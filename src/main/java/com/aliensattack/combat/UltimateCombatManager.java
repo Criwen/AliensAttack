@@ -95,6 +95,49 @@ public class UltimateCombatManager extends ComprehensiveCombatManager {
                 boolean killed = target.takeDamage(damage);
                 yield new CombatResult(true, damage, killed ? "Target killed by psychic blast!" : "Psychic blast damage dealt!");
             }
+            case TELEPORT -> {
+                // Teleport caster to target position
+                Position targetPos = target.getPosition();
+                caster.setPosition(targetPos);
+                yield new CombatResult(true, 0, "Unit teleported to target position!");
+            }
+            case PSYCHIC_DOMINANCE -> {
+                if (target.getUnitType() == UnitType.ROBOTIC && effectivePower > 40) {
+                    yield new CombatResult(true, 0, "Robotic unit controlled!");
+                } else {
+                    yield new CombatResult(false, 0, "Target is not robotic or resisted control");
+                }
+            }
+            case MIND_MERGE -> {
+                // Share consciousness between caster and target
+                yield new CombatResult(true, 0, "Minds merged - consciousness shared!");
+            }
+            case PSYCHIC_BARRIER -> {
+                // Create protective barrier
+                yield new CombatResult(true, effectivePower, "Psychic barrier created!");
+            }
+            case PSYCHIC_SHIELD -> {
+                // Apply psychic shield
+                yield new CombatResult(true, effectivePower, "Psychic shield applied!");
+            }
+            case MIND_SHIELD -> {
+                // Apply mind shield
+                yield new CombatResult(true, effectivePower, "Mind shield applied!");
+            }
+            case DOMINATION -> {
+                if (effectivePower > 60) {
+                    yield new CombatResult(true, 0, "Target dominated!");
+                } else {
+                    yield new CombatResult(false, 0, "Domination resisted");
+                }
+            }
+            case TELEPATHY -> {
+                yield new CombatResult(true, 0, "Enemy information revealed!");
+            }
+            case PSYCHIC_SCREAM -> {
+                int stunDamage = effectivePower / 12;
+                yield new CombatResult(true, stunDamage, "Target stunned by psychic scream!");
+            }
             default -> new CombatResult(false, 0, "Unknown psionic ability");
         };
     }

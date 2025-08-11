@@ -988,8 +988,203 @@ public class AlienPod {
     }
     
     public void usePodAbility(String abilityName, List<Unit> targets) {
-        // This method is called but not implemented in the original design
-        // In a real implementation, this would use pod abilities
+        if (!isActive || targets == null || targets.isEmpty()) {
+            return;
+        }
+        
+        switch (abilityName.toLowerCase()) {
+            case "coordinated_attack":
+                performCoordinatedAttack(targets);
+                break;
+            case "flanking_maneuver":
+                performFlankingManeuver(targets);
+                break;
+            case "suppression_fire":
+                performSuppressionFire(targets);
+                break;
+            case "overwhelm":
+                performOverwhelm(targets);
+                break;
+            case "tactical_retreat":
+                performTacticalRetreat();
+                break;
+            case "reinforcement_call":
+                callReinforcements();
+                break;
+            case "area_denial":
+                performAreaDenial(targets);
+                break;
+            case "stealth_operation":
+                performStealthOperation(targets);
+                break;
+            case "artillery_strike":
+                performArtilleryStrike(targets);
+                break;
+            case "melee_assault":
+                performMeleeAssault(targets);
+                break;
+            default:
+                // Unknown ability
+                break;
+        }
+    }
+    
+    /**
+     * Perform coordinated attack
+     */
+    private void performCoordinatedAttack(List<Unit> targets) {
+        for (Unit target : targets) {
+            for (Unit member : podMembers) {
+                if (member.isAlive() && member.getPosition().getDistance2D(target.getPosition()) <= member.getAttackRange()) {
+                    // Apply coordination bonus
+                    int coordinationBonus = coordinationBonuses.getOrDefault("attack", 0);
+                    int damage = member.getAttackDamage() + coordinationBonus;
+                    target.takeDamage(damage);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Perform flanking maneuver
+     */
+    private void performFlankingManeuver(List<Unit> targets) {
+        for (Unit target : targets) {
+            // Find flanking positions
+            List<Position> flankingPositions = calculateFlankingPositions(target.getPosition());
+            
+            // Move pod members to flanking positions
+            for (int i = 0; i < Math.min(podMembers.size(), flankingPositions.size()); i++) {
+                Unit member = podMembers.get(i);
+                if (member.isAlive()) {
+                    member.setPosition(flankingPositions.get(i));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Perform suppression fire
+     */
+    private void performSuppressionFire(List<Unit> targets) {
+        for (Unit target : targets) {
+            // Apply suppression status effect
+            StatusEffectData suppressionEffect = new StatusEffectData(StatusEffect.SUPPRESSED, 2, 1);
+            target.addStatusEffect(suppressionEffect);
+        }
+    }
+    
+    /**
+     * Perform overwhelm tactic
+     */
+    private void performOverwhelm(List<Unit> targets) {
+        for (Unit target : targets) {
+            // Multiple pod members attack the same target
+            int totalDamage = 0;
+            for (Unit member : podMembers) {
+                if (member.isAlive()) {
+                    totalDamage += member.getAttackDamage();
+                }
+            }
+            target.takeDamage(totalDamage);
+        }
+    }
+    
+    /**
+     * Perform tactical retreat
+     */
+    private void performTacticalRetreat() {
+        // Move pod members away from current position
+        Position retreatPosition = calculateRetreatPosition();
+        for (Unit member : podMembers) {
+            if (member.isAlive()) {
+                member.setPosition(retreatPosition);
+            }
+        }
+        isActive = false;
+    }
+    
+    /**
+     * Perform area denial
+     */
+    private void performAreaDenial(List<Unit> targets) {
+        // Create area denial effect around targets
+        for (Unit target : targets) {
+            // Apply area denial status effects
+            StatusEffectData areaDenialEffect = new StatusEffectData(StatusEffect.MARKED, 3, 1);
+            target.addStatusEffect(areaDenialEffect);
+        }
+    }
+    
+    /**
+     * Perform stealth operation
+     */
+    private void performStealthOperation(List<Unit> targets) {
+        // Apply stealth bonuses to pod members
+        for (Unit member : podMembers) {
+            if (member.isAlive()) {
+                member.setConcealed(true);
+                member.setVisibility(VisibilityType.HIDDEN);
+            }
+        }
+    }
+    
+    /**
+     * Perform artillery strike
+     */
+    private void performArtilleryStrike(List<Unit> targets) {
+        for (Unit target : targets) {
+            // High damage area attack
+            int artilleryDamage = 25;
+            target.takeDamage(artilleryDamage);
+            
+            // Apply blast status effect
+            StatusEffectData blastEffect = new StatusEffectData(StatusEffect.KNOCKED_DOWN, 1, 1);
+            target.addStatusEffect(blastEffect);
+        }
+    }
+    
+    /**
+     * Perform melee assault
+     */
+    private void performMeleeAssault(List<Unit> targets) {
+        for (Unit target : targets) {
+            for (Unit member : podMembers) {
+                if (member.isAlive() && member.getPosition().getDistance2D(target.getPosition()) <= 1) {
+                    // Melee attack with bonus damage
+                    int meleeDamage = member.getAttackDamage() * 2;
+                    target.takeDamage(meleeDamage);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Calculate flanking positions
+     */
+    private List<Position> calculateFlankingPositions(Position targetPosition) {
+        List<Position> positions = new ArrayList<>();
+        
+        // Calculate positions around the target
+        for (int x = -2; x <= 2; x++) {
+            for (int y = -2; y <= 2; y++) {
+                if (x != 0 || y != 0) {
+                    Position pos = new Position(targetPosition.getX() + x, targetPosition.getY() + y);
+                    positions.add(pos);
+                }
+            }
+        }
+        
+        return positions;
+    }
+    
+    /**
+     * Calculate retreat position
+     */
+    private Position calculateRetreatPosition() {
+        // Simple retreat calculation - move away from current position
+        Position currentPos = getPodPosition();
+        return new Position(currentPos.getX() - 3, currentPos.getY() - 3);
     }
     
     public void processPodTurn() {

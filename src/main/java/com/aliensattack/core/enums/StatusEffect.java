@@ -41,5 +41,10 @@ public enum StatusEffect {
     MUTATION_RISK,  // Unit is at risk of mutation
     FREEZING,       // Unit is freezing and taking cold damage
     ARMOR_DEGRADATION, // Unit's armor is degrading
-    WEAPON_MALFUNCTION // Unit's weapon is malfunctioning
+    WEAPON_MALFUNCTION, // Unit's weapon is malfunctioning
+    CONTROLLED,     // Unit is under mind control
+    MIND_MERGED,    // Unit is in mind merge state
+    DOMINATED,      // Unit is dominated by psionic power
+    PSYCHIC_SHIELD, // Unit has psychic shield protection
+    MIND_SHIELD     // Unit has mind shield protection
 } 

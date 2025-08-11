@@ -83,6 +83,7 @@ public class ActionManager {
             case ALIEN_RULER -> availableActions.put(unit, new ArrayList<>(alienActions));
             case CIVILIAN -> availableActions.put(unit, new ArrayList<>(civilianActions));
             case VEHICLE -> availableActions.put(unit, new ArrayList<>(vehicleActions));
+            case ROBOTIC -> availableActions.put(unit, new ArrayList<>(vehicleActions)); // Robotic units use vehicle actions
         }
     }
     

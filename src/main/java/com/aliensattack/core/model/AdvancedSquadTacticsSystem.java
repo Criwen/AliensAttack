@@ -9,7 +9,7 @@ import java.util.*;
 
 /**
  * Advanced Squad Tactics System - XCOM 2 Tactical Combat
- * Implements sophisticated squad-level coordination and formation mechanics
+ * Implements squad bonding, coordination, and tactical bonuses
  */
 @Data
 @Builder
@@ -17,39 +17,60 @@ import java.util.*;
 @AllArgsConstructor
 public class AdvancedSquadTacticsSystem {
     
-    private String squadId;
-    private List<Unit> squadMembers;
-    private SquadFormation currentFormation;
-    private Unit squadLeader;
-    private Map<String, SquadManeuver> availableManeuvers;
-    private Map<String, Double> squadSynergyBonuses;
-    private List<SquadCommunication> activeCommunications;
-    private Map<String, Integer> formationBonuses;
-    private boolean isCoordinated;
-    private int coordinationLevel;
-    private Map<String, SquadTactic> activeTactics;
+    private String tacticsId;
+    private Map<String, Squad> squads;
+    private Map<String, SquadTactic> squadTactics;
+    private Map<String, SquadBond> squadBonds;
+    private Map<String, SquadCoordination> squadCoordinations;
+    private Map<String, SquadMorale> squadMorales;
+    private Map<String, SquadExperience> squadExperiences;
+    private Map<String, List<String>> squadMembers;
+    private Map<String, Map<String, Integer>> squadBonuses;
+    private Map<String, List<String>> activeTactics;
+    private Map<String, Integer> squadLevels;
+    private Map<String, Boolean> squadStates;
+    private int totalSquads;
+    private int maxSquadSize;
+    private boolean isTacticsActive;
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SquadFormation {
+        private String formationId;
         private String formationName;
         private FormationType formationType;
-        private Map<String, Integer> positionBonuses;
-        private List<String> requiredPositions;
+        private Map<String, Integer> formationEffects;
+        private List<String> formationRequirements;
         private int formationCost;
         private boolean isActive;
+        private String description;
+        private int cooldown;
+        private int currentCooldown;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> formationBonuses;
+        private List<String> formationAbilities;
+        private String formationMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
         
         public enum FormationType {
-            DEFENSIVE,      // Defensive formation with cover bonuses
-            OFFENSIVE,      // Offensive formation with attack bonuses
-            FLANKING,       // Flanking formation for side attacks
-            SUPPORT,        // Support formation for healing/buffing
-            RECONNAISSANCE, // Reconnaissance formation for scouting
-            AMBUSH,         // Ambush formation for surprise attacks
-            RETREAT,        // Retreat formation for safe withdrawal
-            COORDINATED     // Coordinated formation for complex tactics
+            DEFENSIVE,      // Defensive formation
+            OFFENSIVE,      // Offensive formation
+            FLANKING,       // Flanking formation
+            SUPPORT,        // Support formation
+            COVER,          // Cover formation
+            OVERWATCH,      // Overwatch formation
+            MEDICAL,        // Medical formation
+            TECHNICAL       // Technical formation
         }
     }
     
@@ -58,23 +79,39 @@ public class AdvancedSquadTacticsSystem {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SquadManeuver {
+        private String maneuverId;
         private String maneuverName;
         private ManeuverType maneuverType;
-        private int actionPointCost;
-        private List<String> requiredUnits;
-        private Map<String, Integer> maneuverBonuses;
+        private Map<String, Integer> maneuverEffects;
+        private List<String> maneuverRequirements;
+        private int maneuverCost;
+        private boolean isActive;
+        private String description;
         private int cooldown;
-        private boolean isAvailable;
+        private int currentCooldown;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> maneuverBonuses;
+        private List<String> maneuverAbilities;
+        private String maneuverMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
         
         public enum ManeuverType {
-            COORDINATED_ATTACK,    // Multiple units attack same target
-            COVERING_FIRE,         // One unit covers another's movement
-            FLANKING_MANEUVER,     // Coordinated flanking attack
-            SUPPORT_POSITIONING,   // Reposition for support abilities
-            TACTICAL_WITHDRAWAL,   // Coordinated retreat
-            AMBUSH_SETUP,          // Set up ambush positions
-            DEFENSIVE_POSITIONING, // Reposition for defense
-            RECONNAISSANCE_SWEEP   // Coordinated scouting
+            COORDINATED_ATTACK,    // Coordinated attack maneuver
+            COVERING_FIRE,         // Covering fire maneuver
+            FLANKING_MANEUVER,     // Flanking maneuver
+            SUPPRESSION_FIRE,      // Suppression fire maneuver
+            OVERWATCH_AMBUSH,      // Overwatch ambush maneuver
+            TACTICAL_WITHDRAWAL,   // Tactical withdrawal maneuver
+            MEDICAL_EVACUATION,    // Medical evacuation maneuver
+            TECHNICAL_SPECIALIST   // Technical specialist maneuver
         }
     }
     
@@ -82,22 +119,32 @@ public class AdvancedSquadTacticsSystem {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class SquadCommunication {
-        private String communicationId;
-        private CommunicationType communicationType;
-        private Unit sender;
-        private Unit receiver;
-        private String message;
-        private int duration;
-        private Map<String, Integer> communicationBonuses;
+    public static class Squad {
+        private String squadId;
+        private String squadName;
+        private List<String> members;
+        private SquadTacticType primaryTactic;
+        private SquadTacticType secondaryTactic;
+        private int squadLevel;
+        private int experience;
+        private int morale;
+        private int cohesion;
+        private boolean isActive;
+        private String leaderId;
+        private Map<String, Integer> squadBonuses;
+        private List<String> squadAbilities;
+        private int maxSize;
+        private int currentSize;
         
-        public enum CommunicationType {
-            TARGET_SHARING,        // Share target information
-            POSITION_REPORTING,    // Report enemy positions
-            TACTIC_COORDINATION,   // Coordinate tactical actions
-            SUPPORT_REQUEST,       // Request support from allies
-            WARNING_ALERT,         // Alert about threats
-            SUCCESS_REPORTING      // Report successful actions
+        public enum SquadTacticType {
+            OVERWATCH_AMBUSH,    // Overwatch and ambush tactics
+            FLANKING_MANEUVER,   // Flanking and positioning
+            SUPPRESSION_COVER,   // Suppression and cover tactics
+            PSYCHIC_COORDINATION, // Psychic coordination
+            STEALTH_INFILTRATION, // Stealth and infiltration
+            HEAVY_ASSAULT,       // Heavy weapons assault
+            MEDICAL_SUPPORT,     // Medical and support tactics
+            TECHNICAL_SPECIALIST  // Technical specialist tactics
         }
     }
     
@@ -106,262 +153,476 @@ public class AdvancedSquadTacticsSystem {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SquadTactic {
+        private String tacticId;
         private String tacticName;
-        private TacticType tacticType;
-        private List<String> requiredAbilities;
-        private Map<String, Integer> tacticBonuses;
-        private int duration;
+        private Squad.SquadTacticType tacticType;
+        private Map<String, Integer> tacticEffects;
+        private List<String> tacticRequirements;
+        private int tacticCost;
         private boolean isActive;
+        private String description;
+        private int cooldown;
+        private int currentCooldown;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> tacticBonuses;
+        private List<String> tacticAbilities;
+        private String tacticMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SquadBond {
+        private String bondId;
+        private String unit1Id;
+        private String unit2Id;
+        private int bondLevel;
+        private int bondExperience;
+        private Map<String, Integer> bondBonuses;
+        private List<String> bondAbilities;
+        private boolean isActive;
+        private String bondType;
+        private int bondDuration;
+        private int currentDuration;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> bondEffects;
+        private List<String> bondRequirements;
+        private int bondCost;
+        private boolean isPermanent;
+        private String permanentCondition;
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SquadCoordination {
+        private String coordinationId;
+        private String squadId;
+        private CoordinationType coordinationType;
+        private Map<String, Integer> coordinationEffects;
+        private List<String> participatingUnits;
+        private boolean isActive;
+        private int duration;
+        private int currentDuration;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> coordinationBonuses;
+        private List<String> coordinationAbilities;
+        private String coordinationMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
         
-        public enum TacticType {
-            OVERWATCH_NET,         // Multiple overwatch positions
-            FLANKING_ATTACK,       // Coordinated flanking
-            SUPPRESSION_FIRE,      // Coordinated suppression
-            MEDICAL_SUPPORT,       // Coordinated healing
-            RECONNAISSANCE,        // Coordinated scouting
-            AMBUSH_TACTIC,         // Coordinated ambush
-            DEFENSIVE_STANCE,      // Coordinated defense
-            BREACH_AND_CLEAR       // Coordinated room clearing
+        public enum CoordinationType {
+            COMBINED_ATTACK,     // Combined attack coordination
+            DEFENSIVE_FORMATION,  // Defensive formation coordination
+            SUPPORT_ACTION,       // Support action coordination
+            TACTICAL_MOVEMENT,    // Tactical movement coordination
+            COVER_COORDINATION,   // Cover coordination
+            OVERWATCH_NETWORK,    // Overwatch network coordination
+            MEDICAL_COORDINATION, // Medical coordination
+            TECHNICAL_COORDINATION // Technical coordination
         }
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SquadMorale {
+        private String moraleId;
+        private String squadId;
+        private int moraleLevel;
+        private int maxMoraleLevel;
+        private Map<String, Integer> moraleEffects;
+        private List<String> moraleEvents;
+        private boolean isActive;
+        private int duration;
+        private int currentDuration;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> moraleBonuses;
+        private List<String> moraleAbilities;
+        private String moraleMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SquadExperience {
+        private String experienceId;
+        private String squadId;
+        private int experienceLevel;
+        private int maxExperienceLevel;
+        private int experiencePoints;
+        private int experienceToNext;
+        private Map<String, Integer> experienceEffects;
+        private List<String> experienceEvents;
+        private boolean isActive;
+        private int duration;
+        private int currentDuration;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> experienceBonuses;
+        private List<String> experienceAbilities;
+        private String experienceMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
     }
     
 
     
     /**
-     * Add squad member
+     * Initialize the squad tactics system
      */
-    public void addSquadMember(Unit member) {
-        squadMembers.add(member);
-        updateSquadSynergy();
+    public void initializeSystem() {
+        // ToDo: Реализовать продвинутые тактики отряда
+        // - Squad Bonding System
+        // - Advanced Squad Tactics
+        // - Squad Cohesion Bonuses
+        // - Squad coordination mechanics
+        // - Squad morale system
+        // - Squad experience sharing
     }
     
     /**
-     * Set squad formation
+     * Create a new squad
      */
-    public boolean setFormation(SquadFormation formation) {
-        if (canUseFormation(formation)) {
-            this.currentFormation = formation;
-            applyFormationBonuses();
-            return true;
+    public boolean createSquad(String squadId, String squadName, String leaderId) {
+        if (squads.containsKey(squadId)) {
+            return false; // Squad already exists
         }
-        return false;
-    }
-    
-    /**
-     * Execute squad maneuver
-     */
-    public boolean executeManeuver(String maneuverName, List<Unit> participants) {
-        SquadManeuver maneuver = availableManeuvers.get(maneuverName);
-        if (maneuver != null && maneuver.isAvailable() && canExecuteManeuver(maneuver, participants)) {
-            applyManeuverBonuses(maneuver, participants);
-            maneuver.setAvailable(false);
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Establish squad communication
-     */
-    public boolean establishCommunication(Unit sender, Unit receiver, SquadCommunication.CommunicationType type, String message) {
-        SquadCommunication communication = SquadCommunication.builder()
-                .communicationId(UUID.randomUUID().toString())
-                .communicationType(type)
-                .sender(sender)
-                .receiver(receiver)
-                .message(message)
-                .duration(3)
-                .communicationBonuses(new HashMap<>())
-                .build();
         
-        activeCommunications.add(communication);
-        applyCommunicationBonuses(communication);
+        Squad squad = Squad.builder()
+            .squadId(squadId)
+            .squadName(squadName)
+            .members(new ArrayList<>())
+            .primaryTactic(Squad.SquadTacticType.OVERWATCH_AMBUSH)
+            .secondaryTactic(Squad.SquadTacticType.FLANKING_MANEUVER)
+            .squadLevel(1)
+            .experience(0)
+            .morale(100)
+            .cohesion(50)
+            .isActive(true)
+            .leaderId(leaderId)
+            .squadBonuses(new HashMap<>())
+            .squadAbilities(new ArrayList<>())
+            .maxSize(maxSquadSize)
+            .currentSize(0)
+            .build();
+        
+        squads.put(squadId, squad);
+        squadMembers.put(squadId, new ArrayList<>());
+        squadBonuses.put(squadId, new HashMap<>());
+        squadLevels.put(squadId, 1);
+        squadStates.put(squadId, true);
+        totalSquads++;
+        
         return true;
     }
     
     /**
-     * Activate squad tactic
+     * Add member to squad
      */
-    public boolean activateTactic(String tacticName) {
-        SquadTactic tactic = activeTactics.get(tacticName);
-        if (tactic != null && canActivateTactic(tactic)) {
-            tactic.setActive(true);
-            applyTacticBonuses(tactic);
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Update squad synergy bonuses
-     */
-    public void updateSquadSynergy() {
-        squadSynergyBonuses.clear();
-        
-        for (Unit member : squadMembers) {
-            for (Unit otherMember : squadMembers) {
-                if (!member.equals(otherMember)) {
-                    calculateSynergyBonus(member, otherMember);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Calculate synergy bonus between two units
-     */
-    private void calculateSynergyBonus(Unit unit1, Unit unit2) {
-        double distance = calculateDistance(unit1.getPosition(), unit2.getPosition());
-        
-        if (distance <= 3.0) { // Close proximity bonus
-            squadSynergyBonuses.put("accuracy", squadSynergyBonuses.getOrDefault("accuracy", 0.0) + 5.0);
-            squadSynergyBonuses.put("defense", squadSynergyBonuses.getOrDefault("defense", 0.0) + 3.0);
+    public boolean addSquadMember(String squadId, String unitId) {
+        Squad squad = squads.get(squadId);
+        if (squad == null || squad.getCurrentSize() >= squad.getMaxSize()) {
+            return false;
         }
         
-        if (distance <= 1.5) { // Adjacent bonus
-            squadSynergyBonuses.put("critical_chance", squadSynergyBonuses.getOrDefault("critical_chance", 0.0) + 2.0);
-            squadSynergyBonuses.put("dodge", squadSynergyBonuses.getOrDefault("dodge", 0.0) + 2.0);
-        }
+        squad.getMembers().add(unitId);
+        squad.setCurrentSize(squad.getCurrentSize() + 1);
+        squadMembers.get(squadId).add(unitId);
+        
+        // Update squad cohesion
+        updateSquadCohesion(squadId);
+        
+        return true;
     }
     
     /**
-     * Apply formation bonuses
+     * Remove member from squad
      */
-    private void applyFormationBonuses() {
-        if (currentFormation != null && currentFormation.isActive()) {
-            formationBonuses.putAll(currentFormation.getPositionBonuses());
+    public boolean removeSquadMember(String squadId, String unitId) {
+        Squad squad = squads.get(squadId);
+        if (squad == null) {
+            return false;
         }
+        
+        boolean removed = squad.getMembers().remove(unitId);
+        if (removed) {
+            squad.setCurrentSize(squad.getCurrentSize() - 1);
+            squadMembers.get(squadId).remove(unitId);
+            
+            // Update squad cohesion
+            updateSquadCohesion(squadId);
+        }
+        
+        return removed;
     }
     
     /**
-     * Apply maneuver bonuses
+     * Create squad bond between two units
      */
-    private void applyManeuverBonuses(SquadManeuver maneuver, List<Unit> participants) {
-        for (Unit participant : participants) {
-            for (Map.Entry<String, Integer> bonus : maneuver.getManeuverBonuses().entrySet()) {
-                // Apply bonus to participant
-                applyBonusToUnit(participant, bonus.getKey(), bonus.getValue());
+    public boolean createSquadBond(String unit1Id, String unit2Id, String bondType) {
+        String bondId = "BOND_" + unit1Id + "_" + unit2Id;
+        
+        if (squadBonds.containsKey(bondId)) {
+            return false; // Bond already exists
+        }
+        
+        SquadBond bond = SquadBond.builder()
+            .bondId(bondId)
+            .unit1Id(unit1Id)
+            .unit2Id(unit2Id)
+            .bondLevel(1)
+            .bondExperience(0)
+            .bondBonuses(new HashMap<>())
+            .bondAbilities(new ArrayList<>())
+            .isActive(true)
+            .bondType(bondType)
+            .bondDuration(0)
+            .currentDuration(0)
+            .activationCondition("Both units alive")
+            .successRate(0.9)
+            .failureEffect("No bond effect")
+            .bondEffects(new HashMap<>())
+            .bondRequirements(new ArrayList<>())
+            .bondCost(0)
+            .isPermanent(true)
+            .permanentCondition("Both units alive")
+            .build();
+        
+        squadBonds.put(bondId, bond);
+        
+        // Apply bond bonuses
+        applyBondBonuses(bond);
+        
+        return true;
+    }
+    
+    /**
+     * Apply squad tactic
+     */
+    public boolean applySquadTactic(String squadId, Squad.SquadTacticType tacticType) {
+        Squad squad = squads.get(squadId);
+        if (squad == null) {
+            return false;
+        }
+        
+        // Create tactic
+        SquadTactic tactic = SquadTactic.builder()
+            .tacticId("TACTIC_" + squadId + "_" + tacticType.name())
+            .tacticName(tacticType.name())
+            .tacticType(tacticType)
+            .tacticEffects(new HashMap<>())
+            .tacticRequirements(new ArrayList<>())
+            .tacticCost(1)
+            .isActive(true)
+            .description("Squad tactic: " + tacticType.name())
+            .cooldown(3)
+            .currentCooldown(0)
+            .activationCondition("Squad has action points")
+            .successRate(0.8)
+            .failureEffect("No tactic effect")
+            .tacticBonuses(new HashMap<>())
+            .tacticAbilities(new ArrayList<>())
+            .tacticMethod("Automatic")
+            .energyCost(0)
+            .isAutomatic(true)
+            .triggerCondition("Squad action")
+            .damageModifiers(new HashMap<>())
+            .resistanceTypes(new ArrayList<>())
+            .isPermanent(false)
+            .permanentCondition("")
+            .build();
+        
+        // Apply tactic effects based on type
+        applyTacticEffects(squad, tactic);
+        
+        squadTactics.put(tactic.getTacticId(), tactic);
+        activeTactics.put(squadId, new ArrayList<>());
+        activeTactics.get(squadId).add(tactic.getTacticId());
+        
+        return true;
+    }
+    
+    /**
+     * Update squad cohesion
+     */
+    private void updateSquadCohesion(String squadId) {
+        Squad squad = squads.get(squadId);
+        if (squad == null) {
+            return;
+        }
+        
+        int memberCount = squad.getMembers().size();
+        if (memberCount < 2) {
+            squad.setCohesion(0);
+            return;
+        }
+        
+        // Calculate cohesion based on member count and bonds
+        int baseCohesion = Math.min(100, memberCount * 20);
+        int bondBonus = calculateBondBonus(squadId);
+        int finalCohesion = Math.min(100, baseCohesion + bondBonus);
+        
+        squad.setCohesion(finalCohesion);
+    }
+    
+    /**
+     * Calculate bond bonus for squad
+     */
+    private int calculateBondBonus(String squadId) {
+        List<String> members = squadMembers.get(squadId);
+        if (members == null) {
+            return 0;
+        }
+        
+        int bondBonus = 0;
+        for (SquadBond bond : squadBonds.values()) {
+            if (members.contains(bond.getUnit1Id()) && members.contains(bond.getUnit2Id())) {
+                bondBonus += bond.getBondLevel() * 5;
             }
         }
+        
+        return bondBonus;
     }
     
     /**
-     * Apply communication bonuses
+     * Apply bond bonuses
      */
-    private void applyCommunicationBonuses(SquadCommunication communication) {
-        communication.getCommunicationBonuses().put("coordination", 10);
-        communication.getCommunicationBonuses().put("awareness", 15);
+    private void applyBondBonuses(SquadBond bond) {
+        // Apply basic bond bonuses
+        bond.getBondBonuses().put("accuracy", 5);
+        bond.getBondBonuses().put("defense", 3);
+        bond.getBondBonuses().put("morale", 10);
+        
+        // Add bond abilities
+        bond.getBondAbilities().add("COORDINATED_ATTACK");
+        bond.getBondAbilities().add("COVER_FIRE");
+        bond.getBondAbilities().add("MORALE_BOOST");
     }
     
     /**
-     * Apply tactic bonuses
+     * Apply tactic effects
      */
-    private void applyTacticBonuses(SquadTactic tactic) {
-        for (Map.Entry<String, Integer> bonus : tactic.getTacticBonuses().entrySet()) {
-            // Apply bonus to all squad members
-            for (Unit member : squadMembers) {
-                applyBonusToUnit(member, bonus.getKey(), bonus.getValue());
-            }
+    private void applyTacticEffects(Squad squad, SquadTactic tactic) {
+        switch (tactic.getTacticType()) {
+            case OVERWATCH_AMBUSH:
+                tactic.getTacticEffects().put("overwatch_bonus", 20);
+                tactic.getTacticEffects().put("ambush_damage", 15);
+                break;
+            case FLANKING_MANEUVER:
+                tactic.getTacticEffects().put("flanking_bonus", 25);
+                tactic.getTacticEffects().put("movement_bonus", 10);
+                break;
+            case SUPPRESSION_COVER:
+                tactic.getTacticEffects().put("suppression_bonus", 15);
+                tactic.getTacticEffects().put("cover_bonus", 20);
+                break;
+            case PSYCHIC_COORDINATION:
+                tactic.getTacticEffects().put("psychic_bonus", 30);
+                tactic.getTacticEffects().put("coordination_bonus", 15);
+                break;
+            case STEALTH_INFILTRATION:
+                tactic.getTacticEffects().put("stealth_bonus", 25);
+                tactic.getTacticEffects().put("infiltration_bonus", 20);
+                break;
+            case HEAVY_ASSAULT:
+                tactic.getTacticEffects().put("heavy_damage", 30);
+                tactic.getTacticEffects().put("armor_penetration", 15);
+                break;
+            case MEDICAL_SUPPORT:
+                tactic.getTacticEffects().put("healing_bonus", 25);
+                tactic.getTacticEffects().put("support_bonus", 20);
+                break;
+            case TECHNICAL_SPECIALIST:
+                tactic.getTacticEffects().put("technical_bonus", 30);
+                tactic.getTacticEffects().put("hacking_bonus", 25);
+                break;
         }
     }
     
     /**
-     * Apply bonus to unit
+     * Get squad by ID
      */
-    private void applyBonusToUnit(Unit unit, String bonusType, int bonusValue) {
-        switch (bonusType) {
-            case "accuracy":
-                unit.setAccuracy(unit.getAccuracy() + bonusValue);
-                break;
-            case "defense":
-                unit.setDefense(unit.getDefense() + bonusValue);
-                break;
-            case "critical_chance":
-                unit.setCriticalChance(unit.getCriticalChance() + bonusValue);
-                break;
-            case "dodge":
-                unit.setDodgeChance(unit.getDodgeChance() + bonusValue);
-                break;
-        }
+    public Squad getSquad(String squadId) {
+        return squads.get(squadId);
     }
     
     /**
-     * Check if formation can be used
+     * Get squad members
      */
-    private boolean canUseFormation(SquadFormation formation) {
-        return squadMembers.size() >= formation.getRequiredPositions().size();
+    public List<String> getSquadMembers(String squadId) {
+        return squadMembers.getOrDefault(squadId, new ArrayList<>());
     }
     
     /**
-     * Check if maneuver can be executed
+     * Get squad bonuses
      */
-    private boolean canExecuteManeuver(SquadManeuver maneuver, List<Unit> participants) {
-        return participants.size() >= maneuver.getRequiredUnits().size();
+    public Map<String, Integer> getSquadBonuses(String squadId) {
+        return squadBonuses.getOrDefault(squadId, new HashMap<>());
     }
     
     /**
-     * Check if tactic can be activated
+     * Get active tactics for squad
      */
-    private boolean canActivateTactic(SquadTactic tactic) {
-        return squadMembers.stream().anyMatch(unit -> 
-            unit.getAbilities().stream().anyMatch(ability -> 
-                tactic.getRequiredAbilities().contains(ability.getName())
-            )
-        );
+    public List<String> getActiveTactics(String squadId) {
+        return activeTactics.getOrDefault(squadId, new ArrayList<>());
     }
     
     /**
-     * Calculate distance between positions
+     * Get squad level
      */
-    private double calculateDistance(Position pos1, Position pos2) {
-        int dx = pos1.getX() - pos2.getX();
-        int dy = pos1.getY() - pos2.getY();
-        return Math.sqrt(dx * dx + dy * dy);
+    public int getSquadLevel(String squadId) {
+        return squadLevels.getOrDefault(squadId, 1);
     }
     
     /**
-     * Get squad coordination level
+     * Check if squad is active
      */
-    public int getCoordinationLevel() {
-        return coordinationLevel;
+    public boolean isSquadActive(String squadId) {
+        return squadStates.getOrDefault(squadId, false);
     }
     
     /**
-     * Increase coordination level
+     * Get total squads
      */
-    public void increaseCoordinationLevel() {
-        if (coordinationLevel < 5) {
-            coordinationLevel++;
-            updateSquadSynergy();
-        }
-    }
-    
-    /**
-     * Check if squad is coordinated
-     */
-    public boolean isCoordinated() {
-        return isCoordinated && coordinationLevel >= 2;
-    }
-    
-    /**
-     * Get active formation
-     */
-    public SquadFormation getCurrentFormation() {
-        return currentFormation;
-    }
-    
-    /**
-     * Get squad leader
-     */
-    public Unit getSquadLeader() {
-        return squadLeader;
-    }
-    
-    /**
-     * Set squad leader
-     */
-    public void setSquadLeader(Unit leader) {
-        this.squadLeader = leader;
-        updateSquadSynergy();
+    public int getTotalSquads() {
+        return totalSquads;
     }
 }

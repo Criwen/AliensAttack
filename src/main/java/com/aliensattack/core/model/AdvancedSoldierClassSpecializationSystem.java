@@ -28,9 +28,7 @@ public class AdvancedSoldierClassSpecializationSystem {
     private Map<String, List<String>> activeAbilities;
     private Map<String, ClassProgression> classProgressions;
     
-    public AdvancedSoldierClassSpecializationSystem() {
-        initializeSystem();
-    }
+
     
 
     

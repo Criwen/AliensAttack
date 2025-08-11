@@ -1,6 +1,6 @@
 package com.aliensattack;
 
-import com.aliensattack.ui.GameWindow;
+import com.aliensattack.core.patterns.GameEngine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,12 +13,14 @@ public class AliensAttackApplication {
     private static final Logger log = LogManager.getLogger(AliensAttackApplication.class);
     
     public static void main(String[] args) {
-        // Launch the unified game window
+        // Launch the unified game window using Singleton pattern
         SwingUtilities.invokeLater(() -> {
             try {
-                // Create and show the game window
-                GameWindow gameWindow = new GameWindow();
-                gameWindow.showWindow();
+                // Get the singleton GameEngine instance
+                GameEngine gameEngine = GameEngine.getInstance();
+                
+                // Start the game
+                gameEngine.startGame();
                 log.info("Game window launched");
                 
                 System.out.println("=== ALIENS ATTACK - XCOM 2 TACTICAL COMBAT ===");

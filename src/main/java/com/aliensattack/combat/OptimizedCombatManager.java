@@ -2,9 +2,13 @@ package com.aliensattack.combat;
 
 import com.aliensattack.core.model.Position;
 import com.aliensattack.core.model.Unit;
+import com.aliensattack.core.model.Explosive;
 import com.aliensattack.core.enums.CoverType;
 import com.aliensattack.field.OptimizedTacticalField;
 import com.aliensattack.field.ITacticalField;
+import com.aliensattack.combat.ICombatManager;
+import com.aliensattack.core.interfaces.IUnit;
+import com.aliensattack.combat.CombatResult;
 
 import lombok.Getter;
 import java.util.*;
@@ -140,17 +144,14 @@ public class OptimizedCombatManager implements ICombatManager {
         return null;
     }
     
-    @Override
     public List<Unit> getPlayerUnits() {
         return new ArrayList<>(playerUnits.values());
     }
     
-    @Override
     public List<Unit> getEnemyUnits() {
         return new ArrayList<>(enemyUnits.values());
     }
     
-    @Override
     public List<Unit> getAllUnits() {
         List<Unit> allUnits = new ArrayList<>();
         allUnits.addAll(playerUnits.values());
@@ -158,12 +159,10 @@ public class OptimizedCombatManager implements ICombatManager {
         return allUnits;
     }
     
-    @Override
     public CombatResult performAttack(Unit attacker, Unit target) {
         return attackOptimized(attacker, target);
     }
     
-    @Override
     public boolean canAttack(Unit attacker, Unit target) {
         if (!attacker.isAlive() || !target.isAlive()) return false;
         
@@ -175,7 +174,6 @@ public class OptimizedCombatManager implements ICombatManager {
         return distance <= attacker.getAttackRange();
     }
     
-    @Override
     public List<Unit> getValidTargets(Unit attacker) {
         List<Unit> validTargets = new ArrayList<>();
         for (Unit target : enemyUnits.values()) {
@@ -186,7 +184,6 @@ public class OptimizedCombatManager implements ICombatManager {
         return validTargets;
     }
     
-    @Override
     public boolean canMoveTo(Unit unit, Position target) {
         if (!unit.isAlive()) return false;
         
@@ -197,7 +194,6 @@ public class OptimizedCombatManager implements ICombatManager {
         return distance <= unit.getMovementRange() && field.isValidPosition(target.getX(), target.getY());
     }
     
-    @Override
     public boolean moveUnit(Unit unit, Position target) {
         if (canMoveTo(unit, target)) {
             return field.moveUnitOptimized(unit, target.getX(), target.getY());
@@ -205,64 +201,52 @@ public class OptimizedCombatManager implements ICombatManager {
         return false;
     }
     
-    @Override
     public List<Position> getValidMovePositions(Unit unit) {
         return field.getValidMovesOptimized(unit, unit.getMovementRange());
     }
     
-    @Override
     public boolean isGameOver() {
         return hasPlayerWon() || hasEnemyWon();
     }
     
-    @Override
     public boolean hasPlayerWon() {
         return enemyUnits.values().stream().noneMatch(Unit::isAlive);
     }
     
-    @Override
     public boolean hasEnemyWon() {
         return playerUnits.values().stream().noneMatch(Unit::isAlive);
     }
     
-    @Override
     public boolean allPlayerUnitsOutOfActionPoints() {
         return playerUnits.values().stream()
             .filter(Unit::isAlive)
             .allMatch(unit -> unit.getActionPoints() <= 0);
     }
     
-    @Override
     public Map<String, Unit> getPlayerUnitsMap() {
         return new HashMap<>(playerUnits);
     }
     
-    @Override
     public Map<String, Unit> getEnemyUnitsMap() {
         return new HashMap<>(enemyUnits);
     }
     
-    @Override
     public List<Unit> getPlayerUnitsOptimized() {
         return new ArrayList<>(playerUnits.values());
     }
     
-    @Override
     public List<Unit> getEnemyUnitsOptimized() {
         return new ArrayList<>(enemyUnits.values());
     }
     
-    @Override
     public boolean isUnitAlive(Unit unit) {
         return unit.isAlive();
     }
     
-    @Override
     public void resetUnitActionPoints(Unit unit) {
         unit.setActionPoints(2);
     }
     
-    @Override
     public void startTurn() {
         isPlayerTurn = true;
         for (Unit unit : playerUnits.values()) {
@@ -270,42 +254,33 @@ public class OptimizedCombatManager implements ICombatManager {
         }
     }
     
-    @Override
     public void endTurn() {
         isPlayerTurn = false;
         // AI turn logic would go here
     }
     
-    @Override
     public boolean isPlayerTurn() {
         return isPlayerTurn;
     }
     
-    @Override
     public int getCurrentTurn() {
         return 1; // Simplified for now
     }
     
-    @Override
     public void addPlayerUnit(Unit unit) {
         playerUnits.put(unit.getName(), unit);
     }
     
-    @Override
     public void addEnemyUnit(Unit unit) {
         enemyUnits.put(unit.getName(), unit);
     }
     
-    @Override
     public void removeUnit(Unit unit) {
         playerUnits.remove(unit.getName());
         enemyUnits.remove(unit.getName());
     }
     
-    @Override
-    public ITacticalField getField() {
-        return field;
-    }
+
     
     public void clearCache() {
         resultCache.clear();
@@ -320,4 +295,114 @@ public class OptimizedCombatManager implements ICombatManager {
         enemyUnits.entrySet().removeIf(entry -> !entry.getValue().isAlive());
     }
     
+    // Additional utility methods (not part of ICombatManager interface)
+    public void initialize() {
+        // Initialize the combat system
+        isPlayerTurn = true;
+        clearCache();
+    }
+    
+    public void processInitiative() {
+        // Process unit initiative order (not implemented in this optimized version)
+    }
+    
+    public List<IUnit> getUnitsInInitiativeOrder() {
+        List<IUnit> allUnits = new ArrayList<>();
+        allUnits.addAll(playerUnits.values());
+        allUnits.addAll(enemyUnits.values());
+        return allUnits;
+    }
+    
+    public boolean isCombatFinished() {
+        return isCombatOverOptimized();
+    }
+    
+    public String getCombatState() {
+        return String.format("Player Turn: %s, Player Units: %d, Enemy Units: %d", 
+                           isPlayerTurn, playerUnits.size(), enemyUnits.size());
+    }
+    
+    public List<IUnit> getUnitsAt(Position position) {
+        List<IUnit> unitsAtPosition = new ArrayList<>();
+        for (Unit unit : playerUnits.values()) {
+            if (unit.getPosition().equals(position)) {
+                unitsAtPosition.add(unit);
+            }
+        }
+        for (Unit unit : enemyUnits.values()) {
+            if (unit.getPosition().equals(position)) {
+                unitsAtPosition.add(unit);
+            }
+        }
+        return unitsAtPosition;
+    }
+    
+    public List<IUnit> getUnitsInRange(Position center, int range) {
+        List<IUnit> unitsInRange = new ArrayList<>();
+        for (Unit unit : playerUnits.values()) {
+            if (center.getDistanceTo(unit.getPosition()) <= range) {
+                unitsInRange.add(unit);
+            }
+        }
+        for (Unit unit : enemyUnits.values()) {
+            if (center.getDistanceTo(unit.getPosition()) <= range) {
+                unitsInRange.add(unit);
+            }
+        }
+        return unitsInRange;
+    }
+    
+    public boolean isValidMovePosition(IUnit unit, Position position) {
+        if (unit instanceof Unit) {
+            Unit u = (Unit) unit;
+            return canMoveTo(u, position);
+        }
+        return false;
+    }
+    
+    public boolean canSeeUnit(IUnit observer, IUnit target) {
+        if (observer instanceof Unit && target instanceof Unit) {
+            Unit obs = (Unit) observer;
+            Unit tgt = (Unit) target;
+            return obs.getPosition().getDistanceTo(tgt.getPosition()) <= obs.getAttackRange();
+        }
+        return false;
+    }
+    
+    @Override
+    public ITacticalField getField() {
+        return field;
+    }
+    
+    /**
+     * Throw a grenade at a target position
+     */
+    public List<CombatResult> throwGrenade(Unit thrower, Explosive explosive, Position targetPos) {
+        List<CombatResult> results = new ArrayList<>();
+        
+        if (!thrower.canAttack()) {
+            results.add(new CombatResult(false, 0, "No action points remaining"));
+            return results;
+        }
+        
+        // Check if target position is in range
+        int distance = thrower.getPosition().getDistanceTo(targetPos);
+        if (distance > explosive.getRadius()) {
+            results.add(new CombatResult(false, 0, "Target out of range"));
+            return results;
+        }
+        
+        // Simulate grenade explosion
+        int damage = explosive.getDamage();
+        boolean hit = random.nextInt(100) < 80; // 80% hit chance for grenades
+        
+        if (hit) {
+            thrower.spendActionPoint();
+            results.add(new CombatResult(true, damage, "Grenade hit target!"));
+        } else {
+            results.add(new CombatResult(false, 0, "Grenade missed!"));
+        }
+        
+        return results;
+    }
 } 

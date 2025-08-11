@@ -236,6 +236,36 @@ public class AdvancedAlienEvolutionSystem {
 
     
     /**
+     * Initialize alien evolution system with default values
+     */
+    public void initializeSystem() {
+        this.evolutionId = "ALIEN_EVOLUTION_" + System.currentTimeMillis();
+        this.alienUnits = new HashMap<>();
+        this.evolutionTriggers = new HashMap<>();
+        this.evolutionTypes = new HashMap<>();
+        this.evolutionTrackers = new HashMap<>();
+        this.evolutionCounters = new HashMap<>();
+        this.evolutionConsequences = new HashMap<>();
+        this.evolutionEvents = new ArrayList<>();
+        this.evolutionLevels = new HashMap<>();
+        this.evolutionStates = new HashMap<>();
+        this.totalEvolutionPoints = 0;
+        this.maxEvolutionLevel = 10;
+        this.isEvolutionActive = false;
+        this.evolutionRate = 1;
+        
+        // ToDo: Реализовать полную систему эволюции пришельцев
+        // - Alien research and technology system
+        // - Alien base system with facilities
+        // - Alien infestation system
+        // - Alien autopsy system for research
+        // - Alien technology reverse engineering
+        // - Alien evolution tree with multiple paths
+        // - Alien adaptation to player tactics
+        // - Alien mutation system
+    }
+    
+    /**
      * Add alien unit
      */
     public void addAlienUnit(AlienUnit unit) {

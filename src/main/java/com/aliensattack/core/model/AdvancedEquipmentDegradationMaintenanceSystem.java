@@ -4,12 +4,12 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
 import java.util.*;
-import java.time.LocalDateTime;
 
 /**
- * Advanced Equipment Degradation and Maintenance System
- * Handles equipment wear, maintenance requirements, and performance degradation
+ * Advanced Equipment Degradation Maintenance System - XCOM 2 Tactical Combat
+ * Implements comprehensive equipment degradation, maintenance, and repair mechanics
  */
 @Data
 @Builder
@@ -17,27 +17,75 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AdvancedEquipmentDegradationMaintenanceSystem {
     
-    // Equipment Management
-    private Map<String, Equipment> equipmentRegistry;
-    private Map<String, EquipmentStatus> equipmentStatuses;
-    private Map<String, MaintenanceSchedule> maintenanceSchedules;
-    private Map<String, List<MaintenanceRecord>> maintenanceHistory;
+    private String degradationSystemId;
+    private Map<String, Equipment> equipmentMap;
+    private Map<String, EquipmentType> equipmentTypes;
+    private Map<String, MaintenanceFacility> maintenanceFacilities;
+    private Map<String, MaintenancePlan> maintenancePlans;
+    private Map<String, RepairOrder> repairOrders;
+    private Map<String, EquipmentQuality> equipmentQualities;
+    private Map<String, List<String>> equipmentHistory;
+    private Map<String, Map<String, Integer>> degradationLevels;
+    private Map<String, List<String>> damagedEquipment;
+    private Map<String, Integer> repairTimes;
+    private Map<String, Boolean> repairStates;
+    private int totalDamagedEquipment;
+    private int maxMaintenanceCapacity;
+    private boolean isMaintenanceActive;
     
-    // Degradation Tracking
-    private Map<String, Integer> equipmentDurability;
-    private Map<String, Double> performanceMultipliers;
-    private Map<String, LocalDateTime> lastMaintenanceDates;
-    private Map<String, LocalDateTime> nextMaintenanceDates;
+    public enum MaintenanceType {
+        PREVENTIVE_MAINTENANCE, // Regular maintenance
+        CORRECTIVE_MAINTENANCE, // Fix specific issues
+        EMERGENCY_MAINTENANCE,  // Urgent repairs
+        PREDICTIVE_MAINTENANCE, // Based on condition
+        CONDITION_BASED_MAINTENANCE, // Based on monitoring
+        RELIABILITY_CENTERED_MAINTENANCE, // Optimized approach
+        TOTAL_PRODUCTIVE_MAINTENANCE, // Comprehensive approach
+        ROUTINE_MAINTENANCE,    // Standard procedures
+        UPGRADE_MAINTENANCE,    // Equipment upgrade
+        CALIBRATION_MAINTENANCE, // Precision calibration
+        SOFTWARE_UPDATE          // Software updates
+    }
     
-    // Maintenance Facilities
-    private List<MaintenanceFacility> maintenanceFacilities;
-    private Map<String, MaintenanceFacility> assignedFacilities;
-    private int totalMaintenanceCapacity;
-    private int availableMaintenanceCapacity;
+    public enum EquipmentStatus {
+        OPERATIONAL,     // Equipment is working
+        DAMAGED,         // Equipment is damaged
+        BROKEN,          // Equipment is broken
+        UNDER_MAINTENANCE, // Equipment is being maintained
+        UNDER_REPAIR,    // Equipment is being repaired
+        RETIRED,         // Equipment is retired
+        LOST,            // Equipment is lost
+        DESTROYED        // Equipment is destroyed
+    }
     
-    // Equipment Types
-    private List<EquipmentType> equipmentTypes;
-    private Map<String, EquipmentSpecification> equipmentSpecs;
+    public enum EquipmentCondition {
+        EXCELLENT,      // Perfect condition
+        GOOD,           // Good condition
+        FAIR,           // Fair condition
+        POOR,           // Poor condition
+        DAMAGED,        // Damaged condition
+        BROKEN,         // Broken condition
+        BEYOND_REPAIR,  // Cannot be repaired
+        SCRAP           // Only useful for parts
+    }
+    
+    public enum EquipmentIssue {
+        WEAR_AND_TEAR,      // Normal wear
+        CORROSION,          // Rust and corrosion
+        ELECTRICAL_FAULT,   // Electrical problems
+        MECHANICAL_FAULT,   // Mechanical problems
+        SOFTWARE_BUG,       // Software issues
+        CALIBRATION_ERROR,  // Calibration problems
+        POWER_ISSUE,        // Power problems
+        SENSOR_FAULT,       // Sensor problems
+        COMMUNICATION_ERROR, // Communication problems
+        STRUCTURAL_DAMAGE,  // Physical damage
+        HEAT_DAMAGE,        // Heat-related damage
+        WATER_DAMAGE,       // Water damage
+        IMPACT_DAMAGE,      // Impact damage
+        AGE_RELATED,        // Age-related issues
+        MANUFACTURING_DEFECT // Manufacturing defects
+    }
     
     @Data
     @Builder
@@ -45,125 +93,88 @@ public class AdvancedEquipmentDegradationMaintenanceSystem {
     @AllArgsConstructor
     public static class Equipment {
         private String equipmentId;
-        private String name;
-        private EquipmentType type;
-        private EquipmentCategory category;
-        private int maxDurability;
+        private String equipmentName;
+        private EquipmentType equipmentType;
         private int currentDurability;
-        private double performanceMultiplier;
-        private LocalDateTime manufactureDate;
-        private LocalDateTime lastMaintenanceDate;
-        private LocalDateTime nextMaintenanceDate;
-        private MaintenanceLevel maintenanceLevel;
-        private List<EquipmentModification> modifications;
-        private EquipmentCondition condition;
-    }
-    
-    public enum EquipmentType {
-        WEAPON, ARMOR, MEDICAL_EQUIPMENT, PSYCHIC_AMPLIFIER, GRENADE_LAUNCHER,
-        HACKING_DEVICE, STEALTH_EQUIPMENT, ENVIRONMENTAL_SUIT, COMMUNICATION_DEVICE,
-        SENSOR_EQUIPMENT, TRANSPORT_EQUIPMENT, EXPERIMENTAL_EQUIPMENT
-    }
-    
-    public enum EquipmentCategory {
-        COMBAT_EQUIPMENT, SUPPORT_EQUIPMENT, SPECIALIZED_EQUIPMENT, 
-        EXPERIMENTAL_EQUIPMENT, ALIEN_TECHNOLOGY
-    }
-    
-    public enum MaintenanceLevel {
-        NONE(0, 1.0), BASIC(1, 0.9), STANDARD(2, 0.8), ADVANCED(3, 0.7), 
-        EXPERT(4, 0.6), EXPERIMENTAL(5, 0.5);
-        
-        private final int level;
-        private final double performancePenalty;
-        
-        MaintenanceLevel(int level, double performancePenalty) {
-            this.level = level;
-            this.performancePenalty = performancePenalty;
-        }
-        
-        public int getLevel() { return level; }
-        public double getPerformancePenalty() { return performancePenalty; }
-    }
-    
-    public enum EquipmentCondition {
-        EXCELLENT(1.0), GOOD(0.9), FAIR(0.8), POOR(0.7), CRITICAL(0.6), BROKEN(0.0);
-        
-        private final double performanceMultiplier;
-        
-        EquipmentCondition(double performanceMultiplier) {
-            this.performanceMultiplier = performanceMultiplier;
-        }
-        
-        public double getPerformanceMultiplier() { return performanceMultiplier; }
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class EquipmentStatus {
-        private String equipmentId;
-        private EquipmentCondition condition;
-        private double performanceMultiplier;
-        private boolean isOperational;
-        private boolean needsMaintenance;
+        private int maxDurability;
+        private int degradationRate;
+        private int currentDegradation;
+        private boolean isDamaged;
         private boolean isBroken;
-        private List<EquipmentIssue> issues;
-        private LocalDateTime lastInspectionDate;
+        private boolean isRepairable;
+        private String equipmentLocation;
+        private String assignedUnit;
+        private String assignedFacility;
+        private String assignedTechnician;
+        private boolean isUnderMaintenance;
+        private boolean isUnderRepair;
+        private String maintenanceStatus;
+        private int maintenanceCost;
+        private int repairCost;
+        private String equipmentQuality;
+        private String equipmentCondition;
+        private String lastMaintenanceDate;
+        private String nextMaintenanceDate;
+        private String warrantyStatus;
+        private boolean isWarrantied;
+        private String warrantyExpiryDate;
+        private String equipmentNotes;
+        private Map<String, Integer> equipmentStats;
+        private List<String> equipmentAbilities;
+        private String manufacturer;
+        private String modelNumber;
+        private String serialNumber;
+        private String purchaseDate;
+        private int purchaseCost;
+        private String supplier;
+        private String location;
+        private String status;
     }
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class EquipmentIssue {
-        private String issueId;
-        private IssueType type;
-        private int severity;
+    public static class EquipmentType {
+        private String equipmentTypeId;
+        private String equipmentTypeName;
+        private EquipmentCategory equipmentCategory;
+        private int baseDurability;
+        private int baseDegradationRate;
+        private int baseMaintenanceCost;
+        private int baseRepairCost;
+        private Map<String, Integer> equipmentEffects;
+        private List<String> possibleFailures;
+        private String maintenanceMethod;
+        private int maintenanceSuccessRate;
+        private String preventionMethod;
+        private boolean isMaintainable;
+        private boolean isRepairable;
+        private boolean isReplaceable;
         private String description;
-        private LocalDateTime detectedDate;
-        private boolean isResolved;
-    }
-    
-    public enum IssueType {
-        WEAR_AND_TEAR, DAMAGE, CORROSION, ELECTRICAL_FAULT, MECHANICAL_FAILURE,
-        SOFTWARE_BUG, CALIBRATION_ERROR, POWER_ISSUE, SENSOR_MALFUNCTION
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MaintenanceSchedule {
-        private String equipmentId;
-        private MaintenanceType type;
-        private int intervalDays;
-        private LocalDateTime lastMaintenanceDate;
-        private LocalDateTime nextMaintenanceDate;
-        private boolean isActive;
-        private int priority;
-    }
-    
-    public enum MaintenanceType {
-        PREVENTIVE_MAINTENANCE, CORRECTIVE_MAINTENANCE, EMERGENCY_MAINTENANCE,
-        UPGRADE_MAINTENANCE, CALIBRATION_MAINTENANCE, SOFTWARE_UPDATE
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MaintenanceRecord {
-        private String recordId;
-        private String equipmentId;
-        private MaintenanceType type;
-        private LocalDateTime maintenanceDate;
-        private int cost;
-        private String description;
-        private boolean wasSuccessful;
-        private List<String> partsReplaced;
-        private int technicianSkill;
+        private int complexityLevel;
+        private String riskFactors;
+        private String failureModes;
+        private String maintenanceSchedule;
+        private String lifespan;
+        
+        public enum EquipmentCategory {
+            WEAPON,             // Combat weapons
+            ARMOR,              // Protective armor
+            MEDICAL,            // Medical equipment
+            TECHNICAL,          // Technical equipment
+            COMMUNICATIONS,     // Communication devices
+            TRANSPORT,          // Transportation equipment
+            SENSORS,            // Sensor equipment
+            POWER,              // Power equipment
+            COMPUTER,           // Computer systems
+            TOOL,               // Tools and instruments
+            CONSUMABLE,         // Consumable items
+            AMMUNITION,         // Ammunition and explosives
+            GRENADE,            // Grenades and explosives
+            MEDIKIT,            // Medical kits
+            HACKING_DEVICE      // Hacking and technical devices
+        }
     }
     
     @Data
@@ -172,609 +183,621 @@ public class AdvancedEquipmentDegradationMaintenanceSystem {
     @AllArgsConstructor
     public static class MaintenanceFacility {
         private String facilityId;
-        private String name;
-        private FacilityType type;
+        private String facilityName;
+        private FacilityType facilityType;
         private int capacity;
-        private int currentWorkload;
-        private List<MaintenanceType> availableServices;
-        private int effectiveness;
-        private int cost;
-        private int technicianSkill;
-    }
-    
-    public enum FacilityType {
-        BASIC_WORKSHOP, ADVANCED_WORKSHOP, SPECIALIZED_LAB, EXPERIMENTAL_LAB,
-        ALIEN_TECHNOLOGY_LAB, EMERGENCY_REPAIR_STATION, CALIBRATION_CENTER
+        private int currentOccupancy;
+        private List<String> availableTechnicians;
+        private List<String> availableEquipment;
+        private Map<String, Integer> facilityBonuses;
+        private List<String> facilityServices;
+        private boolean isOperational;
+        private int facilityLevel;
+        private int facilityQuality;
+        private String location;
+        private int operatingCost;
+        private int maintenanceCost;
+        private String facilityStatus;
+        private List<String> equipment;
+        private Map<String, Integer> repairSuccessRates;
+        private List<String> specializations;
+        private String facilityDescription;
+        
+        public enum FacilityType {
+            WEAPON_WORKSHOP,    // Weapon maintenance
+            ARMOR_WORKSHOP,     // Armor maintenance
+            MEDICAL_LAB,        // Medical equipment
+            TECHNICAL_LAB,      // Technical equipment
+            COMMUNICATIONS_CENTER, // Communication equipment
+            TRANSPORT_GARAGE,   // Vehicle maintenance
+            SENSOR_LAB,         // Sensor equipment
+            POWER_PLANT,        // Power equipment
+            COMPUTER_CENTER,    // Computer systems
+            TOOL_WORKSHOP,      // Tool maintenance
+            AMMUNITION_FACTORY, // Ammunition production
+            GRENADE_FACTORY,    // Explosive production
+            MEDICAL_FACILITY,   // Medical equipment
+            HACKING_LAB,        // Technical devices
+            GENERAL_WORKSHOP    // General maintenance
+        }
     }
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class EquipmentSpecification {
-        private String specId;
-        private EquipmentType type;
-        private int baseDurability;
-        private int maintenanceInterval;
-        private double degradationRate;
-        private List<MaintenanceType> requiredMaintenance;
-        private int complexity;
-        private int cost;
+    public static class MaintenancePlan {
+        private String planId;
+        private String equipmentId;
+        private MaintenanceType maintenanceType;
+        private int maintenanceDuration;
+        private int currentDuration;
+        private List<String> maintenanceTasks;
+        private Map<String, Integer> maintenanceGoals;
+        private List<String> maintenanceMilestones;
+        private boolean isActive;
+        private String assignedTechnician;
+        private String assignedFacility;
+        private int maintenanceProgress;
+        private boolean isCompleted;
+        private String completionDate;
+        private String maintenanceStatus;
+        private String maintenanceNotes;
+        private Map<String, Integer> maintenanceBonuses;
+        private List<String> maintenanceRequirements;
+        private int maintenanceCost;
+        private String maintenanceDescription;
     }
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class EquipmentModification {
-        private String modificationId;
-        private String name;
-        private ModificationType type;
-        private int cost;
-        private boolean isInstalled;
-        private LocalDateTime installationDate;
-        private List<String> effects;
+    public static class RepairOrder {
+        private String repairOrderId;
+        private String equipmentId;
+        private RepairType repairType;
+        private int repairDuration;
+        private int currentDuration;
+        private List<String> repairTasks;
+        private Map<String, Integer> repairGoals;
+        private List<String> repairMilestones;
+        private boolean isActive;
+        private String assignedTechnician;
+        private String assignedFacility;
+        private int repairProgress;
+        private boolean isCompleted;
+        private String completionDate;
+        private String repairStatus;
+        private String repairNotes;
+        private Map<String, Integer> repairBonuses;
+        private List<String> repairRequirements;
+        private int repairCost;
+        private String repairDescription;
+        private String priority;
+        private boolean isUrgent;
+        private String estimatedCompletion;
+        private String actualCompletion;
+        private String qualityCheck;
+        private String warrantyCoverage;
+        
+        public enum RepairType {
+            MINOR_REPAIR,       // Simple fixes
+            MAJOR_REPAIR,       // Complex repairs
+            EMERGENCY_REPAIR,   // Urgent fixes
+            OVERHAUL,           // Complete rebuild
+            UPGRADE,            // Equipment upgrade
+            MODIFICATION,       // Equipment modification
+            CALIBRATION,        // Precision adjustment
+            REPLACEMENT         // Part replacement
+        }
     }
     
-    public enum ModificationType {
-        PERFORMANCE_UPGRADE, DURABILITY_UPGRADE, MAINTENANCE_REDUCTION,
-        SPECIALIZED_FUNCTION, EXPERIMENTAL_FEATURE
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EquipmentQuality {
+        private String qualityId;
+        private String equipmentId;
+        private QualityLevel qualityLevel;
+        private int qualityScore;
+        private Map<String, Integer> qualityMetrics;
+        private List<String> qualityIssues;
+        private boolean isInspected;
+        private String inspectionDate;
+        private String inspector;
+        private String qualityStatus;
+        private String qualityNotes;
+        private Map<String, Integer> qualityBonuses;
+        private List<String> qualityRequirements;
+        private int qualityCost;
+        private String qualityDescription;
+        
+        public enum QualityLevel {
+            EXCELLENT,      // Perfect condition
+            GOOD,           // Good condition
+            FAIR,           // Fair condition
+            POOR,           // Poor condition
+            DAMAGED,        // Damaged condition
+            BROKEN,         // Broken condition
+            BEYOND_REPAIR,  // Cannot be repaired
+            SCRAP           // Only useful for parts
+        }
     }
     
-    // Core Equipment Management Methods
+
     
-    public boolean registerEquipment(String equipmentId, String name, EquipmentType type, 
-                                   EquipmentCategory category, int maxDurability) {
-        if (equipmentId == null || name == null || type == null) {
+    /**
+     * Initialize the equipment degradation system
+     */
+    public void initializeSystem() {
+        // ToDo: Реализовать систему деградации оборудования
+        // - Equipment Degradation System
+        // - Maintenance System
+        // - Weapon Progression (полная реализация)
+        // - Armor degradation
+        // - Equipment repair mechanics
+        // - Maintenance facilities
+        // - Equipment quality system
+        
+        initializeEquipmentTypes();
+        initializeMaintenanceFacilities();
+    }
+    
+    /**
+     * Initialize equipment types
+     */
+    private void initializeEquipmentTypes() {
+        // Weapon type
+        EquipmentType weapon = EquipmentType.builder()
+            .equipmentTypeId("WEAPON")
+            .equipmentTypeName("Combat Weapon")
+            .equipmentCategory(EquipmentType.EquipmentCategory.WEAPON)
+            .baseDurability(100)
+            .baseDegradationRate(5)
+            .baseMaintenanceCost(1000)
+            .baseRepairCost(2000)
+            .equipmentEffects(Map.of("damage", 25, "accuracy", 15, "range", 10))
+            .possibleFailures(Arrays.asList("JAM", "MISFIRE", "BREAKAGE", "ACCURACY_LOSS"))
+            .maintenanceMethod("CLEANING_CALIBRATION")
+            .maintenanceSuccessRate(90)
+            .preventionMethod("REGULAR_CLEANING")
+            .isMaintainable(true)
+            .isRepairable(true)
+            .isReplaceable(true)
+            .description("Combat weapon requiring regular maintenance")
+            .complexityLevel(3)
+            .riskFactors("Combat use, environmental exposure")
+            .failureModes("Jamming, misfiring, barrel wear")
+            .maintenanceSchedule("After each mission")
+            .lifespan("1000 rounds")
+            .build();
+        
+        equipmentTypes.put("WEAPON", weapon);
+        
+        // Armor type
+        EquipmentType armor = EquipmentType.builder()
+            .equipmentTypeId("ARMOR")
+            .equipmentTypeName("Combat Armor")
+            .equipmentCategory(EquipmentType.EquipmentCategory.ARMOR)
+            .baseDurability(150)
+            .baseDegradationRate(3)
+            .baseMaintenanceCost(1500)
+            .baseRepairCost(3000)
+            .equipmentEffects(Map.of("defense", 30, "protection", 25, "mobility", -5))
+            .possibleFailures(Arrays.asList("DAMAGE", "BREACH", "WEAR", "INTEGRITY_LOSS"))
+            .maintenanceMethod("INSPECTION_REPAIR")
+            .maintenanceSuccessRate(85)
+            .preventionMethod("REGULAR_INSPECTION")
+            .isMaintainable(true)
+            .isRepairable(true)
+            .isReplaceable(true)
+            .description("Protective armor requiring regular inspection")
+            .complexityLevel(4)
+            .riskFactors("Combat damage, environmental wear")
+            .failureModes("Breaching, material degradation")
+            .maintenanceSchedule("After each mission")
+            .lifespan("50 missions")
+            .build();
+        
+        equipmentTypes.put("ARMOR", armor);
+        
+        // Medical equipment type
+        EquipmentType medical = EquipmentType.builder()
+            .equipmentTypeId("MEDICAL")
+            .equipmentTypeName("Medical Equipment")
+            .equipmentCategory(EquipmentType.EquipmentCategory.MEDICAL)
+            .baseDurability(80)
+            .baseDegradationRate(2)
+            .baseMaintenanceCost(800)
+            .baseRepairCost(1500)
+            .equipmentEffects(Map.of("healing", 20, "stabilization", 15, "diagnosis", 10))
+            .possibleFailures(Arrays.asList("CONTAMINATION", "CALIBRATION_LOSS", "BATTERY_FAILURE"))
+            .maintenanceMethod("STERILIZATION_CALIBRATION")
+            .maintenanceSuccessRate(95)
+            .preventionMethod("REGULAR_STERILIZATION")
+            .isMaintainable(true)
+            .isRepairable(true)
+            .isReplaceable(true)
+            .description("Medical equipment requiring sterilization")
+            .complexityLevel(2)
+            .riskFactors("Contamination, battery life")
+            .failureModes("Contamination, calibration drift")
+            .maintenanceSchedule("Before each use")
+            .lifespan("100 uses")
+            .build();
+        
+        equipmentTypes.put("MEDICAL", medical);
+    }
+    
+    /**
+     * Initialize maintenance facilities
+     */
+    private void initializeMaintenanceFacilities() {
+        // Weapon Workshop
+        MaintenanceFacility weaponWorkshop = MaintenanceFacility.builder()
+            .facilityId("WEAPON_WORKSHOP")
+            .facilityName("Weapon Workshop")
+            .facilityType(MaintenanceFacility.FacilityType.WEAPON_WORKSHOP)
+            .capacity(20)
+            .currentOccupancy(0)
+            .availableTechnicians(Arrays.asList("TECH_SMITH", "TECH_JOHNSON", "TECH_WILLIAMS"))
+            .availableEquipment(Arrays.asList("CLEANING_KIT", "CALIBRATION_TOOL", "TESTING_RANGE"))
+            .facilityBonuses(Map.of("weapon_maintenance", 25, "weapon_repair", 30))
+            .facilityServices(Arrays.asList("CLEANING", "CALIBRATION", "REPAIR", "UPGRADE"))
+            .isOperational(true)
+            .facilityLevel(3)
+            .facilityQuality(85)
+            .location("MAIN_BASE")
+            .operatingCost(3000)
+            .maintenanceCost(500)
+            .facilityStatus("OPERATIONAL")
+            .equipment(new ArrayList<>())
+            .repairSuccessRates(Map.of("CLEANING", 95, "CALIBRATION", 90, "REPAIR", 85))
+            .specializations(Arrays.asList("RIFLES", "PISTOLS", "HEAVY_WEAPONS", "EXPLOSIVES"))
+            .facilityDescription("Specialized weapon maintenance facility")
+            .build();
+        
+        maintenanceFacilities.put("WEAPON_WORKSHOP", weaponWorkshop);
+        
+        // Armor Workshop
+        MaintenanceFacility armorWorkshop = MaintenanceFacility.builder()
+            .facilityId("ARMOR_WORKSHOP")
+            .facilityName("Armor Workshop")
+            .facilityType(MaintenanceFacility.FacilityType.ARMOR_WORKSHOP)
+            .capacity(15)
+            .currentOccupancy(0)
+            .availableTechnicians(Arrays.asList("TECH_BROWN", "TECH_DAVIS", "TECH_MILLER"))
+            .availableEquipment(Arrays.asList("INSPECTION_TOOL", "REPAIR_KIT", "MATERIALS"))
+            .facilityBonuses(Map.of("armor_maintenance", 25, "armor_repair", 30))
+            .facilityServices(Arrays.asList("INSPECTION", "REPAIR", "REINFORCEMENT", "UPGRADE"))
+            .isOperational(true)
+            .facilityLevel(3)
+            .facilityQuality(80)
+            .location("MAIN_BASE")
+            .operatingCost(2500)
+            .maintenanceCost(400)
+            .facilityStatus("OPERATIONAL")
+            .equipment(new ArrayList<>())
+            .repairSuccessRates(Map.of("INSPECTION", 90, "REPAIR", 85, "REINFORCEMENT", 80))
+            .specializations(Arrays.asList("BODY_ARMOR", "HELMETS", "SHIELDS", "PROTECTIVE_GEAR"))
+            .facilityDescription("Specialized armor maintenance facility")
+            .build();
+        
+        maintenanceFacilities.put("ARMOR_WORKSHOP", armorWorkshop);
+    }
+    
+    /**
+     * Register equipment
+     */
+    public boolean registerEquipment(String equipmentId, String equipmentTypeId, String assignedUnit) {
+        EquipmentType equipmentType = equipmentTypes.get(equipmentTypeId);
+        if (equipmentType == null) {
             return false;
         }
         
         Equipment equipment = Equipment.builder()
             .equipmentId(equipmentId)
-            .name(name)
-            .type(type)
-            .category(category)
-            .maxDurability(maxDurability)
-            .currentDurability(maxDurability)
-            .performanceMultiplier(1.0)
-            .manufactureDate(LocalDateTime.now())
-            .maintenanceLevel(MaintenanceLevel.NONE)
-            .modifications(new ArrayList<>())
-            .condition(EquipmentCondition.EXCELLENT)
-            .build();
-        
-        equipmentRegistry.put(equipmentId, equipment);
-        
-        // Initialize status
-        EquipmentStatus status = EquipmentStatus.builder()
-            .equipmentId(equipmentId)
-            .condition(EquipmentCondition.EXCELLENT)
-            .performanceMultiplier(1.0)
-            .isOperational(true)
-            .needsMaintenance(false)
+            .equipmentName(equipmentType.getEquipmentTypeName())
+            .equipmentType(equipmentType)
+            .currentDurability(equipmentType.getBaseDurability())
+            .maxDurability(equipmentType.getBaseDurability())
+            .degradationRate(equipmentType.getBaseDegradationRate())
+            .currentDegradation(0)
+            .isDamaged(false)
             .isBroken(false)
-            .issues(new ArrayList<>())
+            .isRepairable(equipmentType.isRepairable())
+            .equipmentLocation("INVENTORY")
+            .assignedUnit(assignedUnit)
+            .assignedFacility("")
+            .assignedTechnician("")
+            .isUnderMaintenance(false)
+            .isUnderRepair(false)
+            .maintenanceStatus("OPERATIONAL")
+            .maintenanceCost(equipmentType.getBaseMaintenanceCost())
+            .repairCost(equipmentType.getBaseRepairCost())
+            .equipmentQuality("EXCELLENT")
+            .equipmentCondition("NEW")
+            .lastMaintenanceDate("")
+            .nextMaintenanceDate("")
+            .warrantyStatus("ACTIVE")
+            .isWarrantied(true)
+            .warrantyExpiryDate("")
+            .equipmentNotes("")
+            .equipmentStats(new HashMap<>(equipmentType.getEquipmentEffects()))
+            .equipmentAbilities(new ArrayList<>())
+            .manufacturer("XCOM")
+            .modelNumber("MODEL_001")
+            .serialNumber("SN_" + equipmentId)
+            .purchaseDate(new Date().toString())
+            .purchaseCost(equipmentType.getBaseMaintenanceCost())
+            .supplier("XCOM_SUPPLY")
+            .location("MAIN_BASE")
+            .status("ACTIVE")
             .build();
         
-        equipmentStatuses.put(equipmentId, status);
+        equipmentMap.put(equipmentId, equipment);
+        equipmentHistory.put(equipmentId, new ArrayList<>());
+        degradationLevels.put(equipmentId, new HashMap<>());
+        degradationLevels.get(equipmentId).put(equipmentTypeId, 0);
         
-        // Initialize durability tracking
-        equipmentDurability.put(equipmentId, maxDurability);
-        performanceMultipliers.put(equipmentId, 1.0);
-        
-        return true;
-    }
-    
-    public boolean useEquipment(String equipmentId, int usageIntensity) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
-        if (equipment == null || !isEquipmentOperational(equipmentId)) {
-            return false;
-        }
-        
-        // Calculate degradation
-        int degradation = calculateDegradation(equipment, usageIntensity);
-        equipment.setCurrentDurability(equipment.getCurrentDurability() - degradation);
-        
-        // Update performance multiplier
-        updatePerformanceMultiplier(equipmentId);
-        
-        // Check for issues
-        checkForIssues(equipmentId, usageIntensity);
-        
-        // Update maintenance schedule
-        updateMaintenanceSchedule(equipmentId);
+        // Create equipment quality
+        createEquipmentQuality(equipmentId);
         
         return true;
     }
     
-    public boolean performMaintenance(String equipmentId, MaintenanceType maintenanceType) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
-        if (equipment == null) {
-            return false;
-        }
+    /**
+     * Create equipment quality
+     */
+    private void createEquipmentQuality(String equipmentId) {
+        String qualityId = "QUALITY_" + equipmentId;
         
-        // Calculate maintenance effectiveness
-        int effectiveness = calculateMaintenanceEffectiveness(equipmentId, maintenanceType);
-        
-        // Apply maintenance
-        boolean success = applyMaintenance(equipmentId, maintenanceType, effectiveness);
-        
-        // Record maintenance
-        if (success) {
-            recordMaintenance(equipmentId, maintenanceType, effectiveness);
-        }
-        
-        return success;
-    }
-    
-    public boolean assignMaintenanceFacility(String equipmentId, String facilityId) {
-        MaintenanceFacility facility = findMaintenanceFacility(facilityId);
-        if (facility == null || facility.getCurrentWorkload() >= facility.getCapacity()) {
-            return false;
-        }
-        
-        assignedFacilities.put(equipmentId, facility);
-        facility.setCurrentWorkload(facility.getCurrentWorkload() + 1);
-        
-        return true;
-    }
-    
-    public boolean scheduleMaintenance(String equipmentId, MaintenanceType maintenanceType, 
-                                     int intervalDays) {
-        if (equipmentId == null || maintenanceType == null) {
-            return false;
-        }
-        
-        MaintenanceSchedule schedule = MaintenanceSchedule.builder()
+        EquipmentQuality quality = EquipmentQuality.builder()
+            .qualityId(qualityId)
             .equipmentId(equipmentId)
-            .type(maintenanceType)
-            .intervalDays(intervalDays)
-            .lastMaintenanceDate(LocalDateTime.now())
-            .nextMaintenanceDate(LocalDateTime.now().plusDays(intervalDays))
-            .isActive(true)
-            .priority(calculateMaintenancePriority(equipmentId))
+            .qualityLevel(EquipmentQuality.QualityLevel.EXCELLENT)
+            .qualityScore(100)
+            .qualityMetrics(new HashMap<>())
+            .qualityIssues(new ArrayList<>())
+            .isInspected(false)
+            .inspectionDate("")
+            .inspector("")
+            .qualityStatus("EXCELLENT")
+            .qualityNotes("")
+            .qualityBonuses(new HashMap<>())
+            .qualityRequirements(new ArrayList<>())
+            .qualityCost(0)
+            .qualityDescription("New equipment in excellent condition")
             .build();
         
-        maintenanceSchedules.put(equipmentId, schedule);
-        
-        return true;
+        equipmentQualities.put(qualityId, quality);
     }
     
-    public boolean upgradeEquipment(String equipmentId, String modificationId) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
+    /**
+     * Apply degradation to equipment
+     */
+    public boolean applyDegradation(String equipmentId, int degradationAmount) {
+        Equipment equipment = this.equipmentMap.get(equipmentId);
         if (equipment == null) {
             return false;
         }
         
-        EquipmentModification modification = findEquipmentModification(modificationId);
-        if (modification == null) {
-            return false;
-        }
+        equipment.setCurrentDegradation(equipment.getCurrentDegradation() + degradationAmount);
+        equipment.setCurrentDurability(Math.max(0, equipment.getCurrentDurability() - degradationAmount));
         
-        // Check if modification is compatible
-        if (!isModificationCompatible(equipment, modification)) {
-            return false;
-        }
-        
-        // Install modification
-        modification.setInstalled(true);
-        modification.setInstallationDate(LocalDateTime.now());
-        equipment.getModifications().add(modification);
-        
-        // Apply modification effects
-        applyModificationEffects(equipmentId, modification);
-        
-        return true;
-    }
-    
-    public boolean repairEquipment(String equipmentId, int repairAmount) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
-        if (equipment == null) {
-            return false;
-        }
-        
-        int newDurability = Math.min(equipment.getMaxDurability(), 
-                                   equipment.getCurrentDurability() + repairAmount);
-        equipment.setCurrentDurability(newDurability);
-        
-        // Update condition
-        updateEquipmentCondition(equipmentId);
-        
-        // Update performance multiplier
-        updatePerformanceMultiplier(equipmentId);
-        
-        return true;
-    }
-    
-    public boolean checkEquipmentStatus(String equipmentId) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
-        if (equipment == null) {
-            return false;
-        }
-        
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        if (status == null) {
-            return false;
-        }
-        
-        // Update condition based on durability
-        updateEquipmentCondition(equipmentId);
-        
-        // Check for maintenance needs
-        checkMaintenanceNeeds(equipmentId);
-        
-        // Check for critical issues
-        checkCriticalIssues(equipmentId);
-        
-        return true;
-    }
-    
-    public boolean isEquipmentOperational(String equipmentId) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        return status != null && status.isOperational() && !status.isBroken();
-    }
-    
-    public boolean needsMaintenance(String equipmentId) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        return status != null && status.isNeedsMaintenance();
-    }
-    
-    public double getPerformanceMultiplier(String equipmentId) {
-        return performanceMultipliers.getOrDefault(equipmentId, 1.0);
-    }
-    
-    public int getDurability(String equipmentId) {
-        return equipmentDurability.getOrDefault(equipmentId, 0);
-    }
-    
-    public EquipmentCondition getEquipmentCondition(String equipmentId) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        return status != null ? status.getCondition() : EquipmentCondition.BROKEN;
-    }
-    
-    // Helper Methods
-    
-    private int calculateDegradation(Equipment equipment, int usageIntensity) {
-        int baseDegradation = usageIntensity / 10;
-        
-        // Modify based on equipment type
-        switch (equipment.getType()) {
-            case WEAPON:
-                return baseDegradation * 2; // Weapons degrade faster
-            case ARMOR:
-                return baseDegradation * 1; // Armor degrades moderately
-            case MEDICAL_EQUIPMENT:
-                return baseDegradation * 1; // Medical equipment degrades moderately
-            case PSYCHIC_AMPLIFIER:
-                return baseDegradation * 3; // Psychic equipment degrades very fast
-            case GRENADE_LAUNCHER:
-                return baseDegradation * 2; // Explosive equipment degrades fast
-            case HACKING_DEVICE:
-                return baseDegradation * 1; // Electronic equipment degrades moderately
-            case STEALTH_EQUIPMENT:
-                return baseDegradation * 2; // Stealth equipment degrades fast
-            case ENVIRONMENTAL_SUIT:
-                return baseDegradation * 1; // Environmental equipment degrades moderately
-            case COMMUNICATION_DEVICE:
-                return baseDegradation * 1; // Communication equipment degrades moderately
-            case SENSOR_EQUIPMENT:
-                return baseDegradation * 1; // Sensor equipment degrades moderately
-            case TRANSPORT_EQUIPMENT:
-                return baseDegradation * 2; // Transport equipment degrades fast
-            case EXPERIMENTAL_EQUIPMENT:
-                return baseDegradation * 4; // Experimental equipment degrades very fast
-            default:
-                return baseDegradation;
-        }
-    }
-    
-    private void updatePerformanceMultiplier(String equipmentId) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
-        if (equipment == null) {
-            return;
-        }
-        
-        double durabilityRatio = (double) equipment.getCurrentDurability() / equipment.getMaxDurability();
-        double conditionMultiplier = equipment.getCondition().getPerformanceMultiplier();
-        double maintenanceMultiplier = 1.0 - equipment.getMaintenanceLevel().getPerformancePenalty();
-        
-        double performanceMultiplier = durabilityRatio * conditionMultiplier * maintenanceMultiplier;
-        equipment.setPerformanceMultiplier(performanceMultiplier);
-        performanceMultipliers.put(equipmentId, performanceMultiplier);
-        
-        // Update status
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        if (status != null) {
-            status.setPerformanceMultiplier(performanceMultiplier);
-        }
-    }
-    
-    private void checkForIssues(String equipmentId, int usageIntensity) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
-        if (equipment == null) {
-            return;
-        }
-        
-        double issueChance = calculateIssueChance(equipment, usageIntensity);
-        if (Math.random() < issueChance) {
-            createEquipmentIssue(equipmentId);
-        }
-    }
-    
-    private double calculateIssueChance(Equipment equipment, int usageIntensity) {
-        double baseChance = usageIntensity / 100.0;
-        double durabilityFactor = 1.0 - ((double) equipment.getCurrentDurability() / equipment.getMaxDurability());
-        double maintenanceFactor = equipment.getMaintenanceLevel().getLevel() * 0.1;
-        
-        return baseChance * (1.0 + durabilityFactor + maintenanceFactor);
-    }
-    
-    private void createEquipmentIssue(String equipmentId) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        if (status == null) {
-            return;
-        }
-        
-        IssueType[] issueTypes = IssueType.values();
-        IssueType randomIssue = issueTypes[(int) (Math.random() * issueTypes.length)];
-        
-        EquipmentIssue issue = EquipmentIssue.builder()
-            .issueId(UUID.randomUUID().toString())
-            .type(randomIssue)
-            .severity((int) (Math.random() * 5) + 1)
-            .description("Equipment issue: " + randomIssue.name())
-            .detectedDate(LocalDateTime.now())
-            .isResolved(false)
-            .build();
-        
-        status.getIssues().add(issue);
-        
-        // Update operational status
-        updateOperationalStatus(equipmentId);
-    }
-    
-    private void updateOperationalStatus(String equipmentId) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        if (status == null) {
-            return;
+        // Check if equipment is damaged
+        if (equipment.getCurrentDurability() <= equipment.getMaxDurability() * 0.5) {
+            equipment.setDamaged(true);
         }
         
         // Check if equipment is broken
-        boolean isBroken = status.getIssues().stream()
-            .anyMatch(issue -> issue.getSeverity() >= 5 && !issue.isResolved());
-        
-        status.setBroken(isBroken);
-        status.setOperational(!isBroken);
-    }
-    
-    private void updateMaintenanceSchedule(String equipmentId) {
-        MaintenanceSchedule schedule = maintenanceSchedules.get(equipmentId);
-        if (schedule == null) {
-            return;
+        if (equipment.getCurrentDurability() <= 0) {
+            equipment.setBroken(true);
+            equipment.setDamaged(true);
+            totalDamagedEquipment++;
         }
         
-        // Check if maintenance is due
-        if (LocalDateTime.now().isAfter(schedule.getNextMaintenanceDate())) {
-            EquipmentStatus status = equipmentStatuses.get(equipmentId);
-            if (status != null) {
-                status.setNeedsMaintenance(true);
-            }
-        }
-    }
-    
-    private int calculateMaintenanceEffectiveness(String equipmentId, MaintenanceType maintenanceType) {
-        MaintenanceFacility facility = assignedFacilities.get(equipmentId);
-        if (facility == null) {
-            return 50; // Default effectiveness
-        }
-        
-        int baseEffectiveness = facility.getEffectiveness();
-        int technicianSkill = facility.getTechnicianSkill();
-        
-        return Math.min(100, baseEffectiveness + technicianSkill);
-    }
-    
-    private boolean applyMaintenance(String equipmentId, MaintenanceType maintenanceType, int effectiveness) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
-        if (equipment == null) {
-            return false;
-        }
-        
-        // Calculate repair amount based on effectiveness
-        int maxRepair = equipment.getMaxDurability() - equipment.getCurrentDurability();
-        int repairAmount = (int) (maxRepair * (effectiveness / 100.0));
-        
-        // Apply repair
-        equipment.setCurrentDurability(Math.min(equipment.getMaxDurability(), 
-                                              equipment.getCurrentDurability() + repairAmount));
-        
-        // Update condition
-        updateEquipmentCondition(equipmentId);
-        
-        // Update performance multiplier
-        updatePerformanceMultiplier(equipmentId);
-        
-        // Resolve issues
-        resolveIssues(equipmentId, effectiveness);
+        // Update equipment quality
+        updateEquipmentQuality(equipmentId);
         
         return true;
     }
     
-    private void recordMaintenance(String equipmentId, MaintenanceType maintenanceType, int effectiveness) {
-        MaintenanceRecord record = MaintenanceRecord.builder()
-            .recordId(UUID.randomUUID().toString())
+    /**
+     * Update equipment quality
+     */
+    private void updateEquipmentQuality(String equipmentId) {
+        Equipment equipment = this.equipmentMap.get(equipmentId);
+        if (equipment == null) {
+            return;
+        }
+        
+        EquipmentQuality quality = equipmentQualities.get("QUALITY_" + equipmentId);
+        if (quality == null) {
+            return;
+        }
+        
+        int durabilityPercentage = (equipment.getCurrentDurability() * 100) / equipment.getMaxDurability();
+        
+        if (durabilityPercentage >= 90) {
+            quality.setQualityLevel(EquipmentQuality.QualityLevel.EXCELLENT);
+            quality.setQualityStatus("EXCELLENT");
+        } else if (durabilityPercentage >= 75) {
+            quality.setQualityLevel(EquipmentQuality.QualityLevel.GOOD);
+            quality.setQualityStatus("GOOD");
+        } else if (durabilityPercentage >= 50) {
+            quality.setQualityLevel(EquipmentQuality.QualityLevel.FAIR);
+            quality.setQualityStatus("FAIR");
+        } else if (durabilityPercentage >= 25) {
+            quality.setQualityLevel(EquipmentQuality.QualityLevel.POOR);
+            quality.setQualityStatus("POOR");
+        } else if (durabilityPercentage >= 10) {
+            quality.setQualityLevel(EquipmentQuality.QualityLevel.DAMAGED);
+            quality.setQualityStatus("DAMAGED");
+        } else if (durabilityPercentage > 0) {
+            quality.setQualityLevel(EquipmentQuality.QualityLevel.BROKEN);
+            quality.setQualityStatus("BROKEN");
+        } else {
+            quality.setQualityLevel(EquipmentQuality.QualityLevel.BEYOND_REPAIR);
+            quality.setQualityStatus("BEYOND_REPAIR");
+        }
+        
+        quality.setQualityScore(durabilityPercentage);
+    }
+    
+    /**
+     * Start maintenance on equipment
+     */
+    public boolean startMaintenance(String equipmentId, String facilityId, String technicianId) {
+        Equipment equipment = this.equipmentMap.get(equipmentId);
+        if (equipment == null) {
+            return false;
+        }
+        
+        equipment.setAssignedFacility(facilityId);
+        equipment.setAssignedTechnician(technicianId);
+        equipment.setUnderMaintenance(true); // Fixed method name
+        equipment.setMaintenanceStatus("UNDER_MAINTENANCE");
+
+        // Create maintenance plan
+        MaintenancePlan plan = MaintenancePlan.builder()
+            .planId("MAINTENANCE_" + equipmentId)
             .equipmentId(equipmentId)
-            .type(maintenanceType)
-            .maintenanceDate(LocalDateTime.now())
-            .cost(calculateMaintenanceCost(maintenanceType))
-            .description("Maintenance performed: " + maintenanceType.name())
-            .wasSuccessful(effectiveness >= 70)
-            .partsReplaced(new ArrayList<>())
-            .technicianSkill(effectiveness)
+                            .maintenanceType(MaintenanceType.PREVENTIVE_MAINTENANCE)
+            .maintenanceDuration(3)
+            .currentDuration(0)
+            .maintenanceTasks(new ArrayList<>())
+            .maintenanceGoals(new HashMap<>())
+            .maintenanceMilestones(new ArrayList<>())
+            .isActive(true)
+            .assignedTechnician(technicianId)
+            .assignedFacility(facilityId)
+            .maintenanceProgress(0)
+            .isCompleted(false)
+            .completionDate("")
+            .maintenanceStatus("ACTIVE")
+            .maintenanceNotes("")
+            .maintenanceBonuses(new HashMap<>())
+            .maintenanceRequirements(new ArrayList<>())
+            .maintenanceCost(equipment.getMaintenanceCost())
+            .maintenanceDescription("Preventive maintenance")
             .build();
         
-        maintenanceHistory.computeIfAbsent(equipmentId, k -> new ArrayList<>()).add(record);
-    }
-    
-    private int calculateMaintenanceCost(MaintenanceType maintenanceType) {
-        switch (maintenanceType) {
-            case PREVENTIVE_MAINTENANCE: return 50;
-            case CORRECTIVE_MAINTENANCE: return 100;
-            case EMERGENCY_MAINTENANCE: return 200;
-            case UPGRADE_MAINTENANCE: return 150;
-            case CALIBRATION_MAINTENANCE: return 75;
-            case SOFTWARE_UPDATE: return 25;
-            default: return 100;
-        }
-    }
-    
-    private int calculateMaintenancePriority(String equipmentId) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
-        if (equipment == null) {
-            return 1;
-        }
+        maintenancePlans.put(plan.getPlanId(), plan);
         
-        // Higher priority for critical equipment
-        switch (equipment.getType()) {
-            case WEAPON:
-            case ARMOR:
-            case MEDICAL_EQUIPMENT:
-                return 3;
-            case PSYCHIC_AMPLIFIER:
-            case HACKING_DEVICE:
-                return 2;
-            default:
-                return 1;
+        return true;
+    }
+    
+    /**
+     * Process maintenance for all equipment
+     */
+    public void processMaintenance() {
+        for (MaintenancePlan plan : maintenancePlans.values()) {
+            if (plan.isActive() && !plan.isCompleted()) {
+                processMaintenancePlan(plan);
+            }
         }
     }
     
-    private EquipmentModification findEquipmentModification(String modificationId) {
-        // Find equipment modification
-        return null; // Placeholder
+    /**
+     * Process maintenance plan
+     */
+    private void processMaintenancePlan(MaintenancePlan plan) {
+        plan.setCurrentDuration(plan.getCurrentDuration() + 1);
+        
+        // Check if maintenance is complete
+        if (plan.getCurrentDuration() >= plan.getMaintenanceDuration()) {
+            completeMaintenance(plan);
+        } else {
+            // Update maintenance progress
+            int progress = (plan.getCurrentDuration() * 100) / plan.getMaintenanceDuration();
+            plan.setMaintenanceProgress(progress);
+            plan.setMaintenanceStatus("IN_PROGRESS (" + progress + "%)");
+        }
     }
     
-    private boolean isModificationCompatible(Equipment equipment, EquipmentModification modification) {
-        // Check if modification is compatible with equipment
-        return true; // Placeholder
-    }
-    
-    private void applyModificationEffects(String equipmentId, EquipmentModification modification) {
-        // Apply modification effects to equipment
-        // This would modify equipment performance or capabilities
-    }
-    
-    private void updateEquipmentCondition(String equipmentId) {
-        Equipment equipment = equipmentRegistry.get(equipmentId);
+    /**
+     * Complete maintenance
+     */
+    private void completeMaintenance(MaintenancePlan plan) {
+        Equipment equipment = this.equipmentMap.get(plan.getEquipmentId());
         if (equipment == null) {
             return;
         }
         
-        double durabilityRatio = (double) equipment.getCurrentDurability() / equipment.getMaxDurability();
+        // Restore durability
+        int restorationAmount = equipment.getMaxDurability() * 20 / 100; // Restore 20%
+        equipment.setCurrentDurability(Math.min(equipment.getMaxDurability(), 
+            equipment.getCurrentDurability() + restorationAmount));
         
-        EquipmentCondition newCondition;
-        if (durabilityRatio >= 0.9) {
-            newCondition = EquipmentCondition.EXCELLENT;
-        } else if (durabilityRatio >= 0.7) {
-            newCondition = EquipmentCondition.GOOD;
-        } else if (durabilityRatio >= 0.5) {
-            newCondition = EquipmentCondition.FAIR;
-        } else if (durabilityRatio >= 0.3) {
-            newCondition = EquipmentCondition.POOR;
-        } else if (durabilityRatio >= 0.1) {
-            newCondition = EquipmentCondition.CRITICAL;
-        } else {
-            newCondition = EquipmentCondition.BROKEN;
-        }
-        
-        equipment.setCondition(newCondition);
+        // Reset degradation
+        equipment.setCurrentDegradation(Math.max(0, equipment.getCurrentDegradation() - 10));
         
         // Update status
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        if (status != null) {
-            status.setCondition(newCondition);
-        }
+        equipment.setUnderMaintenance(false);
+        equipment.setMaintenanceStatus("MAINTENANCE_COMPLETED");
+        equipment.setLastMaintenanceDate(new Date().toString());
+        
+        // Update quality
+        updateEquipmentQuality(plan.getEquipmentId());
+        
+        // Complete plan
+        plan.setActive(false);
+        plan.setCompleted(true);
+        plan.setCompletionDate(new Date().toString());
+        plan.setMaintenanceStatus("COMPLETED");
     }
     
-    private void checkMaintenanceNeeds(String equipmentId) {
-        MaintenanceSchedule schedule = maintenanceSchedules.get(equipmentId);
-        if (schedule == null) {
-            return;
-        }
-        
-        if (LocalDateTime.now().isAfter(schedule.getNextMaintenanceDate())) {
-            EquipmentStatus status = equipmentStatuses.get(equipmentId);
-            if (status != null) {
-                status.setNeedsMaintenance(true);
-            }
-        }
-    }
-    
-    private void checkCriticalIssues(String equipmentId) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        if (status == null) {
-            return;
-        }
-        
-        boolean hasCriticalIssues = status.getIssues().stream()
-            .anyMatch(issue -> issue.getSeverity() >= 4 && !issue.isResolved());
-        
-        if (hasCriticalIssues) {
-            status.setOperational(false);
-        }
-    }
-    
-    private void resolveIssues(String equipmentId, int effectiveness) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        if (status == null) {
-            return;
-        }
-        
-        // Resolve issues based on effectiveness
-        for (EquipmentIssue issue : status.getIssues()) {
-            if (!issue.isResolved() && Math.random() < (effectiveness / 100.0)) {
-                issue.setResolved(true);
-            }
-        }
-        
-        // Update operational status
-        updateOperationalStatus(equipmentId);
-    }
-    
-    private MaintenanceFacility findMaintenanceFacility(String facilityId) {
-        return maintenanceFacilities.stream()
-            .filter(facility -> facility.getFacilityId().equals(facilityId))
-            .findFirst()
-            .orElse(null);
-    }
-    
-    // Getters for system state
+    /**
+     * Get equipment by ID
+     */
     public Equipment getEquipment(String equipmentId) {
-        return equipmentRegistry.get(equipmentId);
+        return equipmentMap.get(equipmentId);
     }
     
-    public EquipmentStatus getEquipmentStatus(String equipmentId) {
-        return equipmentStatuses.get(equipmentId);
+    /**
+     * Get equipment quality
+     */
+    public EquipmentQuality getEquipmentQuality(String equipmentId) {
+        return equipmentQualities.get("QUALITY_" + equipmentId);
     }
     
-    public List<MaintenanceRecord> getMaintenanceHistory(String equipmentId) {
-        return maintenanceHistory.getOrDefault(equipmentId, new ArrayList<>());
+    /**
+     * Get maintenance facility by ID
+     */
+    public MaintenanceFacility getMaintenanceFacility(String facilityId) {
+        return maintenanceFacilities.get(facilityId);
     }
     
-    public MaintenanceSchedule getMaintenanceSchedule(String equipmentId) {
-        return maintenanceSchedules.get(equipmentId);
+    /**
+     * Get maintenance plan by ID
+     */
+    public MaintenancePlan getMaintenancePlan(String planId) {
+        return maintenancePlans.get(planId);
     }
     
-    public int getAvailableMaintenanceCapacity() {
-        return availableMaintenanceCapacity;
+    /**
+     * Get total damaged equipment
+     */
+    public int getTotalDamagedEquipment() {
+        return totalDamagedEquipment;
     }
     
+    /**
+     * Check if equipment is damaged
+     */
+    public boolean isEquipmentDamaged(String equipmentId) {
+        Equipment equipment = this.equipmentMap.get(equipmentId);
+        return equipment != null && equipment.isDamaged();
+    }
+    
+    /**
+     * Check if equipment is broken
+     */
     public boolean isEquipmentBroken(String equipmentId) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        return status != null && status.isBroken();
-    }
-    
-    public List<EquipmentIssue> getEquipmentIssues(String equipmentId) {
-        EquipmentStatus status = equipmentStatuses.get(equipmentId);
-        return status != null ? status.getIssues() : new ArrayList<>();
+        Equipment equipment = this.equipmentMap.get(equipmentId);
+        return equipment != null && equipment.isBroken();
     }
 }

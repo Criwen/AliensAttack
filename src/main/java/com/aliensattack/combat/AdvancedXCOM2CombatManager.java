@@ -2,6 +2,7 @@ package com.aliensattack.combat;
 
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
+import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.field.ITacticalField;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,6 +27,100 @@ public class AdvancedXCOM2CombatManager extends XCOM2CombatManager {
     public AdvancedXCOM2CombatManager(ITacticalField field) {
         super(field);
         this.random = ThreadLocalRandom.current();
+    }
+    
+    // =============================================================================
+    // INTERFACE IMPLEMENTATION METHODS
+    // =============================================================================
+    
+    /**
+     * Get all units in combat
+     */
+    public List<Unit> getAllUnits() {
+        List<Unit> allUnits = new ArrayList<>();
+        for (IUnit unit : units) {
+            if (unit instanceof Unit) {
+                allUnits.add((Unit) unit);
+            }
+        }
+        return allUnits;
+    }
+    
+    /**
+     * Get player units
+     */
+    public List<Unit> getPlayerUnits() {
+        return getAllUnits().stream()
+            .filter(unit -> unit.getUnitType() == UnitType.SOLDIER)
+            .collect(java.util.stream.Collectors.toList());
+    }
+    
+    /**
+     * Get enemy units
+     */
+    public List<Unit> getEnemyUnits() {
+        return getAllUnits().stream()
+            .filter(unit -> unit.getUnitType() != UnitType.SOLDIER)
+            .collect(java.util.stream.Collectors.toList());
+    }
+    
+    /**
+     * Perform attack between units
+     */
+    public CombatResult performAttack(Unit attacker, Unit target) {
+        if (!canAttack(attacker, target)) {
+            return new CombatResult(false, 0, "Cannot attack target");
+        }
+        
+        // Basic attack logic - this should be implemented based on your combat system
+        int damage = attacker.getAttackDamage();
+        target.takeDamage(damage);
+        
+        return new CombatResult(true, damage, "Attack successful");
+    }
+    
+    /**
+     * Check if unit can attack target
+     */
+    public boolean canAttack(Unit attacker, Unit target) {
+        if (attacker == null || target == null) return false;
+        if (!attacker.isAlive() || !target.isAlive()) return false;
+        if (attacker.getActionPoints() < 1) return false;
+        
+        // Check if target is in range
+        int distance = attacker.getPosition().getDistanceTo(target.getPosition());
+        return distance <= attacker.getTotalAttackRange();
+    }
+    
+    /**
+     * Move unit to position
+     */
+    public boolean moveUnit(Unit unit, Position target) {
+        if (unit == null || target == null) return false;
+        if (!unit.isAlive()) return false;
+        if (unit.getActionPoints() < 1) return false;
+        
+        // Basic movement logic
+        unit.setPosition(target);
+        unit.spendActionPoint();
+        return true;
+    }
+    
+    /**
+     * Stealth attack
+     */
+    public CombatResult stealthAttack(Unit attacker, Unit target, Weapon weapon) {
+        if (!attacker.isConcealed()) {
+            return new CombatResult(false, 0, "Unit is not concealed");
+        }
+        
+        // Perform stealth attack
+        CombatResult result = performAttack(attacker, target);
+        if (result.isSuccess()) {
+            attacker.setConcealed(false); // Reveal concealment
+        }
+        
+        return result;
     }
     
     // =============================================================================
@@ -81,6 +176,22 @@ public class AdvancedXCOM2CombatManager extends XCOM2CombatManager {
                 return applyPsychicScream(caster, target, effect);
             case TELEPATHY:
                 return applyTelepathy(caster, target, effect);
+            case TELEPORT:
+                return applyTeleport(caster, target, effect);
+            case PSYCHIC_DOMINANCE:
+                return applyPsychicDominance(caster, target, effect);
+            case MIND_MERGE:
+                return applyMindMerge(caster, target, effect);
+            case PSYCHIC_BARRIER:
+                return applyPsychicBarrier(caster, target, effect);
+            case MIND_SCORCH:
+                return applyMindScorch(caster, target, effect);
+            case DOMINATION:
+                return applyDomination(caster, target, effect);
+            case PSYCHIC_SHIELD:
+                return applyPsychicShield(caster, target, effect);
+            case MIND_SHIELD:
+                return applyMindShield(caster, target, effect);
             default:
                 return new CombatResult(false, 0, "Unknown psionic ability");
         }
@@ -131,6 +242,95 @@ public class AdvancedXCOM2CombatManager extends XCOM2CombatManager {
     private CombatResult applyTelepathy(Unit caster, Unit target, int effect) {
         // Telepathy reveals enemy information
         return new CombatResult(true, effect, "Enemy information revealed!");
+    }
+    
+    /**
+     * Apply teleport effect
+     */
+    private CombatResult applyTeleport(Unit caster, Unit target, int effect) {
+        // Teleport caster to target position
+        Position targetPos = target.getPosition();
+        caster.setPosition(targetPos);
+        return new CombatResult(true, effect, "Unit teleported to target position!");
+    }
+    
+    /**
+     * Apply psychic dominance effect for robotic control
+     */
+    private CombatResult applyPsychicDominance(Unit caster, Unit target, int effect) {
+        // Check if target is robotic
+        if (target.getUnitType() == UnitType.ROBOTIC) {
+            // Apply robotic control
+            StatusEffectData controlEffect = new StatusEffectData(StatusEffect.CONTROLLED, 3, 0);
+            target.addStatusEffect(controlEffect);
+            return new CombatResult(true, effect, "Robotic unit controlled!");
+        }
+        return new CombatResult(false, 0, "Target is not robotic");
+    }
+    
+    /**
+     * Apply mind merge effect
+     */
+    private CombatResult applyMindMerge(Unit caster, Unit target, int effect) {
+        // Share consciousness between caster and target
+        StatusEffectData mergeEffect = new StatusEffectData(StatusEffect.MIND_MERGED, 4, 0);
+        caster.addStatusEffect(mergeEffect);
+        target.addStatusEffect(mergeEffect);
+        return new CombatResult(true, effect, "Minds merged - consciousness shared!");
+    }
+    
+    /**
+     * Apply psychic barrier effect
+     */
+    private CombatResult applyPsychicBarrier(Unit caster, Unit target, int effect) {
+        // Create protective barrier
+        StatusEffectData barrierEffect = new StatusEffectData(StatusEffect.PROTECTED, 5, effect);
+        target.addStatusEffect(barrierEffect);
+        return new CombatResult(true, effect, "Psychic barrier created!");
+    }
+    
+    /**
+     * Apply mind scorch effect
+     */
+    private CombatResult applyMindScorch(Unit caster, Unit target, int effect) {
+        boolean killed = target.takeDamageWithArmor(effect);
+        String message = killed ? "Target killed by mind scorch!" : "Target hit by mind scorch!";
+        return new CombatResult(true, effect, message);
+    }
+    
+    /**
+     * Apply domination effect
+     */
+    private CombatResult applyDomination(Unit caster, Unit target, int effect) {
+        // Check target's psi resistance
+        int resistance = target.getPsiResistance();
+        int successChance = effect - resistance;
+        
+        if (random.nextInt(100) < successChance) {
+            StatusEffectData dominationEffect = new StatusEffectData(StatusEffect.DOMINATED, 3, 0);
+            target.addStatusEffect(dominationEffect);
+            return new CombatResult(true, effect, "Target dominated!");
+        }
+        
+        return new CombatResult(false, 0, "Domination resisted");
+    }
+    
+    /**
+     * Apply psychic shield effect
+     */
+    private CombatResult applyPsychicShield(Unit caster, Unit target, int effect) {
+        StatusEffectData shieldEffect = new StatusEffectData(StatusEffect.PSYCHIC_SHIELD, 3, effect);
+        target.addStatusEffect(shieldEffect);
+        return new CombatResult(true, effect, "Psychic shield applied!");
+    }
+    
+    /**
+     * Apply mind shield effect
+     */
+    private CombatResult applyMindShield(Unit caster, Unit target, int effect) {
+        StatusEffectData mindShieldEffect = new StatusEffectData(StatusEffect.MIND_SHIELD, 3, effect);
+        target.addStatusEffect(mindShieldEffect);
+        return new CombatResult(true, effect, "Mind shield applied!");
     }
     
     // =============================================================================

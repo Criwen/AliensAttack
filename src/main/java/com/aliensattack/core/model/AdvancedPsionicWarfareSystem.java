@@ -32,30 +32,7 @@ public class AdvancedPsionicWarfareSystem {
     private Map<String, List<String>> activePsionicEffects;
     private Map<String, List<String>> psionicCooldowns;
     
-    /**
-     * Default constructor that initializes the psionic warfare system
-     */
-    public AdvancedPsionicWarfareSystem() {
-        // Initialize maps
-        psionicAbilities = new HashMap<>();
-        psionicPowers = new HashMap<>();
-        mindControls = new HashMap<>();
-        psionicDefenses = new HashMap<>();
-        psionicAmplifications = new HashMap<>();
-        psionicFeedbacks = new HashMap<>();
-        psionicUnits = new HashMap<>();
-        psionicResistances = new HashMap<>();
-        psionicTrainings = new HashMap<>();
-        psionicEvents = new HashMap<>();
-        psionicEnergy = new HashMap<>();
-        psionicRegeneration = new HashMap<>();
-        psionicCapacity = new HashMap<>();
-        activePsionicEffects = new HashMap<>();
-        psionicCooldowns = new HashMap<>();
-        
-        // Initialize the system
-        initializeSystem();
-    }
+
     
     /**
      * Psionic ability with power management
@@ -395,57 +372,14 @@ public class AdvancedPsionicWarfareSystem {
         
         psionicAbilities.put("mind_control", mindControl);
         
-        // Psychic Blast ability
-        PsionicAbility psychicBlast = PsionicAbility.builder()
-            .abilityId("psychic_blast")
-            .abilityName("Psychic Blast")
-            .description("Deal psychic damage to enemies")
-            .powerCost(30)
-            .cooldown(3)
-            .currentCooldown(0)
-            .abilityType("Active")
-            .effects(Map.of("Damage", 25, "Stun", 50))
-            .requirements(Arrays.asList("psionic_level_2"))
-            .isUnlocked(false)
-            .isActive(false)
-            .activationCondition("Enemy in Range")
-            .range(6)
-            .duration(1)
-            .targetType("Enemy")
-            .successRate(0.8)
-            .failureEffect("Energy Loss")
-            .prerequisites(Arrays.asList("psionic_training"))
-            .bonuses(Map.of("Damage", 10, "Range", 2))
-            .psionicSchool("Destruction")
-            .build();
-        
-        psionicAbilities.put("psychic_blast", psychicBlast);
-        
-        // Psionic Shield ability
-        PsionicAbility psionicShield = PsionicAbility.builder()
-            .abilityId("psionic_shield")
-            .abilityName("Psionic Shield")
-            .description("Create a protective psionic barrier")
-            .powerCost(25)
-            .cooldown(4)
-            .currentCooldown(0)
-            .abilityType("Active")
-            .effects(Map.of("Defense", 30, "Resistance", 50))
-            .requirements(Arrays.asList("psionic_level_2"))
-            .isUnlocked(false)
-            .isActive(false)
-            .activationCondition("Self or Ally")
-            .range(0)
-            .duration(3)
-            .targetType("Self")
-            .successRate(0.9)
-            .failureEffect("Shield Failure")
-            .prerequisites(Arrays.asList("psionic_training"))
-            .bonuses(Map.of("Defense", 15, "Duration", 1))
-            .psionicSchool("Protection")
-            .build();
-        
-        psionicAbilities.put("psionic_shield", psionicShield);
+        // ToDo: Реализовать полную систему псионических способностей
+        // - TELEPORT ability (instant movement)
+        // - PSYCHIC_DOMINANCE (robot control)
+        // - MIND_MERGE (consciousness sharing)
+        // - PSYCHIC_BARRIER (protective barrier)
+        // - Advanced psionic schools and specializations
+        // - Psionic energy regeneration system
+        // - Psionic resistance and immunity mechanics
     }
     
     /**

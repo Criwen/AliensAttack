@@ -6,6 +6,7 @@ import com.aliensattack.core.enums.SoldierClass;
 import com.aliensattack.core.enums.VisibilityType;
 import com.aliensattack.core.enums.ReactiveAbilityType;
 import com.aliensattack.core.config.GameConfig;
+import com.aliensattack.core.interfaces.IUnit;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
  */
 @Getter
 @Setter
-public class Unit {
+public class Unit implements IUnit {
     private String id;
     private String name;
     private int maxHealth;
@@ -112,6 +113,7 @@ public class Unit {
             case ALIEN_RULER -> GameConfig.getViewRange("alien");
             case CIVILIAN -> GameConfig.getViewRange("civilian");
             case VEHICLE -> GameConfig.getViewRange("vehicle");
+            case ROBOTIC -> GameConfig.getViewRange("robotic");
         };
     }
     
@@ -121,6 +123,11 @@ public class Unit {
     
     public boolean canAttack() {
         return hasActionPoints && actionPoints > 0;
+    }
+    
+    @Override
+    public boolean hasActionPoints() {
+        return hasActionPoints;
     }
     
     public void spendActionPoint() {
@@ -796,6 +803,21 @@ public class Unit {
             case WEAPON_MALFUNCTION:
                 // Weapon malfunction effect
                 break;
+            case CONTROLLED:
+                // Mind control effect
+                break;
+            case MIND_MERGED:
+                // Mind merge effect
+                break;
+            case DOMINATED:
+                // Domination effect
+                break;
+            case PSYCHIC_SHIELD:
+                // Psychic shield effect
+                break;
+            case MIND_SHIELD:
+                // Mind shield effect
+                break;
         }
     }
     
@@ -810,6 +832,7 @@ public class Unit {
                     break;
                 case ACID_BURN:
                 case BURNING:
+                case BLEEDING:
                 case ELECTROCUTED:
                 case RADIATION:
                 case CORROSION:
@@ -817,7 +840,39 @@ public class Unit {
                 case POISONED:
                 case FREEZING:
                     return true;
-                default:
+                case STUNNED:
+                case FROZEN:
+                case GRAPPLED:
+                case BOUND:
+                case KNOCKED_DOWN:
+                case KNOCKED_BACK:
+                case GRENADED:
+                case FLASHBANGED:
+                case SMOKED:
+                case HIDDEN:
+                case REVEALED:
+                case PANICKED:
+                case HEALING:
+                case PROTECTED:
+                case EXPOSED:
+                case VULNERABLE:
+                case RESISTANT:
+                case IMMUNE:
+                case WOUNDED:
+                case CAPTURED:
+                case EXTRACTED:
+                case DEAD:
+                case MUTATION_RISK:
+                case ARMOR_DEGRADATION:
+                case WEAPON_MALFUNCTION:
+                case MARKED:
+                case OVERWATCH:
+                case SUPPRESSED:
+                case CONTROLLED:
+                case MIND_SHIELD:
+                case DOMINATED:
+                case PSYCHIC_SHIELD:
+                case MIND_MERGED:
                     // Not an environmental hazard
                     break;
             }
@@ -838,6 +893,7 @@ public class Unit {
                         break;
                     case ACID_BURN:
                     case BURNING:
+                    case BLEEDING:
                     case CORROSION:
                     case ELECTROCUTED:
                     case RADIATION:
@@ -846,7 +902,39 @@ public class Unit {
                     case FREEZING:
                         totalDamage += effect.getIntensity();
                         break;
-                    default:
+                    case STUNNED:
+                    case FROZEN:
+                    case GRAPPLED:
+                    case BOUND:
+                    case KNOCKED_DOWN:
+                    case KNOCKED_BACK:
+                    case GRENADED:
+                    case FLASHBANGED:
+                    case SMOKED:
+                    case HIDDEN:
+                    case REVEALED:
+                    case PANICKED:
+                    case HEALING:
+                    case PROTECTED:
+                    case EXPOSED:
+                    case VULNERABLE:
+                    case RESISTANT:
+                    case IMMUNE:
+                    case WOUNDED:
+                    case CAPTURED:
+                    case EXTRACTED:
+                    case DEAD:
+                    case MUTATION_RISK:
+                    case ARMOR_DEGRADATION:
+                    case WEAPON_MALFUNCTION:
+                    case MARKED:
+                    case OVERWATCH:
+                    case SUPPRESSED:
+                    case CONTROLLED:
+                    case MIND_SHIELD:
+                    case DOMINATED:
+                    case PSYCHIC_SHIELD:
+                    case MIND_MERGED:
                         // Not an environmental hazard damage
                         break;
                 }

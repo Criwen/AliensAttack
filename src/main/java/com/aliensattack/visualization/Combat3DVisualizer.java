@@ -320,6 +320,7 @@ public class Combat3DVisualizer extends Application {
             case ALIEN_RULER -> sphere.setMaterial(alienMaterial); // Alien rulers use same material as regular aliens
             case CIVILIAN -> sphere.setMaterial(civilianMaterial);
             case VEHICLE -> sphere.setMaterial(vehicleMaterial);
+            case ROBOTIC -> sphere.setMaterial(vehicleMaterial); // Robotic units use vehicle material
         }
         
         // Add health indicator
@@ -628,6 +629,7 @@ public class Combat3DVisualizer extends Application {
             case ALIEN_RULER -> alienMaterial; // Alien rulers use same material as regular aliens
             case CIVILIAN -> civilianMaterial;
             case VEHICLE -> vehicleMaterial;
+            case ROBOTIC -> vehicleMaterial; // Robotic units use vehicle material
         };
     }
     

@@ -4,13 +4,13 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
 import java.util.*;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 /**
- * Advanced Soldier Injury and Recovery System
- * Handles realistic soldier injury mechanics with recovery times and permanent consequences
+ * Advanced Soldier Injury Recovery System - XCOM 2 Tactical Combat
+ * Implements comprehensive injury system with recovery mechanics and medical facilities
  */
 @Data
 @Builder
@@ -18,137 +18,134 @@ import java.time.temporal.ChronoUnit;
 @AllArgsConstructor
 public class AdvancedSoldierInjuryRecoverySystem {
     
-    // Injury Management
-    private Map<String, List<Injury>> soldierInjuries;
-    private Map<String, RecoveryStatus> recoveryStatuses;
-    private Map<String, MedicalTreatment> activeTreatments;
-    private List<InjuryType> injuryTypes;
-    private List<TreatmentType> treatmentTypes;
-    
-    // Recovery Tracking
-    private Map<String, LocalDateTime> injuryDates;
-    private Map<String, LocalDateTime> expectedRecoveryDates;
-    private Map<String, Integer> recoveryProgress;
-    private Map<String, Boolean> permanentInjuries;
-    
-    // Medical Facilities
-    private List<MedicalFacility> medicalFacilities;
-    private Map<String, MedicalFacility> assignedFacilities;
-    private int totalMedicalCapacity;
-    private int availableMedicalCapacity;
-    
-    // Prevention Systems
-    private Map<String, InjuryPrevention> preventionMeasures;
-    private List<ProtectiveEquipment> protectiveEquipment;
-    private Map<String, Boolean> equipmentAssigned;
+    private String injurySystemId;
+    private Map<String, SoldierInjury> soldierInjuries;
+    private Map<String, InjuryType> injuryTypes;
+    private Map<String, RecoveryPlan> recoveryPlans;
+    private Map<String, MedicalFacility> medicalFacilities;
+    private Map<String, MedicalPriority> medicalPriorities;
+    private Map<String, RehabilitationProgram> rehabilitationPrograms;
+    private Map<String, List<String>> injuryHistory;
+    private Map<String, Map<String, Integer>> injurySeverities;
+    private Map<String, List<String>> activeInjuries;
+    private Map<String, Integer> recoveryTimes;
+    private Map<String, Boolean> recoveryStates;
+    private int totalInjuredSoldiers;
+    private int maxMedicalCapacity;
+    private boolean isRecoveryActive;
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Injury {
+    public static class SoldierInjury {
         private String injuryId;
         private String soldierId;
-        private InjuryType type;
-        private InjurySeverity severity;
-        private LocalDateTime injuryDate;
-        private LocalDateTime expectedRecoveryDate;
-        private int recoveryDays;
+        private InjuryType injuryType;
+        private int severity;
+        private int maxSeverity;
+        private int recoveryTime;
+        private int currentRecoveryTime;
+        private boolean isHealing;
+        private boolean isCritical;
         private boolean isPermanent;
-        private List<InjuryEffect> effects;
+        private String injuryLocation;
+        private String injuryDescription;
+        private Map<String, Integer> injuryEffects;
+        private List<String> injuryComplications;
+        private String medicalPriority;
+        private String assignedFacility;
+        private String assignedDoctor;
+        private boolean isStabilized;
+        private boolean isInSurgery;
+        private boolean isInRehabilitation;
+        private String recoveryStatus;
+        private int medicalCost;
+        private String insuranceStatus;
+        private boolean isDischarged;
+        private String dischargeDate;
+        private String returnToDutyDate;
+        private String permanentDisability;
+        private String medicalNotes;
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class InjuryType {
+        private String injuryTypeId;
+        private String injuryTypeName;
+        private InjuryCategory injuryCategory;
+        private int baseRecoveryTime;
+        private int baseMedicalCost;
+        private Map<String, Integer> injuryEffects;
+        private List<String> possibleComplications;
+        private String treatmentMethod;
+        private int treatmentSuccessRate;
+        private String preventionMethod;
+        private boolean isPreventable;
+        private boolean isTreatable;
+        private boolean isCurable;
         private String description;
-        private InjurySource source;
-    }
-    
-    public enum InjuryType {
-        GUNSHOT_WOUND, EXPLOSION_BLAST, BURN_INJURY, FRACTURE, CONCUSSION, 
-        PSYCHOLOGICAL_TRAUMA, POISONING, RADIATION_EXPOSURE, ACID_BURN, 
-        ELECTRICAL_SHOCK, FALL_DAMAGE, MELEE_WOUND, DISLOCATION, 
-        INTERNAL_BLEEDING, INFECTION
-    }
-    
-    public enum InjurySeverity {
-        LIGHT(1, 3, 0.1), MODERATE(2, 7, 0.25), SEVERE(3, 14, 0.5), 
-        CRITICAL(4, 30, 0.75), FATAL(5, 0, 1.0);
+        private int severityLevel;
+        private String riskFactors;
+        private String symptoms;
+        private String diagnosis;
+        private String prognosis;
         
-        private final int severityLevel;
-        private final int baseRecoveryDays;
-        private final double permanentChance;
-        
-        InjurySeverity(int severityLevel, int baseRecoveryDays, double permanentChance) {
-            this.severityLevel = severityLevel;
-            this.baseRecoveryDays = baseRecoveryDays;
-            this.permanentChance = permanentChance;
+        public enum InjuryCategory {
+            BULLET_WOUND,      // Gunshot wounds
+            BURN_INJURY,       // Burn injuries
+            FRACTURE,          // Bone fractures
+            CONCUSSION,        // Head injuries
+            POISONING,         // Chemical poisoning
+            RADIATION,         // Radiation exposure
+            PSYCHIC_TRAUMA,    // Mental trauma
+            DISEASE,           // Infectious diseases
+            AMPUTATION,        // Limb loss
+            INTERNAL_DAMAGE,   // Internal organ damage
+            SHOCK,             // Shock and trauma
+            INFECTION,         // Wound infections
+            PARALYSIS,         // Nerve damage
+            BLINDNESS,         // Eye injuries
+            DEAFNESS          // Hearing damage
         }
-        
-        public int getSeverityLevel() { return severityLevel; }
-        public int getBaseRecoveryDays() { return baseRecoveryDays; }
-        public double getPermanentChance() { return permanentChance; }
     }
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class InjuryEffect {
-        private String effectId;
-        private EffectType type;
-        private int magnitude;
-        private boolean isPermanent;
-        private String description;
-    }
-    
-    public enum EffectType {
-        REDUCED_ACCURACY, REDUCED_MOBILITY, REDUCED_HEALTH, REDUCED_PSYCHIC_RESISTANCE,
-        REDUCED_ARMOR, REDUCED_ACTION_POINTS, REDUCED_CRITICAL_CHANCE, 
-        REDUCED_DODGE_CHANCE, INCREASED_FATIGUE, REDUCED_MORALE
-    }
-    
-    public enum InjurySource {
-        COMBAT_DAMAGE, ENVIRONMENTAL_HAZARD, FRIENDLY_FIRE, ACCIDENT, 
-        PSYCHIC_ATTACK, ALIEN_ABILITY, EQUIPMENT_FAILURE, FALL_DAMAGE
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RecoveryStatus {
+    public static class RecoveryPlan {
+        private String recoveryPlanId;
         private String soldierId;
-        private RecoveryState state;
-        private LocalDateTime startDate;
-        private LocalDateTime expectedEndDate;
-        private int daysRemaining;
-        private double recoveryProgress;
-        private List<Injury> activeInjuries;
-        private MedicalTreatment currentTreatment;
-    }
-    
-    public enum RecoveryState {
-        ACTIVE_COMBAT, LIGHT_DUTY, MEDICAL_LEAVE, CRITICAL_CARE, 
-        PERMANENT_DISABILITY, FULLY_RECOVERED
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MedicalTreatment {
-        private String treatmentId;
-        private String soldierId;
-        private TreatmentType type;
-        private LocalDateTime startDate;
-        private LocalDateTime endDate;
-        private int effectiveness;
-        private int cost;
+        private String injuryId;
+        private RecoveryPhase currentPhase;
+        private List<RecoveryPhase> phases;
+        private int totalRecoveryTime;
+        private int currentRecoveryTime;
         private boolean isActive;
-        private List<String> sideEffects;
-    }
-    
-    public enum TreatmentType {
-        BASIC_FIRST_AID, SURGERY, PSYCHOLOGICAL_THERAPY, PHYSICAL_THERAPY,
-        MEDICATION, REST_AND_RECOVERY, EXPERIMENTAL_TREATMENT, 
-        PSYCHIC_HEALING, ALIEN_TECHNOLOGY, EMERGENCY_TREATMENT
+        private String assignedDoctor;
+        private String assignedFacility;
+        private Map<String, Integer> recoveryBonuses;
+        private List<String> recoveryActivities;
+        private String recoveryStatus;
+        private int recoveryProgress;
+        private boolean isCompleted;
+        private String completionDate;
+        private String notes;
+        
+        public enum RecoveryPhase {
+            STABILIZATION,     // Initial stabilization
+            SURGERY,           // Surgical procedures
+            RECOVERY,          // Post-surgery recovery
+            REHABILITATION,    // Physical therapy
+            THERAPY,           // Mental health therapy
+            TRAINING,          // Return to training
+            EVALUATION,        // Medical evaluation
+            CLEARANCE          // Return to duty clearance
+        }
     }
     
     @Data
@@ -157,588 +154,526 @@ public class AdvancedSoldierInjuryRecoverySystem {
     @AllArgsConstructor
     public static class MedicalFacility {
         private String facilityId;
-        private String name;
-        private FacilityType type;
+        private String facilityName;
+        private FacilityType facilityType;
         private int capacity;
-        private int currentPatients;
-        private List<TreatmentType> availableTreatments;
-        private int effectiveness;
-        private int cost;
-    }
-    
-    public enum FacilityType {
-        BASIC_MEDICAL, ADVANCED_MEDICAL, PSYCHIATRIC_WARD, SURGICAL_SUITE,
-        EXPERIMENTAL_LAB, ALIEN_TECHNOLOGY_LAB, EMERGENCY_ROOM, 
-        RECOVERY_WARD, REHABILITATION_CENTER
+        private int currentOccupancy;
+        private List<String> availableDoctors;
+        private List<String> availableEquipment;
+        private Map<String, Integer> facilityBonuses;
+        private List<String> facilityServices;
+        private boolean isOperational;
+        private int facilityLevel;
+        private int facilityQuality;
+        private String location;
+        private int operatingCost;
+        private int maintenanceCost;
+        private String facilityStatus;
+        private List<String> patients;
+        private Map<String, Integer> treatmentSuccessRates;
+        private List<String> specializations;
+        private String facilityDescription;
+        
+        public enum FacilityType {
+            EMERGENCY_ROOM,    // Emergency treatment
+            SURGERY_CENTER,    // Surgical procedures
+            INTENSIVE_CARE,    // Critical care
+            REHABILITATION,    // Physical therapy
+            PSYCHIATRIC_WARD,  // Mental health
+            RESEARCH_LAB,      // Medical research
+            QUARANTINE_WARD,   // Infectious diseases
+            BURNS_UNIT,        // Burn treatment
+            ORTHOPEDICS,       // Bone and joint
+            NEUROLOGY,         // Brain and nerve
+            CARDIOLOGY,        // Heart treatment
+            ONCOLOGY,          // Cancer treatment
+            PEDIATRICS,        // Child care
+            GERIATRICS,        // Elderly care
+            TRAUMA_CENTER      // Trauma treatment
+        }
     }
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class InjuryPrevention {
-        private String preventionId;
-        private PreventionType type;
-        private int effectiveness;
-        private int cost;
+    public static class MedicalPriority {
+        private String priorityId;
+        private String soldierId;
+        private PriorityLevel priorityLevel;
+        private String priorityReason;
+        private int priorityScore;
+        private boolean isUrgent;
+        private boolean isCritical;
+        private String assignedDoctor;
+        private String assignedFacility;
+        private int waitTime;
+        private String priorityStatus;
+        private String priorityNotes;
+        private Date priorityDate;
+        private String priorityCategory;
+        private int priorityDuration;
+        private boolean isEscalated;
+        private String escalationReason;
+        
+        public enum PriorityLevel {
+            CRITICAL,      // Immediate attention required
+            URGENT,        // High priority
+            HIGH,          // Above normal priority
+            NORMAL,        // Standard priority
+            LOW,           // Below normal priority
+            ROUTINE,       // Non-urgent
+            ELECTIVE,      // Optional treatment
+            MAINTENANCE    // Preventive care
+        }
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RehabilitationProgram {
+        private String programId;
+        private String soldierId;
+        private ProgramType programType;
+        private int programDuration;
+        private int currentDuration;
+        private List<String> programActivities;
+        private Map<String, Integer> programGoals;
+        private List<String> programMilestones;
         private boolean isActive;
-        private List<String> applicableInjuries;
+        private String assignedTherapist;
+        private String assignedFacility;
+        private int programProgress;
+        private boolean isCompleted;
+        private String completionDate;
+        private String programStatus;
+        private String programNotes;
+        private Map<String, Integer> programBonuses;
+        private List<String> programRequirements;
+        private int programCost;
+        private String programDescription;
+        
+        public enum ProgramType {
+            PHYSICAL_THERAPY,    // Physical rehabilitation
+            OCCUPATIONAL_THERAPY, // Daily living skills
+            SPEECH_THERAPY,      // Communication skills
+            PSYCHOLOGICAL_THERAPY, // Mental health
+            COGNITIVE_THERAPY,   // Brain function
+            VOCATIONAL_THERAPY,  // Work skills
+            RECREATIONAL_THERAPY, // Leisure activities
+            RESPIRATORY_THERAPY, // Breathing therapy
+            CARDIOVASCULAR_THERAPY, // Heart health
+            NEUROLOGICAL_THERAPY, // Nerve function
+            ORTHOPEDIC_THERAPY,  // Bone and joint
+            BURN_THERAPY,        // Burn recovery
+            AMPUTEE_THERAPY,     // Limb loss adaptation
+            SPINAL_THERAPY,      // Spinal cord injury
+            PEDIATRIC_THERAPY    // Child therapy
+        }
     }
     
-    public enum PreventionType {
-        ARMOR_UPGRADE, MEDICAL_TRAINING, PSYCHOLOGICAL_SUPPORT, 
-        EQUIPMENT_MAINTENANCE, SAFETY_PROTOCOLS, ALIEN_TECHNOLOGY
+
+    
+    /**
+     * Initialize the injury recovery system
+     */
+    public void initializeSystem() {
+        // ToDo: Реализовать систему травм
+        // - Soldier Injury System
+        // - Recovery System
+        // - Medical Priority System
+        // - Injury types and severity
+        // - Recovery time and requirements
+        // - Medical equipment and facilities
+        // - Rehabilitation system
+        
+        initializeInjuryTypes();
+        initializeMedicalFacilities();
     }
     
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ProtectiveEquipment {
-        private String equipmentId;
-        private String name;
-        private EquipmentType type;
-        private int protectionLevel;
-        private int durability;
-        private int cost;
-        private List<InjuryType> protectedInjuries;
+    /**
+     * Initialize injury types
+     */
+    private void initializeInjuryTypes() {
+        // Bullet wound
+        InjuryType bulletWound = InjuryType.builder()
+            .injuryTypeId("BULLET_WOUND")
+            .injuryTypeName("Bullet Wound")
+            .injuryCategory(InjuryType.InjuryCategory.BULLET_WOUND)
+            .baseRecoveryTime(14)
+            .baseMedicalCost(5000)
+            .injuryEffects(Map.of("damage", 20, "bleeding", 10, "infection_risk", 15))
+            .possibleComplications(Arrays.asList("INFECTION", "NERVE_DAMAGE", "SCAR_TISSUE"))
+            .treatmentMethod("SURGERY")
+            .treatmentSuccessRate(85)
+            .preventionMethod("BODY_ARMOR")
+            .isPreventable(true)
+            .isTreatable(true)
+            .isCurable(true)
+            .description("Gunshot wound requiring immediate medical attention")
+            .severityLevel(3)
+            .riskFactors("Combat exposure, lack of armor")
+            .symptoms("Pain, bleeding, tissue damage")
+            .diagnosis("Physical examination, X-ray")
+            .prognosis("Good with proper treatment")
+            .build();
+        
+        injuryTypes.put("BULLET_WOUND", bulletWound);
+        
+        // Burn injury
+        InjuryType burnInjury = InjuryType.builder()
+            .injuryTypeId("BURN_INJURY")
+            .injuryTypeName("Burn Injury")
+            .injuryCategory(InjuryType.InjuryCategory.BURN_INJURY)
+            .baseRecoveryTime(21)
+            .baseMedicalCost(8000)
+            .injuryEffects(Map.of("damage", 25, "infection_risk", 20, "scarring", 30))
+            .possibleComplications(Arrays.asList("INFECTION", "SCARRING", "CONTRACTURES"))
+            .treatmentMethod("SKIN_GRAFT")
+            .treatmentSuccessRate(75)
+            .preventionMethod("FIRE_PROTECTION")
+            .isPreventable(true)
+            .isTreatable(true)
+            .isCurable(true)
+            .description("Thermal injury requiring specialized burn treatment")
+            .severityLevel(4)
+            .riskFactors("Fire exposure, explosion proximity")
+            .symptoms("Pain, blistering, tissue damage")
+            .diagnosis("Visual examination, depth assessment")
+            .prognosis("Variable based on burn depth")
+            .build();
+        
+        injuryTypes.put("BURN_INJURY", burnInjury);
+        
+        // Fracture
+        InjuryType fracture = InjuryType.builder()
+            .injuryTypeId("FRACTURE")
+            .injuryTypeName("Bone Fracture")
+            .injuryCategory(InjuryType.InjuryCategory.FRACTURE)
+            .baseRecoveryTime(42)
+            .baseMedicalCost(3000)
+            .injuryEffects(Map.of("mobility", -50, "pain", 15, "healing_time", 30))
+            .possibleComplications(Arrays.asList("MALUNION", "NONUNION", "INFECTION"))
+            .treatmentMethod("CASTING_SURGERY")
+            .treatmentSuccessRate(90)
+            .preventionMethod("PROTECTIVE_GEAR")
+            .isPreventable(true)
+            .isTreatable(true)
+            .isCurable(true)
+            .description("Broken bone requiring immobilization and healing")
+            .severityLevel(2)
+            .riskFactors("Falls, impacts, overuse")
+            .symptoms("Pain, swelling, deformity")
+            .diagnosis("X-ray, physical examination")
+            .prognosis("Excellent with proper treatment")
+            .build();
+        
+        injuryTypes.put("FRACTURE", fracture);
     }
     
-    public enum EquipmentType {
-        BODY_ARMOR, HELMET, MEDICAL_KIT, PSYCHIC_SHIELD, ENVIRONMENTAL_SUIT,
-        COMBAT_GEAR, SPECIALIZED_EQUIPMENT
+    /**
+     * Initialize medical facilities
+     */
+    private void initializeMedicalFacilities() {
+        // Emergency Room
+        MedicalFacility emergencyRoom = MedicalFacility.builder()
+            .facilityId("EMERGENCY_ROOM")
+            .facilityName("Emergency Room")
+            .facilityType(MedicalFacility.FacilityType.EMERGENCY_ROOM)
+            .capacity(20)
+            .currentOccupancy(0)
+            .availableDoctors(Arrays.asList("DR_SMITH", "DR_JOHNSON", "DR_WILLIAMS"))
+            .availableEquipment(Arrays.asList("DEFIBRILLATOR", "VENTILATOR", "MONITOR"))
+            .facilityBonuses(Map.of("emergency_treatment", 25, "stabilization", 30))
+            .facilityServices(Arrays.asList("TRAUMA_CARE", "STABILIZATION", "EMERGENCY_SURGERY"))
+            .isOperational(true)
+            .facilityLevel(3)
+            .facilityQuality(85)
+            .location("MAIN_BASE")
+            .operatingCost(5000)
+            .maintenanceCost(1000)
+            .facilityStatus("OPERATIONAL")
+            .patients(new ArrayList<>())
+            .treatmentSuccessRates(Map.of("STABILIZATION", 95, "EMERGENCY_SURGERY", 80))
+            .specializations(Arrays.asList("TRAUMA", "EMERGENCY_MEDICINE", "CRITICAL_CARE"))
+            .facilityDescription("Primary emergency treatment facility")
+            .build();
+        
+        medicalFacilities.put("EMERGENCY_ROOM", emergencyRoom);
+        
+        // Surgery Center
+        MedicalFacility surgeryCenter = MedicalFacility.builder()
+            .facilityId("SURGERY_CENTER")
+            .facilityName("Surgery Center")
+            .facilityType(MedicalFacility.FacilityType.SURGERY_CENTER)
+            .capacity(10)
+            .currentOccupancy(0)
+            .availableDoctors(Arrays.asList("DR_BROWN", "DR_DAVIS", "DR_MILLER"))
+            .availableEquipment(Arrays.asList("SURGICAL_TABLE", "ANESTHESIA_MACHINE", "SURGICAL_TOOLS"))
+            .facilityBonuses(Map.of("surgical_procedures", 30, "precision", 25))
+            .facilityServices(Arrays.asList("GENERAL_SURGERY", "ORTHOPEDIC_SURGERY", "PLASTIC_SURGERY"))
+            .isOperational(true)
+            .facilityLevel(4)
+            .facilityQuality(90)
+            .location("MAIN_BASE")
+            .operatingCost(8000)
+            .maintenanceCost(2000)
+            .facilityStatus("OPERATIONAL")
+            .patients(new ArrayList<>())
+            .treatmentSuccessRates(Map.of("GENERAL_SURGERY", 85, "ORTHOPEDIC_SURGERY", 90))
+            .specializations(Arrays.asList("GENERAL_SURGERY", "ORTHOPEDICS", "PLASTIC_SURGERY"))
+            .facilityDescription("Advanced surgical facility")
+            .build();
+        
+        medicalFacilities.put("SURGERY_CENTER", surgeryCenter);
     }
     
-    // Core Injury Management Methods
-    
-    public boolean inflictInjury(String soldierId, InjuryType injuryType, 
-                                InjurySeverity severity, InjurySource source) {
-        if (soldierId == null || injuryType == null || severity == null) {
+    /**
+     * Register soldier injury
+     */
+    public boolean registerInjury(String soldierId, String injuryTypeId, int severity, String location) {
+        InjuryType injuryType = injuryTypes.get(injuryTypeId);
+        if (injuryType == null) {
             return false;
         }
         
-        // Create injury
-        Injury injury = createInjury(soldierId, injuryType, severity, source);
+        String injuryId = "INJURY_" + soldierId + "_" + System.currentTimeMillis();
         
-        // Add to soldier's injury list
-        soldierInjuries.computeIfAbsent(soldierId, k -> new ArrayList<>()).add(injury);
-        
-        // Update recovery status
-        updateRecoveryStatus(soldierId);
-        
-        // Apply injury effects to soldier
-        applyInjuryEffects(soldierId, injury);
-        
-        // Check for permanent injury
-        checkPermanentInjury(soldierId, injury);
-        
-        return true;
-    }
-    
-    public boolean healInjury(String soldierId, String injuryId) {
-        List<Injury> injuries = soldierInjuries.get(soldierId);
-        if (injuries == null) {
-            return false;
-        }
-        
-        for (Injury injury : injuries) {
-            if (injury.getInjuryId().equals(injuryId) && !injury.isPermanent()) {
-                injuries.remove(injury);
-                updateRecoveryStatus(soldierId);
-                removeInjuryEffects(soldierId, injury);
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public boolean applyMedicalTreatment(String soldierId, TreatmentType treatmentType) {
-        if (soldierId == null || treatmentType == null) {
-            return false;
-        }
-        
-        // Check if soldier has injuries
-        List<Injury> injuries = soldierInjuries.get(soldierId);
-        if (injuries == null || injuries.isEmpty()) {
-            return false;
-        }
-        
-        // Create treatment
-        MedicalTreatment treatment = createTreatment(soldierId, treatmentType);
-        
-        // Apply treatment effects
-        applyTreatmentEffects(soldierId, treatment);
-        
-        // Update recovery status
-        updateRecoveryStatus(soldierId);
-        
-        return true;
-    }
-    
-    public boolean assignMedicalFacility(String soldierId, String facilityId) {
-        MedicalFacility facility = findMedicalFacility(facilityId);
-        if (facility == null || facility.getCurrentPatients() >= facility.getCapacity()) {
-            return false;
-        }
-        
-        assignedFacilities.put(soldierId, facility);
-        facility.setCurrentPatients(facility.getCurrentPatients() + 1);
-        
-        // Apply facility benefits
-        applyFacilityBenefits(soldierId, facility);
-        
-        return true;
-    }
-    
-    public boolean updateRecoveryProgress() {
-        LocalDateTime now = LocalDateTime.now();
-        boolean anyUpdates = false;
-        
-        for (Map.Entry<String, RecoveryStatus> entry : recoveryStatuses.entrySet()) {
-            String soldierId = entry.getKey();
-            RecoveryStatus status = entry.getValue();
-            
-            if (status.getState() != RecoveryState.ACTIVE_COMBAT && 
-                status.getState() != RecoveryState.PERMANENT_DISABILITY) {
-                
-                // Calculate recovery progress
-                double progress = calculateRecoveryProgress(soldierId, now);
-                status.setRecoveryProgress(progress);
-                
-                // Update days remaining
-                int daysRemaining = calculateDaysRemaining(soldierId, now);
-                status.setDaysRemaining(daysRemaining);
-                
-                // Check if fully recovered
-                if (progress >= 1.0) {
-                    completeRecovery(soldierId);
-                }
-                
-                anyUpdates = true;
-            }
-        }
-        
-        return anyUpdates;
-    }
-    
-    public boolean assignProtectiveEquipment(String soldierId, String equipmentId) {
-        ProtectiveEquipment equipment = findProtectiveEquipment(equipmentId);
-        if (equipment == null) {
-            return false;
-        }
-        
-        equipmentAssigned.put(soldierId + "_" + equipmentId, true);
-        
-        // Apply protection effects
-        applyProtectionEffects(soldierId, equipment);
-        
-        return true;
-    }
-    
-    public boolean activateInjuryPrevention(String soldierId, PreventionType preventionType) {
-        InjuryPrevention prevention = findInjuryPrevention(preventionType);
-        if (prevention == null) {
-            return false;
-        }
-        
-        preventionMeasures.put(soldierId + "_" + preventionType.name(), prevention);
-        
-        return true;
-    }
-    
-    public boolean canReturnToCombat(String soldierId) {
-        RecoveryStatus status = recoveryStatuses.get(soldierId);
-        if (status == null) {
-            return true; // No injuries, can fight
-        }
-        
-        return status.getState() == RecoveryState.ACTIVE_COMBAT || 
-               status.getState() == RecoveryState.LIGHT_DUTY;
-    }
-    
-    public boolean hasPermanentInjuries(String soldierId) {
-        return permanentInjuries.getOrDefault(soldierId, false);
-    }
-    
-    public List<Injury> getActiveInjuries(String soldierId) {
-        List<Injury> injuries = soldierInjuries.get(soldierId);
-        if (injuries == null) {
-            return new ArrayList<>();
-        }
-        
-        return injuries.stream()
-            .filter(injury -> !injury.isPermanent())
-            .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-    }
-    
-    public int getRecoveryDaysRemaining(String soldierId) {
-        RecoveryStatus status = recoveryStatuses.get(soldierId);
-        return status != null ? status.getDaysRemaining() : 0;
-    }
-    
-    public double getRecoveryProgress(String soldierId) {
-        RecoveryStatus status = recoveryStatuses.get(soldierId);
-        return status != null ? status.getRecoveryProgress() : 1.0;
-    }
-    
-    // Helper Methods
-    
-    private Injury createInjury(String soldierId, InjuryType injuryType, 
-                               InjurySeverity severity, InjurySource source) {
-        String injuryId = UUID.randomUUID().toString();
-        LocalDateTime injuryDate = LocalDateTime.now();
-        int recoveryDays = calculateRecoveryDays(severity, injuryType);
-        LocalDateTime expectedRecoveryDate = injuryDate.plusDays(recoveryDays);
-        
-        List<InjuryEffect> effects = generateInjuryEffects(injuryType, severity);
-        
-        return Injury.builder()
+        SoldierInjury injury = SoldierInjury.builder()
             .injuryId(injuryId)
             .soldierId(soldierId)
-            .type(injuryType)
+            .injuryType(injuryType)
             .severity(severity)
-            .injuryDate(injuryDate)
-            .expectedRecoveryDate(expectedRecoveryDate)
-            .recoveryDays(recoveryDays)
-            .isPermanent(false)
-            .effects(effects)
-            .description(generateInjuryDescription(injuryType, severity))
-            .source(source)
+            .maxSeverity(10)
+            .recoveryTime(injuryType.getBaseRecoveryTime())
+            .currentRecoveryTime(0)
+            .isHealing(false)
+            .isCritical(severity >= 8)
+            .isPermanent(severity >= 10)
+            .injuryLocation(location)
+            .injuryDescription(injuryType.getDescription())
+            .injuryEffects(new HashMap<>(injuryType.getInjuryEffects()))
+            .injuryComplications(new ArrayList<>(injuryType.getPossibleComplications()))
+            .medicalPriority(severity >= 8 ? "CRITICAL" : severity >= 5 ? "URGENT" : "NORMAL")
+            .assignedFacility("")
+            .assignedDoctor("")
+            .isStabilized(false)
+            .isInSurgery(false)
+            .isInRehabilitation(false)
+            .recoveryStatus("REGISTERED")
+            .medicalCost(injuryType.getBaseMedicalCost())
+            .insuranceStatus("COVERED")
+            .isDischarged(false)
+            .dischargeDate("")
+            .returnToDutyDate("")
+            .permanentDisability("")
+            .medicalNotes("")
             .build();
+        
+        soldierInjuries.put(injuryId, injury);
+        injuryHistory.put(soldierId, injuryHistory.getOrDefault(soldierId, new ArrayList<>()));
+        injuryHistory.get(soldierId).add(injuryId);
+        injurySeverities.put(soldierId, injurySeverities.getOrDefault(soldierId, new HashMap<>()));
+        injurySeverities.get(soldierId).put(injuryTypeId, severity);
+        activeInjuries.put(soldierId, activeInjuries.getOrDefault(soldierId, new ArrayList<>()));
+        activeInjuries.get(soldierId).add(injuryId);
+        recoveryTimes.put(injuryId, injuryType.getBaseRecoveryTime());
+        recoveryStates.put(injuryId, false);
+        
+        totalInjuredSoldiers++;
+        
+        // Create medical priority
+        createMedicalPriority(soldierId, injury);
+        
+        return true;
     }
     
-    private int calculateRecoveryDays(InjurySeverity severity, InjuryType injuryType) {
-        int baseDays = severity.getBaseRecoveryDays();
+    /**
+     * Create medical priority for injury
+     */
+    private void createMedicalPriority(String soldierId, SoldierInjury injury) {
+        String priorityId = "PRIORITY_" + soldierId + "_" + System.currentTimeMillis();
         
-        // Modify based on injury type
-        switch (injuryType) {
-            case PSYCHOLOGICAL_TRAUMA:
-                return baseDays * 2; // Psychological injuries take longer
-            case RADIATION_EXPOSURE:
-                return baseDays * 3; // Radiation exposure is very serious
-            case INFECTION:
-                return baseDays + 7; // Infections extend recovery time
-            default:
-                return baseDays;
-        }
-    }
-    
-    private List<InjuryEffect> generateInjuryEffects(InjuryType injuryType, InjurySeverity severity) {
-        List<InjuryEffect> effects = new ArrayList<>();
-        
-        switch (injuryType) {
-            case GUNSHOT_WOUND:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 10));
-                effects.add(createEffect(EffectType.REDUCED_MOBILITY, severity.getSeverityLevel() * 5));
-                break;
-            case EXPLOSION_BLAST:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 15));
-                effects.add(createEffect(EffectType.REDUCED_ACCURACY, severity.getSeverityLevel() * 8));
-                break;
-            case BURN_INJURY:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 12));
-                effects.add(createEffect(EffectType.INCREASED_FATIGUE, severity.getSeverityLevel() * 3));
-                break;
-            case FRACTURE:
-                effects.add(createEffect(EffectType.REDUCED_MOBILITY, severity.getSeverityLevel() * 15));
-                effects.add(createEffect(EffectType.REDUCED_ACTION_POINTS, severity.getSeverityLevel() * 2));
-                break;
-            case CONCUSSION:
-                effects.add(createEffect(EffectType.REDUCED_ACCURACY, severity.getSeverityLevel() * 10));
-                effects.add(createEffect(EffectType.REDUCED_CRITICAL_CHANCE, severity.getSeverityLevel() * 5));
-                break;
-            case PSYCHOLOGICAL_TRAUMA:
-                effects.add(createEffect(EffectType.REDUCED_MORALE, severity.getSeverityLevel() * 20));
-                effects.add(createEffect(EffectType.REDUCED_PSYCHIC_RESISTANCE, severity.getSeverityLevel() * 15));
-                break;
-            case POISONING:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 8));
-                effects.add(createEffect(EffectType.INCREASED_FATIGUE, severity.getSeverityLevel() * 5));
-                break;
-            case RADIATION_EXPOSURE:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 20));
-                effects.add(createEffect(EffectType.REDUCED_ARMOR, severity.getSeverityLevel() * 10));
-                break;
-            case ACID_BURN:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 12));
-                effects.add(createEffect(EffectType.REDUCED_DODGE_CHANCE, severity.getSeverityLevel() * 8));
-                break;
-            case ELECTRICAL_SHOCK:
-                effects.add(createEffect(EffectType.REDUCED_ACTION_POINTS, severity.getSeverityLevel() * 3));
-                effects.add(createEffect(EffectType.REDUCED_ACCURACY, severity.getSeverityLevel() * 6));
-                break;
-            case FALL_DAMAGE:
-                effects.add(createEffect(EffectType.REDUCED_MOBILITY, severity.getSeverityLevel() * 10));
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 8));
-                break;
-            case MELEE_WOUND:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 6));
-                effects.add(createEffect(EffectType.REDUCED_DODGE_CHANCE, severity.getSeverityLevel() * 4));
-                break;
-            case DISLOCATION:
-                effects.add(createEffect(EffectType.REDUCED_MOBILITY, severity.getSeverityLevel() * 12));
-                effects.add(createEffect(EffectType.REDUCED_ACTION_POINTS, severity.getSeverityLevel() * 2));
-                break;
-            case INTERNAL_BLEEDING:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 15));
-                effects.add(createEffect(EffectType.INCREASED_FATIGUE, severity.getSeverityLevel() * 4));
-                break;
-            case INFECTION:
-                effects.add(createEffect(EffectType.REDUCED_HEALTH, severity.getSeverityLevel() * 8));
-                effects.add(createEffect(EffectType.INCREASED_FATIGUE, severity.getSeverityLevel() * 6));
-                break;
+        MedicalPriority.PriorityLevel priorityLevel;
+        if (injury.isCritical()) {
+            priorityLevel = MedicalPriority.PriorityLevel.CRITICAL;
+        } else if (injury.getSeverity() >= 5) {
+            priorityLevel = MedicalPriority.PriorityLevel.URGENT;
+        } else {
+            priorityLevel = MedicalPriority.PriorityLevel.NORMAL;
         }
         
-        return effects;
-    }
-    
-    private InjuryEffect createEffect(EffectType type, int magnitude) {
-        return InjuryEffect.builder()
-            .effectId(UUID.randomUUID().toString())
-            .type(type)
-            .magnitude(magnitude)
-            .isPermanent(false)
-            .description(type.name() + " reduced by " + magnitude)
-            .build();
-    }
-    
-    private String generateInjuryDescription(InjuryType injuryType, InjurySeverity severity) {
-        String severityText = severity.name().toLowerCase().replace("_", " ");
-        String injuryText = injuryType.name().toLowerCase().replace("_", " ");
-        return severityText + " " + injuryText;
-    }
-    
-    private void updateRecoveryStatus(String soldierId) {
-        List<Injury> injuries = soldierInjuries.get(soldierId);
-        if (injuries == null || injuries.isEmpty()) {
-            recoveryStatuses.remove(soldierId);
-            return;
-        }
-        
-        RecoveryStatus status = recoveryStatuses.computeIfAbsent(soldierId, 
-            k -> RecoveryStatus.builder()
-                .soldierId(soldierId)
-                .state(RecoveryState.MEDICAL_LEAVE)
-                .startDate(LocalDateTime.now())
-                .activeInjuries(new ArrayList<>())
-                .build());
-        
-        // Update active injuries
-        status.setActiveInjuries(getActiveInjuries(soldierId));
-        
-        // Determine recovery state
-        RecoveryState newState = determineRecoveryState(soldierId, injuries);
-        status.setState(newState);
-        
-        // Update expected end date
-        LocalDateTime latestRecoveryDate = injuries.stream()
-            .map(Injury::getExpectedRecoveryDate)
-            .max(LocalDateTime::compareTo)
-            .orElse(LocalDateTime.now());
-        status.setExpectedEndDate(latestRecoveryDate);
-    }
-    
-    private RecoveryState determineRecoveryState(String soldierId, List<Injury> injuries) {
-        boolean hasPermanent = injuries.stream().anyMatch(Injury::isPermanent);
-        if (hasPermanent) {
-            return RecoveryState.PERMANENT_DISABILITY;
-        }
-        
-        boolean hasSevere = injuries.stream()
-            .anyMatch(injury -> injury.getSeverity() == InjurySeverity.SEVERE || 
-                               injury.getSeverity() == InjurySeverity.CRITICAL);
-        if (hasSevere) {
-            return RecoveryState.CRITICAL_CARE;
-        }
-        
-        boolean hasModerate = injuries.stream()
-            .anyMatch(injury -> injury.getSeverity() == InjurySeverity.MODERATE);
-        if (hasModerate) {
-            return RecoveryState.MEDICAL_LEAVE;
-        }
-        
-        return RecoveryState.LIGHT_DUTY;
-    }
-    
-    private void applyInjuryEffects(String soldierId, Injury injury) {
-        // Apply injury effects to the soldier's stats
-        // This would integrate with the Unit class to modify stats
-    }
-    
-    private void removeInjuryEffects(String soldierId, Injury injury) {
-        // Remove injury effects from the soldier's stats
-        // This would integrate with the Unit class to restore stats
-    }
-    
-    private void checkPermanentInjury(String soldierId, Injury injury) {
-        double permanentChance = injury.getSeverity().getPermanentChance();
-        if (Math.random() < permanentChance) {
-            injury.setPermanent(true);
-            permanentInjuries.put(soldierId, true);
-        }
-    }
-    
-    private MedicalTreatment createTreatment(String soldierId, TreatmentType treatmentType) {
-        String treatmentId = UUID.randomUUID().toString();
-        LocalDateTime startDate = LocalDateTime.now();
-        LocalDateTime endDate = startDate.plusDays(calculateTreatmentDuration(treatmentType));
-        
-        return MedicalTreatment.builder()
-            .treatmentId(treatmentId)
+        MedicalPriority priority = MedicalPriority.builder()
+            .priorityId(priorityId)
             .soldierId(soldierId)
-            .type(treatmentType)
-            .startDate(startDate)
-            .endDate(endDate)
-            .effectiveness(calculateTreatmentEffectiveness(treatmentType))
-            .cost(calculateTreatmentCost(treatmentType))
-            .isActive(true)
-            .sideEffects(new ArrayList<>())
+            .priorityLevel(priorityLevel)
+            .priorityReason(injury.getInjuryType().getInjuryTypeName())
+            .priorityScore(injury.getSeverity() * 10)
+            .isUrgent(injury.getSeverity() >= 5)
+            .isCritical(injury.isCritical())
+            .assignedDoctor("")
+            .assignedFacility("")
+            .waitTime(0)
+            .priorityStatus("PENDING")
+            .priorityNotes("")
+            .priorityDate(new Date())
+            .priorityCategory(injury.getInjuryType().getInjuryCategory().name())
+            .priorityDuration(0)
+            .isEscalated(false)
+            .escalationReason("")
             .build();
+        
+        medicalPriorities.put(priorityId, priority);
     }
     
-    private int calculateTreatmentDuration(TreatmentType treatmentType) {
-        switch (treatmentType) {
-            case BASIC_FIRST_AID: return 1;
-            case SURGERY: return 7;
-            case PSYCHOLOGICAL_THERAPY: return 14;
-            case PHYSICAL_THERAPY: return 10;
-            case MEDICATION: return 5;
-            case REST_AND_RECOVERY: return 3;
-            case EXPERIMENTAL_TREATMENT: return 21;
-            case PSYCHIC_HEALING: return 2;
-            case ALIEN_TECHNOLOGY: return 1;
-            case EMERGENCY_TREATMENT: return 1;
-            default: return 5;
-        }
-    }
-    
-    private int calculateTreatmentEffectiveness(TreatmentType treatmentType) {
-        switch (treatmentType) {
-            case BASIC_FIRST_AID: return 30;
-            case SURGERY: return 80;
-            case PSYCHOLOGICAL_THERAPY: return 60;
-            case PHYSICAL_THERAPY: return 70;
-            case MEDICATION: return 50;
-            case REST_AND_RECOVERY: return 40;
-            case EXPERIMENTAL_TREATMENT: return 90;
-            case PSYCHIC_HEALING: return 75;
-            case ALIEN_TECHNOLOGY: return 95;
-            case EMERGENCY_TREATMENT: return 60;
-            default: return 50;
-        }
-    }
-    
-    private int calculateTreatmentCost(TreatmentType treatmentType) {
-        switch (treatmentType) {
-            case BASIC_FIRST_AID: return 10;
-            case SURGERY: return 100;
-            case PSYCHOLOGICAL_THERAPY: return 50;
-            case PHYSICAL_THERAPY: return 75;
-            case MEDICATION: return 25;
-            case REST_AND_RECOVERY: return 15;
-            case EXPERIMENTAL_TREATMENT: return 200;
-            case PSYCHIC_HEALING: return 150;
-            case ALIEN_TECHNOLOGY: return 300;
-            case EMERGENCY_TREATMENT: return 80;
-            default: return 50;
-        }
-    }
-    
-    private void applyTreatmentEffects(String soldierId, MedicalTreatment treatment) {
-        // Apply treatment effects to speed up recovery
-        // This would modify recovery progress
-    }
-    
-    private MedicalFacility findMedicalFacility(String facilityId) {
-        return medicalFacilities.stream()
-            .filter(facility -> facility.getFacilityId().equals(facilityId))
-            .findFirst()
-            .orElse(null);
-    }
-    
-    private void applyFacilityBenefits(String soldierId, MedicalFacility facility) {
-        // Apply facility benefits to recovery
-        // This would improve recovery rates
-    }
-    
-    private double calculateRecoveryProgress(String soldierId, LocalDateTime now) {
-        RecoveryStatus status = recoveryStatuses.get(soldierId);
-        if (status == null || status.getExpectedEndDate() == null) {
-            return 1.0;
+    /**
+     * Start recovery process
+     */
+    public boolean startRecovery(String injuryId, String facilityId, String doctorId) {
+        SoldierInjury injury = soldierInjuries.get(injuryId);
+        if (injury == null) {
+            return false;
         }
         
-        long totalDays = ChronoUnit.DAYS.between(status.getStartDate(), status.getExpectedEndDate());
-        long elapsedDays = ChronoUnit.DAYS.between(status.getStartDate(), now);
+        injury.setAssignedFacility(facilityId);
+        injury.setAssignedDoctor(doctorId);
+        injury.setHealing(true);
+        injury.setRecoveryStatus("IN_TREATMENT");
         
-        if (totalDays <= 0) {
-            return 1.0;
+        // Create recovery plan
+        RecoveryPlan recoveryPlan = RecoveryPlan.builder()
+            .recoveryPlanId("RECOVERY_" + injuryId)
+            .soldierId(injury.getSoldierId())
+            .injuryId(injuryId)
+            .currentPhase(RecoveryPlan.RecoveryPhase.STABILIZATION)
+            .phases(Arrays.asList(RecoveryPlan.RecoveryPhase.values()))
+            .totalRecoveryTime(injury.getRecoveryTime())
+            .currentRecoveryTime(0)
+            .isActive(true)
+            .assignedDoctor(doctorId)
+            .assignedFacility(facilityId)
+            .recoveryBonuses(new HashMap<>())
+            .recoveryActivities(new ArrayList<>())
+            .recoveryStatus("ACTIVE")
+            .recoveryProgress(0)
+            .isCompleted(false)
+            .completionDate("")
+            .notes("")
+            .build();
+        
+        recoveryPlans.put(recoveryPlan.getRecoveryPlanId(), recoveryPlan);
+        
+        return true;
+    }
+    
+    /**
+     * Process recovery for all injuries
+     */
+    public void processRecovery() {
+        for (SoldierInjury injury : soldierInjuries.values()) {
+            if (injury.isHealing() && !injury.isPermanent()) {
+                processInjuryRecovery(injury);
+            }
+        }
+    }
+    
+    /**
+     * Process recovery for specific injury
+     */
+    private void processInjuryRecovery(SoldierInjury injury) {
+        injury.setCurrentRecoveryTime(injury.getCurrentRecoveryTime() + 1);
+        
+        // Check if recovery is complete
+        if (injury.getCurrentRecoveryTime() >= injury.getRecoveryTime()) {
+            completeRecovery(injury);
+        } else {
+            // Update recovery status
+            int progress = (injury.getCurrentRecoveryTime() * 100) / injury.getRecoveryTime();
+            injury.setRecoveryStatus("RECOVERING (" + progress + "%)");
+        }
+    }
+    
+    /**
+     * Complete recovery for injury
+     */
+    private void completeRecovery(SoldierInjury injury) {
+        injury.setHealing(false);
+        injury.setRecoveryStatus("COMPLETED");
+        injury.setReturnToDutyDate(new Date().toString());
+        
+        // Remove from active injuries
+        List<String> soldierInjuries = activeInjuries.get(injury.getSoldierId());
+        if (soldierInjuries != null) {
+            soldierInjuries.remove(injury.getInjuryId());
         }
         
-        return Math.min(1.0, (double) elapsedDays / totalDays);
-    }
-    
-    private int calculateDaysRemaining(String soldierId, LocalDateTime now) {
-        RecoveryStatus status = recoveryStatuses.get(soldierId);
-        if (status == null || status.getExpectedEndDate() == null) {
-            return 0;
-        }
+        // Update recovery state
+        recoveryStates.put(injury.getInjuryId(), true);
         
-        return (int) ChronoUnit.DAYS.between(now, status.getExpectedEndDate());
+        totalInjuredSoldiers--;
     }
     
-    private void completeRecovery(String soldierId) {
-        RecoveryStatus status = recoveryStatuses.get(soldierId);
-        if (status != null) {
-            status.setState(RecoveryState.FULLY_RECOVERED);
-            status.setRecoveryProgress(1.0);
-            status.setDaysRemaining(0);
-        }
-        
-        // Remove all non-permanent injuries
-        List<Injury> injuries = soldierInjuries.get(soldierId);
-        if (injuries != null) {
-            injuries.removeIf(injury -> !injury.isPermanent());
-        }
+    /**
+     * Get injury by ID
+     */
+    public SoldierInjury getInjury(String injuryId) {
+        return soldierInjuries.get(injuryId);
     }
     
-    private ProtectiveEquipment findProtectiveEquipment(String equipmentId) {
-        return protectiveEquipment.stream()
-            .filter(equipment -> equipment.getEquipmentId().equals(equipmentId))
-            .findFirst()
-            .orElse(null);
+    /**
+     * Get active injuries for soldier
+     */
+    public List<String> getActiveInjuries(String soldierId) {
+        return activeInjuries.getOrDefault(soldierId, new ArrayList<>());
     }
     
-    private void applyProtectionEffects(String soldierId, ProtectiveEquipment equipment) {
-        // Apply protection effects to reduce injury chance
+    /**
+     * Get injury history for soldier
+     */
+    public List<String> getInjuryHistory(String soldierId) {
+        return injuryHistory.getOrDefault(soldierId, new ArrayList<>());
     }
     
-    private InjuryPrevention findInjuryPrevention(PreventionType preventionType) {
-        // Find injury prevention measure
-        return null; // Placeholder
+    /**
+     * Get recovery time for injury
+     */
+    public int getRecoveryTime(String injuryId) {
+        return recoveryTimes.getOrDefault(injuryId, 0);
     }
     
-    // Getters for system state
-    public List<Injury> getSoldierInjuries(String soldierId) {
-        return soldierInjuries.getOrDefault(soldierId, new ArrayList<>());
+    /**
+     * Check if injury is recovered
+     */
+    public boolean isInjuryRecovered(String injuryId) {
+        return recoveryStates.getOrDefault(injuryId, false);
     }
     
-    public RecoveryStatus getRecoveryStatus(String soldierId) {
-        return recoveryStatuses.get(soldierId);
+    /**
+     * Get total injured soldiers
+     */
+    public int getTotalInjuredSoldiers() {
+        return totalInjuredSoldiers;
     }
     
-    public List<MedicalTreatment> getActiveTreatments(String soldierId) {
-        return activeTreatments.values().stream()
-            .filter(treatment -> treatment.getSoldierId().equals(soldierId) && treatment.isActive())
-            .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    /**
+     * Get medical facility by ID
+     */
+    public MedicalFacility getMedicalFacility(String facilityId) {
+        return medicalFacilities.get(facilityId);
     }
     
-    public int getAvailableMedicalCapacity() {
-        return availableMedicalCapacity;
+    /**
+     * Get medical priority by ID
+     */
+    public MedicalPriority getMedicalPriority(String priorityId) {
+        return medicalPriorities.get(priorityId);
     }
     
-    public boolean hasActiveInjuries(String soldierId) {
-        List<Injury> injuries = getActiveInjuries(soldierId);
-        return !injuries.isEmpty();
+    /**
+     * Get recovery plan by ID
+     */
+    public RecoveryPlan getRecoveryPlan(String planId) {
+        return recoveryPlans.get(planId);
     }
 }

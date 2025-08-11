@@ -119,7 +119,11 @@ public class FinalXCOM2CombatManager extends UltimateXCOM2CombatManager {
         
         // Find all units in chain reaction area
         int chainRadius = explosive.getVolatileMixChainRadius();
-        List<Unit> unitsInArea = getAllUnits().stream()
+        List<Unit> allUnits = getAllUnits();
+        if (allUnits == null) {
+            return results;
+        }
+        List<Unit> unitsInArea = allUnits.stream()
             .filter(unit -> unit.isAlive() && targetPos.getDistanceTo(unit.getPosition()) <= chainRadius)
             .collect(java.util.stream.Collectors.toList());
         
@@ -159,7 +163,8 @@ public class FinalXCOM2CombatManager extends UltimateXCOM2CombatManager {
             return results;
         }
 
-        if (thrower.getExplosives() == null || !thrower.getExplosives().contains(explosive)) {
+        List<Explosive> throwerExplosives = thrower.getExplosives();
+        if (throwerExplosives == null || !throwerExplosives.contains(explosive)) {
             return results;
         }
 
@@ -168,7 +173,12 @@ public class FinalXCOM2CombatManager extends UltimateXCOM2CombatManager {
         log.info("Grenade thrown by {}: '{}' at {} (radius={}, baseDmg={})",
                 thrower.getName(), explosive.getName(), targetPos, radius, baseDamage);
 
-        for (Unit unit : getAllUnits()) {
+        List<Unit> allUnits = getAllUnits();
+        if (allUnits == null) {
+            return results;
+        }
+        
+        for (Unit unit : allUnits) {
             if (unit == null || !unit.isAlive() || unit.equals(thrower) || unit.getPosition() == null) {
                 continue;
             }
@@ -332,8 +342,11 @@ public class FinalXCOM2CombatManager extends UltimateXCOM2CombatManager {
         super.endTurn();
         
         // Process reactive ability cooldowns
-        for (Unit unit : getAllUnits()) {
-            unit.processReactiveAbilityCooldowns();
+        List<Unit> allUnits = getAllUnits();
+        if (allUnits != null) {
+            for (Unit unit : allUnits) {
+                unit.processReactiveAbilityCooldowns();
+            }
         }
     }
 } 

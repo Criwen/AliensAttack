@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.aliensattack.core.enums.StatusEffect;
 
 import java.util.*;
 
@@ -504,7 +505,152 @@ public class AdvancedEnvironmentalInteractionSystem {
      */
     private void applyHazardEffects(EnvironmentalHazard hazard) {
         // Apply hazard effects to all units in range
-        // Implementation would check all units in hazard radius
+        // Note: This would need to be connected to a unit manager to get all units
+        // For now, we'll apply effects to the manipulating unit if available
+        if (hazard.getHazardSource() != null) {
+            // Find the source unit and apply effects
+            // This is a simplified implementation
+        }
+        
+        // Apply specific hazard effects based on hazard type
+        applySpecificHazardEffects(hazard);
+    }
+    
+    /**
+     * Apply specific hazard effects based on hazard type
+     */
+    private void applySpecificHazardEffects(EnvironmentalHazard hazard) {
+        // Apply effects based on hazard type
+        switch (hazard.getHazardType()) {
+            case FIRE:
+                // Fire effects are handled by applyFireHazardEffect
+                // Note: Would need a unit parameter to apply effects
+                break;
+            case POISON_GAS:
+                // Poison effects are handled by applyPoisonHazardEffect
+                // Note: Would need a unit parameter to apply effects
+                break;
+            case ELECTRIC_FIELD:
+                // Electric effects are handled by applyElectricHazardEffect
+                // Note: Would need a unit parameter to apply effects
+                break;
+            case RADIATION:
+                // Radiation effects are handled by applyRadiationHazardEffect
+                // Note: Would need a unit parameter to apply effects
+                break;
+            case ACID_POOL:
+                // Acid effects are handled by applyAcidHazardEffect
+                // Note: Would need a unit parameter to apply effects
+                break;
+            case EXPLOSIVE:
+                // Explosive effects are handled by applyExplosiveHazardEffect
+                // Note: Would need a unit parameter to apply effects
+                break;
+            case TOXIC_WASTE:
+                // Toxic effects are handled by applyToxicHazardEffect
+                // Note: Would need a unit parameter to apply effects
+                break;
+            case PLASMA_FIELD:
+                // Plasma effects are handled by applyPlasmaHazardEffect
+                // Note: Would need a unit parameter to apply effects
+                break;
+        }
+    }
+    
+    /**
+     * Apply hazard effects to a specific unit
+     */
+    public void applyHazardEffectsToUnit(EnvironmentalHazard hazard, Unit unit) {
+        if (unit == null || hazard == null) {
+            return;
+        }
+        
+        // Check if unit is within hazard radius
+        double distance = calculateDistance(unit.getPosition(), hazard.getPosition());
+        if (distance > hazard.getHazardRadius()) {
+            return;
+        }
+        
+        // Get the primary effect value from hazard effects
+        int effectValue = hazard.getHazardEffects().getOrDefault("damage", 10);
+        
+        // Apply effects based on hazard type
+        switch (hazard.getHazardType()) {
+            case FIRE:
+                applyFireHazardEffect(unit, effectValue);
+                break;
+            case POISON_GAS:
+                applyPoisonHazardEffect(unit, effectValue);
+                break;
+            case ELECTRIC_FIELD:
+                applyElectricHazardEffect(unit, effectValue);
+                break;
+            case RADIATION:
+                applyRadiationHazardEffect(unit, effectValue);
+                break;
+            case ACID_POOL:
+                applyAcidHazardEffect(unit, effectValue);
+                break;
+            case EXPLOSIVE:
+                applyExplosiveHazardEffect(unit, effectValue);
+                break;
+            case TOXIC_WASTE:
+                applyToxicHazardEffect(unit, effectValue);
+                break;
+            case PLASMA_FIELD:
+                applyPlasmaHazardEffect(unit, effectValue);
+                break;
+        }
+    }
+    
+
+    
+    private void applyFireHazardEffect(Unit unit, int effectValue) {
+        unit.takeDamage(effectValue);
+        StatusEffectData burningEffect = new StatusEffectData(StatusEffect.BURNING, 3, effectValue);
+        unit.addStatusEffect(burningEffect);
+    }
+    
+    private void applyPoisonHazardEffect(Unit unit, int effectValue) {
+        unit.takeDamage(effectValue / 2);
+        StatusEffectData poisonedEffect = new StatusEffectData(StatusEffect.POISONED, 4, effectValue);
+        unit.addStatusEffect(poisonedEffect);
+    }
+    
+    private void applyElectricHazardEffect(Unit unit, int effectValue) {
+        unit.takeDamage(effectValue);
+        StatusEffectData stunnedEffect = new StatusEffectData(StatusEffect.STUNNED, 2, effectValue);
+        unit.addStatusEffect(stunnedEffect);
+    }
+    
+    private void applyRadiationHazardEffect(Unit unit, int effectValue) {
+        unit.takeDamage(effectValue / 3);
+        StatusEffectData radiationEffect = new StatusEffectData(StatusEffect.RADIATION, 5, effectValue);
+        unit.addStatusEffect(radiationEffect);
+    }
+    
+    private void applyAcidHazardEffect(Unit unit, int effectValue) {
+        unit.takeDamage(effectValue);
+        StatusEffectData acidEffect = new StatusEffectData(StatusEffect.ACID_BURN, 3, effectValue);
+        unit.addStatusEffect(acidEffect);
+    }
+    
+    private void applyExplosiveHazardEffect(Unit unit, int effectValue) {
+        unit.takeDamage(effectValue * 2);
+        StatusEffectData knockedDownEffect = new StatusEffectData(StatusEffect.KNOCKED_DOWN, 1, effectValue);
+        unit.addStatusEffect(knockedDownEffect);
+    }
+    
+    private void applyToxicHazardEffect(Unit unit, int effectValue) {
+        unit.takeDamage(effectValue / 2);
+        StatusEffectData toxicEffect = new StatusEffectData(StatusEffect.POISONED, 4, effectValue);
+        unit.addStatusEffect(toxicEffect);
+    }
+    
+    private void applyPlasmaHazardEffect(Unit unit, int effectValue) {
+        unit.takeDamage(effectValue);
+        StatusEffectData plasmaEffect = new StatusEffectData(StatusEffect.BURNING, 2, effectValue);
+        unit.addStatusEffect(plasmaEffect);
     }
     
     /**
@@ -525,8 +671,113 @@ public class AdvancedEnvironmentalInteractionSystem {
      * Apply manipulation effects
      */
     private void applyManipulationEffects(EnvironmentalManipulation manipulation) {
-        // Apply manipulation effects to environment
-        // Implementation would modify terrain, create/destroy objects, etc.
+        switch (manipulation.getManipulationType()) {
+            case CREATE_COVER:
+                createCoverAtPosition(manipulation.getTargetPosition());
+                break;
+            case DESTROY_COVER:
+                destroyCoverAtPosition(manipulation.getTargetPosition());
+                break;
+            case CREATE_HAZARD:
+                createHazardAtPosition(manipulation.getTargetPosition(), manipulation.getManipulationEffects());
+                break;
+            case CLEAR_HAZARD:
+                clearHazardAtPosition(manipulation.getTargetPosition());
+                break;
+            case BLOCK_PATH:
+                blockPathAtPosition(manipulation.getTargetPosition());
+                break;
+            case CLEAR_PATH:
+                clearPathAtPosition(manipulation.getTargetPosition());
+                break;
+            case CREATE_ELEVATION:
+                createElevationAtPosition(manipulation.getTargetPosition());
+                break;
+            case DESTROY_ELEVATION:
+                destroyElevationAtPosition(manipulation.getTargetPosition());
+                break;
+        }
+    }
+    
+    private void createCoverAtPosition(Position position) {
+        DestructibleObject cover = DestructibleObject.builder()
+                .objectId(UUID.randomUUID().toString())
+                .objectName("Created Cover")
+                .destructibleType(DestructibleObject.DestructibleType.COVER)
+                .position(position)
+                .maxHealth(50)
+                .currentHealth(50)
+                .isDestroyed(false)
+                .destructionEffects(Map.of("damage", 10))
+                .requiredWeapons(new ArrayList<>())
+                .isExplosive(false)
+                .explosionRadius(0)
+                .build();
+        
+        destructibleObjects.put(cover.getObjectId(), cover);
+    }
+    
+    private void destroyCoverAtPosition(Position position) {
+        // Find and destroy cover at position
+        destructibleObjects.values().removeIf(obj -> 
+            obj.getPosition().equals(position) && 
+            obj.getDestructibleType() == DestructibleObject.DestructibleType.COVER);
+    }
+    
+    private void createHazardAtPosition(Position position, Map<String, Integer> effects) {
+        EnvironmentalHazard hazard = EnvironmentalHazard.builder()
+                .hazardId(UUID.randomUUID().toString())
+                .hazardName("Created Hazard")
+                .hazardType(EnvironmentalHazard.HazardType.FIRE)
+                .position(position)
+                .hazardRadius(3)
+                .hazardEffects(effects)
+                .duration(5)
+                .isActive(true)
+                .isPermanent(false)
+                .hazardSource("manipulation")
+                .build();
+        
+        environmentalHazards.add(hazard);
+    }
+    
+    private void clearHazardAtPosition(Position position) {
+        environmentalHazards.removeIf(hazard -> 
+            hazard.getPosition().equals(position));
+    }
+    
+    private void blockPathAtPosition(Position position) {
+        DestructibleObject barrier = DestructibleObject.builder()
+                .objectId(UUID.randomUUID().toString())
+                .objectName("Path Block")
+                .destructibleType(DestructibleObject.DestructibleType.BARRIER)
+                .position(position)
+                .maxHealth(100)
+                .currentHealth(100)
+                .isDestroyed(false)
+                .destructionEffects(Map.of("damage", 20))
+                .requiredWeapons(new ArrayList<>())
+                .isExplosive(false)
+                .explosionRadius(0)
+                .build();
+        
+        destructibleObjects.put(barrier.getObjectId(), barrier);
+    }
+    
+    private void clearPathAtPosition(Position position) {
+        destructibleObjects.values().removeIf(obj -> 
+            obj.getPosition().equals(position) && 
+            obj.getDestructibleType() == DestructibleObject.DestructibleType.BARRIER);
+    }
+    
+    private void createElevationAtPosition(Position position) {
+        // Create elevated terrain
+        // This would modify the terrain system
+    }
+    
+    private void destroyElevationAtPosition(Position position) {
+        // Remove elevated terrain
+        // This would modify the terrain system
     }
     
     /**

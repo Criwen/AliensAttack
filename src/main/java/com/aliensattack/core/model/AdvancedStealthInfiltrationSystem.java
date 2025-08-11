@@ -31,9 +31,7 @@ public class AdvancedStealthInfiltrationSystem {
     private Map<String, Integer> infiltrationProgress;
     private Map<String, Integer> stealthBonuses;
     
-    public AdvancedStealthInfiltrationSystem() {
-        initializeSystem();
-    }
+
     
 
     

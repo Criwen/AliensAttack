@@ -507,10 +507,72 @@ public class Chosen extends Unit {
             return false;
         }
         
-        // Knowledge absorption logic would be implemented here
-        knowledgeAbsorption++;
+        // Absorb knowledge from target
+        String targetName = target.getName();
+        int knowledgeGain = calculateKnowledgeGain(target);
+        
+        // Add to absorbed knowledge
+        if (!absorbedKnowledge.contains(targetName)) {
+            absorbedKnowledge.add(targetName);
+        }
+        
+        // Increase knowledge absorption counter
+        knowledgeAbsorption += knowledgeGain;
+        
+        // Learn from target's abilities
+        if (target.getAbilities() != null) {
+            for (SoldierAbility ability : target.getAbilities()) {
+                String abilityName = ability.getName();
+                if (!learnedTactics.contains(abilityName)) {
+                    learnedTactics.add(abilityName);
+                    tacticCounters.put(abilityName, 1);
+                    tacticEffectiveness.put(abilityName, 60);
+                } else {
+                    tacticCounters.put(abilityName, tacticCounters.get(abilityName) + 1);
+                    int currentEffectiveness = tacticEffectiveness.get(abilityName);
+                    tacticEffectiveness.put(abilityName, Math.min(100, currentEffectiveness + 15));
+                }
+            }
+        }
+        
+        // Store knowledge effectiveness
+        knowledgeEffectiveness.put(targetName, knowledgeGain);
+        
+        // Increase learning level if enough knowledge absorbed
+        if (knowledgeAbsorption >= learningLevel * 20) {
+            learningLevel++;
+        }
+        
         abilityCooldowns.put(ChosenStrength.KNOWLEDGE_ABSORPTION.name(), 3);
         return true;
+    }
+    
+    /**
+     * Calculate knowledge gain from target
+     */
+    private int calculateKnowledgeGain(Unit target) {
+        int baseGain = 5;
+        
+        // Bonus for soldier class
+        if (target.getSoldierClass() != null) {
+            baseGain += 3;
+        }
+        
+        // Bonus for high-level abilities
+        if (target.getAbilities() != null && !target.getAbilities().isEmpty()) {
+            baseGain += target.getAbilities().size() * 2;
+        }
+        
+        // Bonus for unique abilities
+        if (target.getAbilities() != null) {
+            for (SoldierAbility ability : target.getAbilities()) {
+                if (ability.getName().contains("unique") || ability.getName().contains("special")) {
+                    baseGain += 5;
+                }
+            }
+        }
+        
+        return baseGain;
     }
     
     /**

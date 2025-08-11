@@ -220,6 +220,11 @@ public class EnhancedCombatManager extends OptimizedCombatManager {
                             case MARKED:
                             case OVERWATCH:
                             case SUPPRESSED:
+                            case CONTROLLED:
+                            case MIND_SHIELD:
+                            case DOMINATED:
+                            case PSYCHIC_SHIELD:
+                            case MIND_MERGED:
                             case NONE:
                                 // These effects don't cause damage over time
                                 break;
@@ -296,7 +301,11 @@ public class EnhancedCombatManager extends OptimizedCombatManager {
      * Check if unit is visible to observer
      */
     private boolean isUnitVisible(Unit observer, Unit target) {
-        return getField().isPositionVisible(observer.getPosition(), target.getPosition(), observer.getViewRange());
+        Object field = getField();
+        if (field instanceof OptimizedTacticalField) {
+            return ((OptimizedTacticalField) field).isPositionVisible(observer.getPosition(), target.getPosition(), observer.getViewRange());
+        }
+        return false;
     }
     
     @Override

@@ -2,6 +2,7 @@ package com.aliensattack.combat;
 
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
+import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.field.ITacticalField;
 import lombok.Getter;
 import lombok.Setter;
@@ -75,8 +76,8 @@ public class ComprehensiveXCOM2CombatManager extends FinalXCOM2CombatManager {
         // Deal damage to nearby units
         int destructionDamage = object.getDestructionDamage();
         if (destructionDamage > 0) {
-            List<Unit> nearbyUnits = getUnitsInRange(object.getPosition(), 2);
-            for (Unit unit : nearbyUnits) {
+            List<IUnit> nearbyUnits = getUnitsInRange(object.getPosition(), 2);
+            for (IUnit unit : nearbyUnits) {
                 unit.takeDamage(destructionDamage);
             }
         }
@@ -97,8 +98,8 @@ public class ComprehensiveXCOM2CombatManager extends FinalXCOM2CombatManager {
         int explosionRadius = object.getExplosionRadius();
         int explosionDamage = object.getExplosionDamage();
         
-        List<Unit> unitsInExplosion = getUnitsInRange(object.getPosition(), explosionRadius);
-        for (Unit unit : unitsInExplosion) {
+        List<IUnit> unitsInExplosion = getUnitsInRange(object.getPosition(), explosionRadius);
+        for (IUnit unit : unitsInExplosion) {
             unit.takeDamage(explosionDamage);
         }
         
@@ -275,10 +276,10 @@ public class ComprehensiveXCOM2CombatManager extends FinalXCOM2CombatManager {
         List<Unit> validTargets = new ArrayList<>();
         int range = ability.getTriggerRange();
         
-        List<Unit> unitsInRange = getUnitsInRange(attacker.getPosition(), range);
-        for (Unit unit : unitsInRange) {
-            if (unit != attacker && isEnemy(attacker, unit)) {
-                validTargets.add(unit);
+        List<IUnit> unitsInRange = getUnitsInRange(attacker.getPosition(), range);
+        for (IUnit unit : unitsInRange) {
+            if (unit instanceof Unit && unit != attacker && isEnemy(attacker, (Unit) unit)) {
+                validTargets.add((Unit) unit);
             }
         }
         
@@ -363,12 +364,12 @@ public class ComprehensiveXCOM2CombatManager extends FinalXCOM2CombatManager {
             triggerExplosion(explosive);
             
             // Deal damage to nearby units
-            List<Unit> unitsInExplosion = getUnitsInRange(explosive.getPosition(), explosive.getExplosionRadius());
-            for (Unit unit : unitsInExplosion) {
-                CombatResult result = new CombatResult(true, explosive.getExplosionDamage(), "Chain reaction explosion!");
-                results.add(result);
-                unit.takeDamage(explosive.getExplosionDamage());
-            }
+                    List<IUnit> unitsInExplosion = getUnitsInRange(explosive.getPosition(), explosive.getExplosionRadius());
+        for (IUnit unit : unitsInExplosion) {
+            CombatResult result = new CombatResult(true, explosive.getExplosionDamage(), "Chain reaction explosion!");
+            results.add(result);
+            unit.takeDamage(explosive.getExplosionDamage());
+        }
         }
         
         return results;
@@ -496,9 +497,9 @@ public class ComprehensiveXCOM2CombatManager extends FinalXCOM2CombatManager {
         
         // Find all units in grenade radius
         int grenadeRadius = 3;
-        List<Unit> unitsInRadius = getUnitsInRange(targetPos, grenadeRadius);
+        List<IUnit> unitsInRadius = getUnitsInRange(targetPos, grenadeRadius);
         
-        for (Unit target : unitsInRadius) {
+        for (IUnit target : unitsInRadius) {
             if (target != attacker) {
                 int grenadeDamage = weapon.getBaseDamage();
                 CombatResult result = new CombatResult(true, grenadeDamage, "Grenade launcher hit!");
@@ -556,13 +557,14 @@ public class ComprehensiveXCOM2CombatManager extends FinalXCOM2CombatManager {
     // HELPER METHODS
     // =============================================================================
     
-    /**
-     * Get units in range
-     */
-    private List<Unit> getUnitsInRange(Position position, int range) {
-        // Note: This would need to be implemented in the field class
-        // For now, return empty list as placeholder
-        return new ArrayList<>();
+    public List<IUnit> getUnitsInRange(Position position, int range) {
+        List<IUnit> unitsInRange = new ArrayList<>();
+        for (IUnit unit : units) {
+            if (unit.getPosition().getDistanceTo(position) <= range) {
+                unitsInRange.add(unit);
+            }
+        }
+        return unitsInRange;
     }
     
     /**

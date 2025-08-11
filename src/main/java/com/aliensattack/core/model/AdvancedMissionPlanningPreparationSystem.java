@@ -31,29 +31,7 @@ public class AdvancedMissionPlanningPreparationSystem {
     private Map<String, List<String>> missionObjectives;
     private Map<String, Map<String, Integer>> soldierLoadouts;
     
-    /**
-     * Default constructor that initializes the mission planning and preparation system
-     */
-    public AdvancedMissionPlanningPreparationSystem() {
-        // Initialize maps
-        missionBriefings = new HashMap<>();
-        equipmentLoadouts = new HashMap<>();
-        soldierSelections = new HashMap<>();
-        equipmentMaintenance = new HashMap<>();
-        preparationBonuses = new HashMap<>();
-        missionPlans = new HashMap<>();
-        preparationEvents = new HashMap<>();
-        selectedSoldiers = new HashMap<>();
-        selectedEquipment = new HashMap<>();
-        preparationProgress = new HashMap<>();
-        equipmentCondition = new HashMap<>();
-        preparationComplete = new HashMap<>();
-        missionObjectives = new HashMap<>();
-        soldierLoadouts = new HashMap<>();
-        
-        // Initialize the system
-        initializeSystem();
-    }
+
     
     /**
      * Mission briefing with detailed information

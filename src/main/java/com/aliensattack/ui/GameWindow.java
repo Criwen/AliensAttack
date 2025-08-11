@@ -1,6 +1,9 @@
 package com.aliensattack.ui;
 
-import com.aliensattack.combat.*;
+import com.aliensattack.combat.ShootingSystem;
+import com.aliensattack.combat.CombatResult;
+import com.aliensattack.combat.OptimizedCombatManager;
+import com.aliensattack.combat.interfaces.ICombatManager;
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
 import com.aliensattack.field.ITacticalField;
@@ -28,7 +31,7 @@ public class GameWindow extends JFrame {
     private static final Logger log = LogManager.getLogger(GameWindow.class);
     
     private ITacticalField tacticalField;
-    private FinalXCOM2CombatManager combatManager;
+    private OptimizedCombatManager combatManager;
     private ShootingSystem shootingSystem;
     private ActionManager actionManager; // Добавляем ActionManager
     
@@ -148,7 +151,7 @@ public class GameWindow extends JFrame {
         tacticalField = new OptimizedTacticalField(10, 10);
         
         // Initialize combat manager
-        combatManager = new FinalXCOM2CombatManager(tacticalField);
+        combatManager = new OptimizedCombatManager((OptimizedTacticalField) tacticalField);
         
         // Initialize action manager - используем OptimizedCombatManager вместо FinalXCOM2CombatManager
         OptimizedCombatManager optimizedCombatManager = new OptimizedCombatManager((OptimizedTacticalField) tacticalField);

@@ -193,6 +193,14 @@ public class UnitAction {
             successful = true;
             result = performer.getName() + " лечит " + target.getName() + " на " + healAmount + " HP";
         }
+        
+        // ToDo: Реализовать полную систему лечения и медицины
+        // - Medikit system with limited uses
+        // - Medical stabilization for critically wounded soldiers
+        // - Healing rate based on medic skill
+        // - Medical priority system
+        // - Injury recovery system
+        // - Medical equipment degradation
     }
     
     private void executeGrenade() {
@@ -202,6 +210,13 @@ public class UnitAction {
             result = performer.getName() + " бросает гранату в позицию " + targetPosition + 
                     " и наносит " + damage + " урона по области";
         }
+        
+        // ToDo: Реализовать полную систему гранат и взрывчатки
+        // - Different grenade types (Frag, Acid, Fire, Poison, Smoke, Flashbang)
+        // - Area of effect damage calculation
+        // - Environmental destruction
+        // - Chain reactions
+        // - Grenade launcher mechanics
     }
     
     private void executeSpecialAbility() {
@@ -212,8 +227,15 @@ public class UnitAction {
             case ALIEN_RULER -> "Мощная псионическая атака";
             case CIVILIAN -> "Первая помощь";
             case VEHICLE -> "Усиленная броня";
+            case ROBOTIC -> "Техническая атака";
         };
         result = performer.getName() + " использует " + abilityName;
+        
+        // ToDo: Реализовать полную систему специальных способностей
+        // - Psionic abilities (Mind Control, Teleport, Psychic Blast)
+        // - Technical abilities (Hacking, Robot Control)
+        // - Soldier class abilities (Ranger, Sharpshooter, Heavy, Specialist)
+        // - Alien abilities (Evolution, Ruler abilities, Chosen abilities)
     }
     
     private void executeDefend() {

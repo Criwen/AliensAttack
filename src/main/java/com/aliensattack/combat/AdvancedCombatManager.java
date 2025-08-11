@@ -269,7 +269,11 @@ public class AdvancedCombatManager extends EnhancedCombatManager {
         }
         
         // Check line of sight
-        return getField().isPositionVisible(attacker.getPosition(), target.getPosition(), attacker.getViewRange());
+        Object field = getField();
+        if (field instanceof OptimizedTacticalField) {
+            return ((OptimizedTacticalField) field).isPositionVisible(attacker.getPosition(), target.getPosition(), attacker.getViewRange());
+        }
+        return false;
     }
     
     /**

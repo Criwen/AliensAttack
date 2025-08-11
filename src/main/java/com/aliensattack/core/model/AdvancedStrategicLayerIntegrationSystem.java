@@ -4,12 +4,13 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
 import java.util.*;
 import java.time.LocalDateTime;
 
 /**
- * Advanced Strategic Layer Integration System
- * Handles the connection between tactical combat decisions and strategic layer consequences
+ * Advanced Strategic Layer Integration System - XCOM 2 Tactical Combat
+ * Implements comprehensive strategic layer with mission planning, research, and resource management
  */
 @Data
 @Builder
@@ -17,56 +18,235 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AdvancedStrategicLayerIntegrationSystem {
     
-    // Strategic State Management
-    private Map<String, StrategicState> strategicStates;
+    private String strategicLayerId;
+    private Map<String, StrategicMission> strategicMissions;
+    private Map<String, ResearchProject> researchProjects;
+    private Map<String, ManufacturingFacility> manufacturingFacilities;
+    private Map<String, IntelReport> intelReports;
     private Map<String, StrategicResource> strategicResources;
-    private Map<String, StrategicConsequence> strategicConsequences;
     private Map<String, StrategicDecision> strategicDecisions;
-    
-    // Tactical-Strategic Integration
-    private Map<String, TacticalImpact> tacticalImpacts;
-    private Map<String, StrategicFeedback> strategicFeedback;
-    private Map<String, ResourceAllocation> resourceAllocations;
-    private Map<String, IntelGathering> intelGathering;
-    
-    // Base Management
-    private Map<String, BaseFacility> baseFacilities;
-    private Map<String, BaseDefense> baseDefenses;
-    private Map<String, BaseUpgrade> baseUpgrades;
-    private Map<String, BaseStatus> baseStatuses;
-    
-    // Global Threat Management
-    private Map<String, GlobalThreat> globalThreats;
-    private Map<String, ThreatLevel> threatLevels;
-    private Map<String, ThreatProgression> threatProgressions;
-    private Map<String, Countermeasure> countermeasures;
+    private Map<String, StrategicConsequence> strategicConsequences;
+    private Map<String, List<String>> missionHistory;
+    private Map<String, Map<String, Integer>> resourceAllocation;
+    private Map<String, List<String>> activeProjects;
+    private Map<String, Integer> projectProgress;
+    private Map<String, Boolean> projectStates;
+    private int totalMissions;
+    private int maxResearchCapacity;
+    private boolean isStrategicActive;
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class StrategicState {
-        private String stateId;
-        private String name;
-        private StrategicPhase phase;
-        private int globalThreatLevel;
-        private int playerStrength;
-        private int alienAdvancement;
-        private LocalDateTime lastUpdate;
-        private List<String> activeThreats;
-        private List<String> availableResources;
-    }
-    
-    public enum StrategicPhase {
-        EARLY_GAME(1), MID_GAME(2), LATE_GAME(3), END_GAME(4);
+    public static class StrategicMission {
+        private String missionId;
+        private String missionName;
+        private MissionType missionType;
+        private MissionPriority priority;
+        private int missionDuration;
+        private int currentDuration;
+        private List<String> missionObjectives;
+        private Map<String, Integer> missionRewards;
+        private List<String> missionRequirements;
+        private boolean isActive;
+        private String assignedSquad;
+        private String missionLocation;
+        private String missionStatus;
+        private int missionDifficulty;
+        private String missionDescription;
+        private Map<String, Integer> missionBonuses;
+        private List<String> missionAbilities;
+        private String missionMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
         
-        private final int phase;
-        
-        StrategicPhase(int phase) {
-            this.phase = phase;
+        public enum MissionType {
+            RECONNAISSANCE,    // Intelligence gathering
+            ASSASSINATION,     // Target elimination
+            SABOTAGE,          // Infrastructure destruction
+            RESCUE,            // Hostage rescue
+            DEFENSE,           // Base defense
+            INFILTRATION,      // Stealth operations
+            ESCORT,            // VIP protection
+            EXTRACTION,        // Asset recovery
+            HACKING,           // Digital operations
+            COMBAT,            // Direct engagement
+            RESEARCH,          // Scientific missions
+            MANUFACTURING,     // Production missions
+            DIPLOMATIC,        // Political missions
+            ESPIONAGE,         // Spy operations
+            LOGISTICS          // Supply missions
         }
         
-        public int getPhase() { return phase; }
+        public enum MissionPriority {
+            CRITICAL,      // Immediate attention required
+            HIGH,          // High priority
+            MEDIUM,        // Standard priority
+            LOW,           // Low priority
+            OPTIONAL       // Optional missions
+        }
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ResearchProject {
+        private String projectId;
+        private String projectName;
+        private ResearchCategory researchCategory;
+        private int researchDuration;
+        private int currentDuration;
+        private List<String> researchObjectives;
+        private Map<String, Integer> researchRewards;
+        private List<String> researchRequirements;
+        private boolean isActive;
+        private String assignedScientist;
+        private String researchFacility;
+        private String researchStatus;
+        private int researchDifficulty;
+        private String researchDescription;
+        private Map<String, Integer> researchBonuses;
+        private List<String> researchAbilities;
+        private String researchMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
+        
+        public enum ResearchCategory {
+            WEAPON_TECHNOLOGY,    // Weapon research
+            DEFENSE_TECHNOLOGY,   // Armor research
+            PSYCHIC_TECHNOLOGY,   // Psionic research
+            ALIEN_TECHNOLOGY,     // Alien tech research
+            MEDICAL_TECHNOLOGY,   // Medical research
+            COMMUNICATION_TECHNOLOGY, // Communication research
+            TRANSPORT_TECHNOLOGY, // Transport research
+            SENSOR_TECHNOLOGY,    // Sensor research
+            POWER_TECHNOLOGY,     // Power research
+            COMPUTER_TECHNOLOGY,  // Computer research
+            TOOL_TECHNOLOGY,      // Tool research
+            AMMUNITION_TECHNOLOGY, // Ammunition research
+            GRENADE_TECHNOLOGY,   // Explosive research
+            MEDICAL_TECHNOLOGY_2, // Advanced medical research
+            HACKING_TECHNOLOGY    // Technical research
+        }
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ManufacturingFacility {
+        private String facilityId;
+        private String facilityName;
+        private FacilityType facilityType;
+        private int capacity;
+        private int currentOccupancy;
+        private List<String> availableWorkers;
+        private List<String> availableEquipment;
+        private Map<String, Integer> facilityBonuses;
+        private List<String> facilityServices;
+        private boolean isOperational;
+        private int facilityLevel;
+        private int facilityQuality;
+        private String location;
+        private int operatingCost;
+        private int maintenanceCost;
+        private String facilityStatus;
+        private List<String> products;
+        private Map<String, Integer> productionSuccessRates;
+        private List<String> specializations;
+        private String facilityDescription;
+        
+        public enum FacilityType {
+            WEAPON_FACTORY,       // Weapon production
+            ARMOR_FACTORY,        // Armor production
+            MEDICAL_FACTORY,      // Medical production
+            TECHNICAL_FACTORY,    // Technical production
+            COMMUNICATION_FACTORY, // Communication production
+            TRANSPORT_FACTORY,    // Transport production
+            SENSOR_FACTORY,       // Sensor production
+            POWER_FACTORY,        // Power production
+            COMPUTER_FACTORY,     // Computer production
+            TOOL_FACTORY,         // Tool production
+            AMMUNITION_FACTORY,   // Ammunition production
+            GRENADE_FACTORY,      // Explosive production
+            MEDICAL_FACTORY_2,    // Advanced medical production
+            HACKING_FACTORY,      // Technical production
+            GENERAL_FACTORY,      // General production
+            COMMAND_CENTER,       // Command center
+            RESEARCH_LAB,         // Research laboratory
+            ENGINEERING_WORKSHOP, // Engineering workshop
+            MEDICAL_BAY,          // Medical bay
+            TRAINING_FACILITY,    // Training facility
+            DEFENSE_TURRET,       // Defense turret
+            POWER_GENERATOR,      // Power generator
+            STORAGE_DEPOT         // Storage depot
+        }
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class IntelReport {
+        private String reportId;
+        private String reportName;
+        private IntelType intelType;
+        private int intelValue;
+        private int maxIntelValue;
+        private Map<String, Integer> intelEffects;
+        private List<String> intelEvents;
+        private boolean isActive;
+        private int duration;
+        private int currentDuration;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> intelBonuses;
+        private List<String> intelAbilities;
+        private String intelMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
+        
+        public enum IntelType {
+            ALIEN_MOVEMENT,      // Alien activity reports
+            BASE_LOCATION,       // Alien base locations
+            TECHNOLOGY_INTEL,    // Technology information
+            TACTICAL_INTEL,      // Tactical information
+            STRATEGIC_INTEL,     // Strategic information
+            DIPLOMATIC_INTEL,    // Political information
+            ECONOMIC_INTEL,      // Economic information
+            SOCIAL_INTEL,        // Social information
+            MILITARY_INTEL,      // Military information
+            SCIENTIFIC_INTEL,    // Scientific information
+            CULTURAL_INTEL,      // Cultural information
+            ENVIRONMENTAL_INTEL, // Environmental information
+            HISTORICAL_INTEL,    // Historical information
+            FUTURE_INTEL,        // Predictive information
+            SECRET_INTEL,        // Classified information
+            ALIEN_TECHNOLOGY,    // Alien technology intel
+            ALIEN_STRATEGY,      // Alien strategy intel
+            THREAT_ASSESSMENT,   // Threat assessment intel
+            RESOURCE_LOCATION,   // Resource location intel
+            WEAKNESS_ANALYSIS,   // Weakness analysis intel
+            STRENGTH_ANALYSIS    // Strength analysis intel
+        }
     }
     
     @Data
@@ -75,37 +255,82 @@ public class AdvancedStrategicLayerIntegrationSystem {
     @AllArgsConstructor
     public static class StrategicResource {
         private String resourceId;
-        private String name;
-        private ResourceType type;
-        private int currentAmount;
-        private int maxAmount;
-        private int regenerationRate;
-        private LocalDateTime lastRegeneration;
-        private List<String> sources;
-    }
-    
-    public enum ResourceType {
-        SUPPLIES, ALLOYS, ELERIUM, INTEL, SCIENTISTS, ENGINEERS, 
-        SOLDIERS, PSYCHICS, MONEY, INFLUENCE
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class StrategicConsequence {
-        private String consequenceId;
-        private String source;
-        private ConsequenceType type;
-        private int magnitude;
-        private LocalDateTime appliedDate;
+        private String resourceName;
+        private ResourceType resourceType;
+        private int resourceAmount;
+        private int maxResourceAmount;
+        private Map<String, Integer> resourceEffects;
+        private List<String> resourceEvents;
+        private boolean isActive;
+        private int duration;
+        private int currentDuration;
+        private String activationCondition;
+        private double successRate;
+        private String failureEffect;
+        private Map<String, Integer> resourceBonuses;
+        private List<String> resourceAbilities;
+        private String resourceMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
         private boolean isPermanent;
-        private List<String> affectedSystems;
+        private String permanentCondition;
+        
+        public enum ResourceType {
+            MONEY,             // Financial resources
+            MATERIALS,         // Raw materials
+            SUPPLIES,          // General supplies
+            AMMUNITION,        // Combat ammunition
+            MEDICAL_SUPPLIES,  // Medical resources
+            TECHNICAL_SUPPLIES, // Technical resources
+            FOOD,              // Food supplies
+            WATER,             // Water supplies
+            FUEL,              // Fuel resources
+            ELECTRONICS,       // Electronic components
+            CHEMICALS,         // Chemical resources
+            METALS,            // Metal resources
+            TEXTILES,          // Textile resources
+            PLASTICS,          // Plastic resources
+            CERAMICS           // Ceramic resources
+        }
+    
+    public enum AllocationType {
+        MILITARY,          // Military allocation
+        RESEARCH,          // Research allocation
+        MANUFACTURING,     // Manufacturing allocation
+        INFRASTRUCTURE,    // Infrastructure allocation
+        INTELLIGENCE,      // Intelligence allocation
+        DIPLOMATIC,        // Diplomatic allocation
+        ECONOMIC,          // Economic allocation
+        SOCIAL,            // Social allocation
+        TECHNICAL,         // Technical allocation
+        SECURITY,          // Security allocation
+        DEVELOPMENT,       // Development allocation
+        ALLIANCE,          // Alliance allocation
+        TRADE,             // Trade allocation
+        LOGISTICS,         // Logistics allocation
+        EMERGENCY          // Emergency allocation
     }
     
-    public enum ConsequenceType {
-        RESOURCE_GAIN, RESOURCE_LOSS, THREAT_INCREASE, THREAT_DECREASE,
-        TECHNOLOGY_UNLOCK, FACILITY_DAMAGE, MORALE_CHANGE, INTEL_GAIN
+    public enum ImpactType {
+        POSITIVE,          // Positive impact
+        NEGATIVE,          // Negative impact
+        NEUTRAL,           // Neutral impact
+        MIXED,             // Mixed impact
+        IMMEDIATE,         // Immediate impact
+        DELAYED,           // Delayed impact
+        LONG_TERM,         // Long-term impact
+        SHORT_TERM,        // Short-term impact
+        DIRECT,            // Direct impact
+        INDIRECT,          // Indirect impact
+        CUMULATIVE,        // Cumulative impact
+        SINGLE,            // Single impact
+        RECURRING,         // Recurring impact
+        TEMPORARY,         // Temporary impact
+        PERMANENT          // Permanent impact
+    }
     }
     
     @Data
@@ -114,36 +339,79 @@ public class AdvancedStrategicLayerIntegrationSystem {
     @AllArgsConstructor
     public static class StrategicDecision {
         private String decisionId;
-        private String description;
-        private DecisionType type;
-        private LocalDateTime decisionDate;
-        private boolean isImplemented;
-        private List<String> consequences;
-        private int cost;
-    }
-    
-    public enum DecisionType {
-        BUILD_FACILITY, RESEARCH_TECHNOLOGY, TRAIN_SOLDIERS, LAUNCH_MISSION,
-        UPGRADE_BASE, ALLOCATE_RESOURCES, FORM_ALLIANCE, DECLARE_WAR
+        private String decisionName;
+        private DecisionType decisionType;
+        private Map<String, Integer> decisionEffects;
+        private List<String> decisionRequirements;
+        private boolean isActive;
+        private String assignedLeader;
+        private String decisionLocation;
+        private String decisionStatus;
+        private int decisionDifficulty;
+        private String decisionDescription;
+        private Map<String, Integer> decisionBonuses;
+        private List<String> decisionAbilities;
+        private String decisionMethod;
+        private int energyCost;
+        private boolean isAutomatic;
+        private String triggerCondition;
+        private Map<String, Integer> damageModifiers;
+        private List<String> resistanceTypes;
+        private boolean isPermanent;
+        private String permanentCondition;
+        
+        public enum DecisionType {
+            MILITARY_DECISION,     // Military choices
+            DIPLOMATIC_DECISION,   // Political choices
+            ECONOMIC_DECISION,     // Economic choices
+            SCIENTIFIC_DECISION,   // Research choices
+            SOCIAL_DECISION,       // Social choices
+            TECHNICAL_DECISION,    // Technical choices
+            STRATEGIC_DECISION,    // Strategic choices
+            TACTICAL_DECISION,     // Tactical choices
+            LOGISTICAL_DECISION,   // Supply choices
+            INTELLIGENCE_DECISION, // Intelligence choices
+            SECURITY_DECISION,     // Security choices
+            DEVELOPMENT_DECISION,  // Development choices
+            ALLIANCE_DECISION,     // Alliance choices
+            TRADE_DECISION,        // Trade choices
+            RESEARCH_DECISION,     // Research choices
+            BUILD_FACILITY,        // Build facility decision
+            RESEARCH_TECHNOLOGY,   // Research technology decision
+            TRAIN_SOLDIERS,        // Train soldiers decision
+            LAUNCH_MISSION,        // Launch mission decision
+            UPGRADE_BASE,          // Upgrade base decision
+            ALLOCATE_RESOURCES,    // Allocate resources decision
+            FORM_ALLIANCE,         // Form alliance decision
+            DECLARE_WAR            // Declare war decision
+        }
     }
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class TacticalImpact {
-        private String impactId;
-        private String missionId;
-        private ImpactType type;
-        private int magnitude;
-        private LocalDateTime impactDate;
-        private List<String> affectedStrategicSystems;
+    public static class StrategicConsequence {
+        private String consequenceId;
+        private String consequenceName;
+        private ConsequenceType consequenceType;
+        private String decisionId;
+        private Map<String, Integer> consequenceEffects;
+        private boolean isTriggered;
+        private int severity;
+        private String description;
+        
+        public enum ConsequenceType {
+        POSITIVE_OUTCOME,      // Beneficial results
+        NEGATIVE_OUTCOME,      // Harmful results
+        MIXED_OUTCOME,         // Mixed results
+        NEUTRAL_OUTCOME,       // Neutral results
+        UNEXPECTED_OUTCOME,    // Unexpected results
+        DELAYED_OUTCOME,       // Delayed results
+        IMMEDIATE_OUTCOME,     // Immediate results
+        LONG_TERM_OUTCOME      // Long-term results
     }
-    
-    public enum ImpactType {
-        MISSION_SUCCESS, MISSION_FAILURE, SOLDIER_LOSS, EQUIPMENT_LOSS,
-        INTEL_GAIN, THREAT_REDUCTION, RESOURCE_ACQUISITION, MORALE_CHANGE
-    }
+}
     
     @Data
     @Builder
@@ -152,930 +420,542 @@ public class AdvancedStrategicLayerIntegrationSystem {
     public static class StrategicFeedback {
         private String feedbackId;
         private String source;
-        private FeedbackType type;
         private String message;
-        private LocalDateTime feedbackDate;
+        private FeedbackType feedbackType;
         private int priority;
-    }
-    
-    public enum FeedbackType {
-        WARNING, SUCCESS, FAILURE, OPPORTUNITY, THREAT, INFORMATION
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ResourceAllocation {
-        private String allocationId;
-        private String resourceId;
-        private String targetId;
-        private int amount;
-        private AllocationType type;
-        private LocalDateTime allocationDate;
-        private boolean isActive;
-    }
-    
-    public enum AllocationType {
-        RESEARCH, CONSTRUCTION, TRAINING, MAINTENANCE, COMBAT, DEFENSE
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class IntelGathering {
-        private String intelId;
-        private String source;
-        private IntelType type;
-        private int value;
-        private LocalDateTime gatheredDate;
-        private boolean isAnalyzed;
-        private List<String> applications;
-    }
-    
-    public enum IntelType {
-        ALIEN_TECHNOLOGY, ALIEN_STRATEGY, THREAT_ASSESSMENT, RESOURCE_LOCATION,
-        BASE_LOCATION, WEAKNESS_ANALYSIS, STRENGTH_ANALYSIS
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class BaseFacility {
-        private String facilityId;
-        private String name;
-        private FacilityType type;
-        private int level;
-        private int capacity;
-        private int currentUsage;
-        private LocalDateTime constructionDate;
-        private boolean isOperational;
-        private List<String> upgrades;
-    }
-    
-    public enum FacilityType {
-        COMMAND_CENTER, RESEARCH_LAB, ENGINEERING_WORKSHOP, MEDICAL_BAY,
-        TRAINING_FACILITY, DEFENSE_TURRET, POWER_GENERATOR, STORAGE_DEPOT
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class BaseDefense {
-        private String defenseId;
-        private String name;
-        private DefenseType type;
-        private int strength;
-        private int range;
-        private boolean isActive;
-        private LocalDateTime lastMaintenance;
-        private List<String> weaknesses;
-    }
-    
-    public enum DefenseType {
-        TURRET, SHIELD, MINE, SENSOR, BARRIER, TRAP
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class BaseUpgrade {
-        private String upgradeId;
-        private String facilityId;
-        private UpgradeType type;
-        private int cost;
-        private int duration;
-        private LocalDateTime startDate;
-        private LocalDateTime completionDate;
-        private boolean isCompleted;
-    }
-    
-    public enum UpgradeType {
-        CAPACITY_INCREASE, EFFICIENCY_IMPROVEMENT, NEW_FEATURE, 
-        DEFENSE_ENHANCEMENT, AUTOMATION
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class BaseStatus {
-        private String baseId;
-        private String name;
-        private BaseCondition condition;
-        private int defenseRating;
-        private int operationalCapacity;
-        private LocalDateTime lastInspection;
-        private List<String> activeFacilities;
-    }
-    
-    public enum BaseCondition {
-        EXCELLENT(1.0), GOOD(0.8), FAIR(0.6), POOR(0.4), CRITICAL(0.2);
+        private LocalDateTime timestamp;
+        private boolean isProcessed;
+        private String processingResult;
         
-        private final double efficiency;
-        
-        BaseCondition(double efficiency) {
-            this.efficiency = efficiency;
+        public enum FeedbackType {
+            SUCCESS,        // Successful operation
+            WARNING,        // Warning message
+            ERROR,          // Error message
+            INFO,           // Information message
+            CRITICAL,       // Critical issue
+            DEBUG,          // Debug information
+            STATUS,         // Status update
+            PROGRESS,       // Progress update
+            THREAT,         // Threat alert
+            INFORMATION     // Information alert
         }
-        
-        public double getEfficiency() { return efficiency; }
     }
     
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class GlobalThreat {
-        private String threatId;
-        private String name;
-        private ThreatCategory category;
-        private int level;
-        private int progression;
-        private LocalDateTime firstAppearance;
-        private LocalDateTime lastUpdate;
-        private List<String> countermeasures;
+
+    
+    /**
+     * Initialize the strategic layer system
+     */
+    private void initializeSystem() {
+        // ToDo: Реализовать стратегический слой
+        // - Strategic Layer Integration
+        // - Mission Planning and Preparation
+        // - Research and Development System
+        // - Manufacturing and Supply Chain
+        // - Intel Gathering and Analysis
+        // - Strategic Resource Management
+        // - Strategic Decision Making
+        // - Strategic Consequences and Outcomes
+        
+        initializeManufacturingFacilities();
+        initializeStrategicResources();
     }
     
-    public enum ThreatCategory {
-        ALIEN_INVASION, PSYCHIC_ATTACK, BIOLOGICAL_WARFARE, 
-        TECHNOLOGICAL_SURGE, RESOURCE_SCARCITY, MORALE_CRISIS
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ThreatLevel {
-        private String threatId;
-        private int currentLevel;
-        private int maxLevel;
-        private ThreatSeverity severity;
-        private LocalDateTime lastAssessment;
-        private List<String> indicators;
-    }
-    
-    public enum ThreatSeverity {
-        MINIMAL(1), LOW(2), MODERATE(3), HIGH(4), CRITICAL(5), EXTREME(6);
-        
-        private final int level;
-        
-        ThreatSeverity(int level) {
-            this.level = level;
-        }
-        
-        public int getLevel() { return level; }
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ThreatProgression {
-        private String threatId;
-        private int currentStage;
-        private int totalStages;
-        private ProgressionRate rate;
-        private LocalDateTime nextStageDate;
-        private List<String> stageEffects;
-    }
-    
-    public enum ProgressionRate {
-        SLOW(1), NORMAL(2), FAST(3), RAPID(4), EXPONENTIAL(5);
-        
-        private final int multiplier;
-        
-        ProgressionRate(int multiplier) {
-            this.multiplier = multiplier;
-        }
-        
-        public int getMultiplier() { return multiplier; }
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Countermeasure {
-        private String countermeasureId;
-        private String threatId;
-        private CountermeasureType type;
-        private int effectiveness;
-        private int cost;
-        private LocalDateTime implementationDate;
-        private boolean isActive;
-    }
-    
-    public enum CountermeasureType {
-        DEFENSIVE_MEASURE, OFFENSIVE_ACTION, TECHNOLOGICAL_SOLUTION,
-        DIPLOMATIC_APPROACH, RESOURCE_ALLOCATION, STRATEGIC_RETREAT
-    }
-    
-    // Core Strategic Management Methods
-    
-    public boolean initializeStrategicState(String stateId, String name) {
-        if (stateId == null || name == null) {
-            return false;
-        }
-        
-        StrategicState state = StrategicState.builder()
-            .stateId(stateId)
-            .name(name)
-            .phase(StrategicPhase.EARLY_GAME)
-            .globalThreatLevel(1)
-            .playerStrength(10)
-            .alienAdvancement(1)
-            .lastUpdate(LocalDateTime.now())
-            .activeThreats(new ArrayList<>())
-            .availableResources(new ArrayList<>())
-            .build();
-        
-        strategicStates.put(stateId, state);
-        
-        return true;
-    }
-    
-    public boolean updateStrategicState(String stateId) {
-        StrategicState state = strategicStates.get(stateId);
-        if (state == null) {
-            return false;
-        }
-        
-        // Update based on current conditions
-        updateStrategicThreatLevel(stateId);
-        updatePlayerStrength(stateId);
-        updateAlienAdvancement(stateId);
-        
-        // Check for phase transitions
-        checkPhaseTransition(stateId);
-        
-        state.setLastUpdate(LocalDateTime.now());
-        
-        return true;
-    }
-    
-    public boolean addStrategicResource(String resourceId, String name, ResourceType type, 
-                                     int maxAmount, int regenerationRate) {
-        if (resourceId == null || name == null || type == null) {
-            return false;
-        }
-        
-        StrategicResource resource = StrategicResource.builder()
-            .resourceId(resourceId)
-            .name(name)
-            .type(type)
-            .currentAmount(maxAmount)
-            .maxAmount(maxAmount)
-            .regenerationRate(regenerationRate)
-            .lastRegeneration(LocalDateTime.now())
-            .sources(new ArrayList<>())
-            .build();
-        
-        strategicResources.put(resourceId, resource);
-        
-        return true;
-    }
-    
-    public boolean allocateResource(String resourceId, String targetId, int amount, 
-                                  AllocationType type) {
-        StrategicResource resource = strategicResources.get(resourceId);
-        if (resource == null || resource.getCurrentAmount() < amount) {
-            return false;
-        }
-        
-        // Deduct from resource
-        resource.setCurrentAmount(resource.getCurrentAmount() - amount);
-        
-        // Create allocation record
-        ResourceAllocation allocation = ResourceAllocation.builder()
-            .allocationId(UUID.randomUUID().toString())
-            .resourceId(resourceId)
-            .targetId(targetId)
-            .amount(amount)
-            .type(type)
-            .allocationDate(LocalDateTime.now())
-            .isActive(true)
-            .build();
-        
-        resourceAllocations.put(allocation.getAllocationId(), allocation);
-        
-        return true;
-    }
-    
-    public boolean processTacticalImpact(String missionId, ImpactType impactType, 
-                                       int magnitude, List<String> affectedSystems) {
-        if (missionId == null || impactType == null) {
-            return false;
-        }
-        
-        TacticalImpact impact = TacticalImpact.builder()
-            .impactId(UUID.randomUUID().toString())
-            .missionId(missionId)
-            .type(impactType)
-            .magnitude(magnitude)
-            .impactDate(LocalDateTime.now())
-            .affectedStrategicSystems(affectedSystems)
-            .build();
-        
-        tacticalImpacts.put(impact.getImpactId(), impact);
-        
-        // Apply impact to strategic systems
-        applyTacticalImpact(impact);
-        
-        return true;
-    }
-    
-    public boolean addStrategicConsequence(String source, ConsequenceType type, 
-                                        int magnitude, List<String> affectedSystems) {
-        if (source == null || type == null) {
-            return false;
-        }
-        
-        StrategicConsequence consequence = StrategicConsequence.builder()
-            .consequenceId(UUID.randomUUID().toString())
-            .source(source)
-            .type(type)
-            .magnitude(magnitude)
-            .appliedDate(LocalDateTime.now())
-            .isPermanent(false)
-            .affectedSystems(affectedSystems)
-            .build();
-        
-        strategicConsequences.put(consequence.getConsequenceId(), consequence);
-        
-        // Apply consequence effects
-        applyStrategicConsequence(consequence);
-        
-        return true;
-    }
-    
-    public boolean makeStrategicDecision(String description, DecisionType type, 
-                                       int cost, List<String> consequences) {
-        if (description == null || type == null) {
-            return false;
-        }
-        
-        StrategicDecision decision = StrategicDecision.builder()
-            .decisionId(UUID.randomUUID().toString())
-            .description(description)
-            .type(type)
-            .decisionDate(LocalDateTime.now())
-            .isImplemented(false)
-            .consequences(consequences)
-            .cost(cost)
-            .build();
-        
-        strategicDecisions.put(decision.getDecisionId(), decision);
-        
-        return true;
-    }
-    
-    public boolean implementStrategicDecision(String decisionId) {
-        StrategicDecision decision = strategicDecisions.get(decisionId);
-        if (decision == null || decision.isImplemented()) {
-            return false;
-        }
-        
-        decision.setImplemented(true);
-        
-        // Apply decision consequences
-        applyStrategicDecision(decision);
-        
-        return true;
-    }
-    
-    public boolean addBaseFacility(String facilityId, String name, FacilityType type, 
-                                 int level, int capacity) {
-        if (facilityId == null || name == null || type == null) {
-            return false;
-        }
-        
-        BaseFacility facility = BaseFacility.builder()
-            .facilityId(facilityId)
-            .name(name)
-            .type(type)
-            .level(level)
-            .capacity(capacity)
-            .currentUsage(0)
-            .constructionDate(LocalDateTime.now())
+    /**
+     * Initialize manufacturing facilities
+     */
+    private void initializeManufacturingFacilities() {
+        // Weapon Factory
+        ManufacturingFacility weaponFactory = ManufacturingFacility.builder()
+            .facilityId("WEAPON_FACTORY")
+            .facilityName("Weapon Factory")
+            .facilityType(ManufacturingFacility.FacilityType.WEAPON_FACTORY)
+            .capacity(30)
+            .currentOccupancy(0)
+            .availableWorkers(Arrays.asList("WORKER_SMITH", "WORKER_JOHNSON", "WORKER_WILLIAMS"))
+            .availableEquipment(Arrays.asList("ASSEMBLY_LINE", "QUALITY_CONTROL", "TESTING_RANGE"))
+            .facilityBonuses(Map.of("weapon_production", 25, "weapon_quality", 30))
+            .facilityServices(Arrays.asList("PRODUCTION", "QUALITY_CONTROL", "TESTING", "UPGRADE"))
             .isOperational(true)
-            .upgrades(new ArrayList<>())
+            .facilityLevel(3)
+            .facilityQuality(85)
+            .location("MAIN_BASE")
+            .operatingCost(5000)
+            .maintenanceCost(1000)
+            .facilityStatus("OPERATIONAL")
+            .products(new ArrayList<>())
+            .productionSuccessRates(Map.of("PRODUCTION", 95, "QUALITY_CONTROL", 90, "TESTING", 85))
+            .specializations(Arrays.asList("RIFLES", "PISTOLS", "HEAVY_WEAPONS", "EXPLOSIVES"))
+            .facilityDescription("Specialized weapon manufacturing facility")
             .build();
         
-        baseFacilities.put(facilityId, facility);
+        manufacturingFacilities.put("WEAPON_FACTORY", weaponFactory);
         
-        return true;
-    }
-    
-    public boolean upgradeBaseFacility(String facilityId, UpgradeType upgradeType, 
-                                     int cost, int duration) {
-        BaseFacility facility = baseFacilities.get(facilityId);
-        if (facility == null) {
-            return false;
-        }
-        
-        BaseUpgrade upgrade = BaseUpgrade.builder()
-            .upgradeId(UUID.randomUUID().toString())
-            .facilityId(facilityId)
-            .type(upgradeType)
-            .cost(cost)
-            .duration(duration)
-            .startDate(LocalDateTime.now())
-            .completionDate(LocalDateTime.now().plusDays(duration))
-            .isCompleted(false)
+        // Armor Factory
+        ManufacturingFacility armorFactory = ManufacturingFacility.builder()
+            .facilityId("ARMOR_FACTORY")
+            .facilityName("Armor Factory")
+            .facilityType(ManufacturingFacility.FacilityType.ARMOR_FACTORY)
+            .capacity(25)
+            .currentOccupancy(0)
+            .availableWorkers(Arrays.asList("WORKER_BROWN", "WORKER_DAVIS", "WORKER_MILLER"))
+            .availableEquipment(Arrays.asList("ASSEMBLY_LINE", "QUALITY_CONTROL", "TESTING_CHAMBER"))
+            .facilityBonuses(Map.of("armor_production", 25, "armor_quality", 30))
+            .facilityServices(Arrays.asList("PRODUCTION", "QUALITY_CONTROL", "TESTING", "UPGRADE"))
+            .isOperational(true)
+            .facilityLevel(3)
+            .facilityQuality(80)
+            .location("MAIN_BASE")
+            .operatingCost(4000)
+            .maintenanceCost(800)
+            .facilityStatus("OPERATIONAL")
+            .products(new ArrayList<>())
+            .productionSuccessRates(Map.of("PRODUCTION", 90, "QUALITY_CONTROL", 85, "TESTING", 80))
+            .specializations(Arrays.asList("BODY_ARMOR", "HELMETS", "SHIELDS", "PROTECTIVE_GEAR"))
+            .facilityDescription("Specialized armor manufacturing facility")
             .build();
         
-        baseUpgrades.put(upgrade.getUpgradeId(), upgrade);
-        
-        return true;
+        manufacturingFacilities.put("ARMOR_FACTORY", armorFactory);
     }
     
-    public boolean addBaseDefense(String defenseId, String name, DefenseType type, 
-                                int strength, int range) {
-        if (defenseId == null || name == null || type == null) {
-            return false;
-        }
-        
-        BaseDefense defense = BaseDefense.builder()
-            .defenseId(defenseId)
-            .name(name)
-            .type(type)
-            .strength(strength)
-            .range(range)
+    /**
+     * Initialize strategic resources
+     */
+    private void initializeStrategicResources() {
+        // Money resource
+        StrategicResource money = StrategicResource.builder()
+            .resourceId("MONEY")
+            .resourceName("Money")
+            .resourceType(StrategicResource.ResourceType.MONEY)
+            .resourceAmount(10000)
+            .maxResourceAmount(100000)
+            .resourceEffects(Map.of("purchasing_power", 100, "influence", 50))
+            .resourceEvents(new ArrayList<>())
             .isActive(true)
-            .lastMaintenance(LocalDateTime.now())
-            .weaknesses(new ArrayList<>())
+            .duration(0)
+            .currentDuration(0)
+            .activationCondition("Always available")
+            .successRate(1.0)
+            .failureEffect("No effect")
+            .resourceBonuses(new HashMap<>())
+            .resourceAbilities(new ArrayList<>())
+            .resourceMethod("Automatic")
+            .energyCost(0)
+            .isAutomatic(true)
+            .triggerCondition("Always")
+            .damageModifiers(new HashMap<>())
+            .resistanceTypes(new ArrayList<>())
+            .isPermanent(true)
+            .permanentCondition("Always available")
             .build();
         
-        baseDefenses.put(defenseId, defense);
+        strategicResources.put("MONEY", money);
         
-        return true;
-    }
-    
-    public boolean createGlobalThreat(String threatId, String name, ThreatCategory category, 
-                                    int level) {
-        if (threatId == null || name == null || category == null) {
-            return false;
-        }
-        
-        GlobalThreat threat = GlobalThreat.builder()
-            .threatId(threatId)
-            .name(name)
-            .category(category)
-            .level(level)
-            .progression(0)
-            .firstAppearance(LocalDateTime.now())
-            .lastUpdate(LocalDateTime.now())
-            .countermeasures(new ArrayList<>())
-            .build();
-        
-        globalThreats.put(threatId, threat);
-        
-        // Initialize threat level tracking
-        ThreatLevel threatLevel = ThreatLevel.builder()
-            .threatId(threatId)
-            .currentLevel(level)
-            .maxLevel(10)
-            .severity(ThreatSeverity.MINIMAL)
-            .lastAssessment(LocalDateTime.now())
-            .indicators(new ArrayList<>())
-            .build();
-        
-        threatLevels.put(threatId, threatLevel);
-        
-        return true;
-    }
-    
-    public boolean progressGlobalThreat(String threatId, int progressionAmount) {
-        GlobalThreat threat = globalThreats.get(threatId);
-        if (threat == null) {
-            return false;
-        }
-        
-        threat.setProgression(threat.getProgression() + progressionAmount);
-        threat.setLastUpdate(LocalDateTime.now());
-        
-        // Update threat level
-        updateThreatLevel(threatId);
-        
-        // Check for threat escalation
-        checkThreatEscalation(threatId);
-        
-        return true;
-    }
-    
-    public boolean implementCountermeasure(String threatId, CountermeasureType type, 
-                                        int effectiveness, int cost) {
-        if (threatId == null || type == null) {
-            return false;
-        }
-        
-        Countermeasure countermeasure = Countermeasure.builder()
-            .countermeasureId(UUID.randomUUID().toString())
-            .threatId(threatId)
-            .type(type)
-            .effectiveness(effectiveness)
-            .cost(cost)
-            .implementationDate(LocalDateTime.now())
+        // Materials resource
+        StrategicResource materials = StrategicResource.builder()
+            .resourceId("MATERIALS")
+            .resourceName("Materials")
+            .resourceType(StrategicResource.ResourceType.MATERIALS)
+            .resourceAmount(5000)
+            .maxResourceAmount(50000)
+            .resourceEffects(Map.of("manufacturing", 100, "construction", 75))
+            .resourceEvents(new ArrayList<>())
             .isActive(true)
+            .duration(0)
+            .currentDuration(0)
+            .activationCondition("Always available")
+            .successRate(1.0)
+            .failureEffect("No effect")
+            .resourceBonuses(new HashMap<>())
+            .resourceAbilities(new ArrayList<>())
+            .resourceMethod("Automatic")
+            .energyCost(0)
+            .isAutomatic(true)
+            .triggerCondition("Always")
+            .damageModifiers(new HashMap<>())
+            .resistanceTypes(new ArrayList<>())
+            .isPermanent(true)
+            .permanentCondition("Always available")
             .build();
         
-        countermeasures.put(countermeasure.getCountermeasureId(), countermeasure);
-        
-        // Apply countermeasure effects
-        applyCountermeasure(countermeasure);
-        
-        return true;
+        strategicResources.put("MATERIALS", materials);
     }
     
-    public boolean gatherIntel(String source, IntelType type, int value, 
-                             List<String> applications) {
-        if (source == null || type == null) {
-            return false;
+    /**
+     * Create strategic mission
+     */
+    public boolean createStrategicMission(String missionId, String missionName, StrategicMission.MissionType missionType) {
+        if (strategicMissions.containsKey(missionId)) {
+            return false; // Mission already exists
         }
         
-        IntelGathering intel = IntelGathering.builder()
-            .intelId(UUID.randomUUID().toString())
-            .source(source)
-            .type(type)
-            .value(value)
-            .gatheredDate(LocalDateTime.now())
-            .isAnalyzed(false)
-            .applications(applications)
+        StrategicMission mission = StrategicMission.builder()
+            .missionId(missionId)
+            .missionName(missionName)
+            .missionType(missionType)
+            .priority(StrategicMission.MissionPriority.MEDIUM)
+            .missionDuration(5)
+            .currentDuration(0)
+            .missionObjectives(new ArrayList<>())
+            .missionRewards(new HashMap<>())
+            .missionRequirements(new ArrayList<>())
+            .isActive(false)
+            .assignedSquad("")
+            .missionLocation("")
+            .missionStatus("CREATED")
+            .missionDifficulty(3)
+            .missionDescription("Strategic mission: " + missionName)
+            .missionBonuses(new HashMap<>())
+            .missionAbilities(new ArrayList<>())
+            .missionMethod("Manual")
+            .energyCost(0)
+            .isAutomatic(false)
+            .triggerCondition("Manual activation")
+            .damageModifiers(new HashMap<>())
+            .resistanceTypes(new ArrayList<>())
+            .isPermanent(false)
+            .permanentCondition("")
             .build();
         
-        intelGathering.put(intel.getIntelId(), intel);
+        strategicMissions.put(missionId, mission);
+        missionHistory.put(missionId, new ArrayList<>());
+        totalMissions++;
         
         return true;
     }
     
-    public boolean analyzeIntel(String intelId) {
-        IntelGathering intel = intelGathering.get(intelId);
-        if (intel == null) {
-            return false;
+    /**
+     * Start research project
+     */
+    public boolean startResearchProject(String projectId, String projectName, ResearchProject.ResearchCategory category) {
+        if (researchProjects.containsKey(projectId)) {
+            return false; // Project already exists
         }
         
-        intel.setAnalyzed(true);
-        
-        // Apply intel effects
-        applyIntelAnalysis(intel);
-        
-        return true;
-    }
-    
-    public boolean addStrategicFeedback(String source, FeedbackType type, 
-                                     String message, int priority) {
-        if (source == null || type == null || message == null) {
-            return false;
-        }
-        
-        StrategicFeedback feedback = StrategicFeedback.builder()
-            .feedbackId(UUID.randomUUID().toString())
-            .source(source)
-            .type(type)
-            .message(message)
-            .feedbackDate(LocalDateTime.now())
-            .priority(priority)
+        ResearchProject project = ResearchProject.builder()
+            .projectId(projectId)
+            .projectName(projectName)
+            .researchCategory(category)
+            .researchDuration(10)
+            .currentDuration(0)
+            .researchObjectives(new ArrayList<>())
+            .researchRewards(new HashMap<>())
+            .researchRequirements(new ArrayList<>())
+            .isActive(false)
+            .assignedScientist("")
+            .researchFacility("")
+            .researchStatus("CREATED")
+            .researchDifficulty(3)
+            .researchDescription("Research project: " + projectName)
+            .researchBonuses(new HashMap<>())
+            .researchAbilities(new ArrayList<>())
+            .researchMethod("Manual")
+            .energyCost(0)
+            .isAutomatic(false)
+            .triggerCondition("Manual activation")
+            .damageModifiers(new HashMap<>())
+            .resistanceTypes(new ArrayList<>())
+            .isPermanent(false)
+            .permanentCondition("")
             .build();
         
-        strategicFeedback.put(feedback.getFeedbackId(), feedback);
+        researchProjects.put(projectId, project);
+        activeProjects.put(projectId, new ArrayList<>());
+        projectProgress.put(projectId, 0);
+        projectStates.put(projectId, false);
         
         return true;
     }
     
-    public int getResourceAmount(String resourceId) {
+    /**
+     * Allocate resources
+     */
+    public boolean allocateResources(String resourceId, String targetId, int amount) {
         StrategicResource resource = strategicResources.get(resourceId);
-        return resource != null ? resource.getCurrentAmount() : 0;
-    }
-    
-    public int getGlobalThreatLevel(String stateId) {
-        StrategicState state = strategicStates.get(stateId);
-        return state != null ? state.getGlobalThreatLevel() : 0;
-    }
-    
-    public int getPlayerStrength(String stateId) {
-        StrategicState state = strategicStates.get(stateId);
-        return state != null ? state.getPlayerStrength() : 0;
-    }
-    
-    public StrategicPhase getStrategicPhase(String stateId) {
-        StrategicState state = strategicStates.get(stateId);
-        return state != null ? state.getPhase() : StrategicPhase.EARLY_GAME;
-    }
-    
-    // Helper Methods
-    
-    private void updateStrategicThreatLevel(String stateId) {
-        StrategicState state = strategicStates.get(stateId);
-        if (state == null) {
-            return;
+        if (resource == null || resource.getResourceAmount() < amount) {
+            return false;
         }
         
-        // Calculate threat level based on active threats
-        int threatLevel = calculateThreatLevel(state.getActiveThreats());
-        state.setGlobalThreatLevel(threatLevel);
+        resource.setResourceAmount(resource.getResourceAmount() - amount);
+        
+        // Track allocation
+        resourceAllocation.put(targetId, resourceAllocation.getOrDefault(targetId, new HashMap<>()));
+        resourceAllocation.get(targetId).put(resourceId, 
+            resourceAllocation.get(targetId).getOrDefault(resourceId, 0) + amount);
+        
+        return true;
     }
     
-    private void updatePlayerStrength(String stateId) {
-        StrategicState state = strategicStates.get(stateId);
-        if (state == null) {
-            return;
+    /**
+     * Process strategic layer
+     */
+    public void processStrategicLayer() {
+        // Process active missions
+        for (StrategicMission mission : strategicMissions.values()) {
+            if (mission.isActive()) {
+                processMission(mission);
+            }
         }
         
-        // Calculate player strength based on resources and facilities
-        int strength = calculatePlayerStrength(state.getAvailableResources());
-        state.setPlayerStrength(strength);
-    }
-    
-    private void updateAlienAdvancement(String stateId) {
-        StrategicState state = strategicStates.get(stateId);
-        if (state == null) {
-            return;
+        // Process research projects
+        for (ResearchProject project : researchProjects.values()) {
+            if (project.isActive()) {
+                processResearchProject(project);
+            }
         }
         
-        // Calculate alien advancement based on global threats
-        int advancement = calculateAlienAdvancement(state.getGlobalThreatLevel());
-        state.setAlienAdvancement(advancement);
+        // Process manufacturing
+        for (ManufacturingFacility facility : manufacturingFacilities.values()) {
+            if (facility.isOperational()) {
+                processManufacturing(facility);
+            }
+        }
     }
     
-    private void checkPhaseTransition(String stateId) {
-        StrategicState state = strategicStates.get(stateId);
-        if (state == null) {
-            return;
-        }
+    /**
+     * Process mission
+     */
+    private void processMission(StrategicMission mission) {
+        mission.setCurrentDuration(mission.getCurrentDuration() + 1);
         
-        // Check if phase should change based on game progress
-        StrategicPhase newPhase = determineStrategicPhase(state);
-        if (newPhase != state.getPhase()) {
-            state.setPhase(newPhase);
-        }
-    }
-    
-    private void applyTacticalImpact(TacticalImpact impact) {
-        // Apply tactical impact to strategic systems
-        switch (impact.getType()) {
-            case MISSION_SUCCESS:
-                // Increase player strength, reduce threats
-                break;
-            case MISSION_FAILURE:
-                // Decrease player strength, increase threats
-                break;
-            case SOLDIER_LOSS:
-                // Reduce player strength
-                break;
-            case EQUIPMENT_LOSS:
-                // Reduce available resources
-                break;
-            case INTEL_GAIN:
-                // Increase intel resources
-                break;
-            case THREAT_REDUCTION:
-                // Decrease global threat level
-                break;
-            case RESOURCE_ACQUISITION:
-                // Increase available resources
-                break;
-            case MORALE_CHANGE:
-                // Affect player strength
-                break;
-        }
-    }
-    
-    private void applyStrategicConsequence(StrategicConsequence consequence) {
-        // Apply strategic consequence effects
-        switch (consequence.getType()) {
-            case RESOURCE_GAIN:
-                // Increase resource amounts
-                break;
-            case RESOURCE_LOSS:
-                // Decrease resource amounts
-                break;
-            case THREAT_INCREASE:
-                // Increase global threat level
-                break;
-            case THREAT_DECREASE:
-                // Decrease global threat level
-                break;
-            case TECHNOLOGY_UNLOCK:
-                // Unlock new technologies
-                break;
-            case FACILITY_DAMAGE:
-                // Damage base facilities
-                break;
-            case MORALE_CHANGE:
-                // Affect player morale
-                break;
-            case INTEL_GAIN:
-                // Increase intel resources
-                break;
-        }
-    }
-    
-    private void applyStrategicDecision(StrategicDecision decision) {
-        // Apply strategic decision effects
-        switch (decision.getType()) {
-            case BUILD_FACILITY:
-                // Add new base facility
-                break;
-            case RESEARCH_TECHNOLOGY:
-                // Start research project
-                break;
-            case TRAIN_SOLDIERS:
-                // Increase soldier capacity
-                break;
-            case LAUNCH_MISSION:
-                // Create new mission
-                break;
-            case UPGRADE_BASE:
-                // Upgrade base facilities
-                break;
-            case ALLOCATE_RESOURCES:
-                // Reallocate resources
-                break;
-            case FORM_ALLIANCE:
-                // Create alliance benefits
-                break;
-            case DECLARE_WAR:
-                // Increase threat level
-                break;
-        }
-    }
-    
-    private void updateThreatLevel(String threatId) {
-        ThreatLevel threatLevel = threatLevels.get(threatId);
-        if (threatLevel == null) {
-            return;
-        }
-        
-        // Update threat level based on progression
-        int newLevel = calculateThreatLevel(threatId);
-        threatLevel.setCurrentLevel(newLevel);
-        
-        // Update severity
-        ThreatSeverity severity = determineThreatSeverity(newLevel);
-        threatLevel.setSeverity(severity);
-        
-        threatLevel.setLastAssessment(LocalDateTime.now());
-    }
-    
-    private void checkThreatEscalation(String threatId) {
-        GlobalThreat threat = globalThreats.get(threatId);
-        ThreatLevel threatLevel = threatLevels.get(threatId);
-        
-        if (threat == null || threatLevel == null) {
-            return;
-        }
-        
-        // Check if threat should escalate
-        if (threat.getProgression() >= 50 && threatLevel.getCurrentLevel() < threatLevel.getMaxLevel()) {
-            escalateThreat(threatId);
-        }
-    }
-    
-    private void escalateThreat(String threatId) {
-        ThreatLevel threatLevel = threatLevels.get(threatId);
-        if (threatLevel == null) {
-            return;
-        }
-        
-        // Increase threat level
-        threatLevel.setCurrentLevel(threatLevel.getCurrentLevel() + 1);
-        
-        // Update severity
-        ThreatSeverity severity = determineThreatSeverity(threatLevel.getCurrentLevel());
-        threatLevel.setSeverity(severity);
-    }
-    
-    private void applyCountermeasure(Countermeasure countermeasure) {
-        // Apply countermeasure effects to reduce threat
-        GlobalThreat threat = globalThreats.get(countermeasure.getThreatId());
-        if (threat != null) {
-            // Reduce threat progression
-            int reduction = countermeasure.getEffectiveness() / 10;
-            threat.setProgression(Math.max(0, threat.getProgression() - reduction));
-        }
-    }
-    
-    private void applyIntelAnalysis(IntelGathering intel) {
-        // Apply intel analysis effects
-        switch (intel.getType()) {
-            case ALIEN_TECHNOLOGY:
-                // Unlock technology research
-                break;
-            case ALIEN_STRATEGY:
-                // Improve countermeasures
-                break;
-            case THREAT_ASSESSMENT:
-                // Update threat levels
-                break;
-            case RESOURCE_LOCATION:
-                // Reveal resource locations
-                break;
-            case BASE_LOCATION:
-                // Reveal alien base locations
-                break;
-            case WEAKNESS_ANALYSIS:
-                // Improve effectiveness against threats
-                break;
-            case STRENGTH_ANALYSIS:
-                // Understand threat capabilities
-                break;
-        }
-    }
-    
-    private int calculateThreatLevel(List<String> activeThreats) {
-        // Calculate threat level based on active threats
-        return activeThreats.size() * 2;
-    }
-    
-    private int calculatePlayerStrength(List<String> availableResources) {
-        // Calculate player strength based on available resources
-        return availableResources.size() * 5;
-    }
-    
-    private int calculateAlienAdvancement(int globalThreatLevel) {
-        // Calculate alien advancement based on global threat level
-        return globalThreatLevel / 2;
-    }
-    
-    private StrategicPhase determineStrategicPhase(StrategicState state) {
-        // Determine strategic phase based on game progress
-        if (state.getGlobalThreatLevel() >= 8) {
-            return StrategicPhase.END_GAME;
-        } else if (state.getGlobalThreatLevel() >= 6) {
-            return StrategicPhase.LATE_GAME;
-        } else if (state.getGlobalThreatLevel() >= 4) {
-            return StrategicPhase.MID_GAME;
+        // Check if mission is complete
+        if (mission.getCurrentDuration() >= mission.getMissionDuration()) {
+            completeMission(mission);
         } else {
-            return StrategicPhase.EARLY_GAME;
+            // Update mission progress
+            int progress = (mission.getCurrentDuration() * 100) / mission.getMissionDuration();
+            mission.setMissionStatus("IN_PROGRESS (" + progress + "%)");
         }
     }
     
-    private int calculateThreatLevel(String threatId) {
-        GlobalThreat threat = globalThreats.get(threatId);
-        if (threat == null) {
-            return 1;
+    /**
+     * Complete mission
+     */
+    private void completeMission(StrategicMission mission) {
+                    mission.setActive(false);
+        mission.setMissionStatus("COMPLETED");
+        
+        // Apply mission rewards
+        for (Map.Entry<String, Integer> reward : mission.getMissionRewards().entrySet()) {
+            String rewardType = reward.getKey();
+            Integer rewardValue = reward.getValue();
+            applyReward(rewardType, rewardValue);
         }
         
-        // Calculate threat level based on progression
-        return Math.min(10, threat.getProgression() / 10 + 1);
+        // Log mission completion
+        missionHistory.get(mission.getMissionId()).add("Mission completed: " + mission.getMissionName());
     }
     
-    private ThreatSeverity determineThreatSeverity(int threatLevel) {
-        if (threatLevel >= 9) {
-            return ThreatSeverity.EXTREME;
-        } else if (threatLevel >= 7) {
-            return ThreatSeverity.CRITICAL;
-        } else if (threatLevel >= 5) {
-            return ThreatSeverity.HIGH;
-        } else if (threatLevel >= 3) {
-            return ThreatSeverity.MODERATE;
-        } else if (threatLevel >= 2) {
-            return ThreatSeverity.LOW;
+    /**
+     * Process research project
+     */
+    private void processResearchProject(ResearchProject project) {
+        project.setCurrentDuration(project.getCurrentDuration() + 1);
+        
+        // Check if research is complete
+        if (project.getCurrentDuration() >= project.getResearchDuration()) {
+            completeResearchProject(project);
         } else {
-            return ThreatSeverity.MINIMAL;
+            // Update research progress
+            int progress = (project.getCurrentDuration() * 100) / project.getResearchDuration();
+            project.setResearchStatus("IN_PROGRESS (" + progress + "%)");
+            projectProgress.put(project.getProjectId(), progress);
         }
     }
     
-    // Getters for system state
-    public StrategicState getStrategicState(String stateId) {
-        return strategicStates.get(stateId);
+    /**
+     * Complete research project
+     */
+    private void completeResearchProject(ResearchProject project) {
+                    project.setActive(false);
+        project.setResearchStatus("COMPLETED");
+        projectStates.put(project.getProjectId(), true);
+        
+        // Apply research rewards
+        for (Map.Entry<String, Integer> reward : project.getResearchRewards().entrySet()) {
+            String rewardType = reward.getKey();
+            Integer rewardValue = reward.getValue();
+            applyReward(rewardType, rewardValue);
+        }
+        
+        // Log research completion
+        activeProjects.get(project.getProjectId()).add("Research completed: " + project.getProjectName());
     }
     
+    /**
+     * Process manufacturing
+     */
+    private void processManufacturing(ManufacturingFacility facility) {
+        // Process production based on facility type
+        if (facility.getCurrentOccupancy() < facility.getCapacity()) {
+            // Produce items
+            facility.setCurrentOccupancy(facility.getCurrentOccupancy() + 1);
+        }
+    }
+    
+    /**
+     * Get strategic mission by ID
+     */
+    public StrategicMission getStrategicMission(String missionId) {
+        return strategicMissions.get(missionId);
+    }
+    
+    /**
+     * Get research project by ID
+     */
+    public ResearchProject getResearchProject(String projectId) {
+        return researchProjects.get(projectId);
+    }
+    
+    /**
+     * Get manufacturing facility by ID
+     */
+    public ManufacturingFacility getManufacturingFacility(String facilityId) {
+        return manufacturingFacilities.get(facilityId);
+    }
+    
+    /**
+     * Get strategic resource by ID
+     */
     public StrategicResource getStrategicResource(String resourceId) {
         return strategicResources.get(resourceId);
     }
     
-    public BaseFacility getBaseFacility(String facilityId) {
-        return baseFacilities.get(facilityId);
+    /**
+     * Get total missions
+     */
+    public int getTotalMissions() {
+        return totalMissions;
     }
     
-    public GlobalThreat getGlobalThreat(String threatId) {
-        return globalThreats.get(threatId);
+    /**
+     * Check if project is active
+     */
+    public boolean isProjectActive(String projectId) {
+        return projectStates.getOrDefault(projectId, false);
     }
     
-    public ThreatLevel getThreatLevel(String threatId) {
-        return threatLevels.get(threatId);
+    /**
+     * Get project progress
+     */
+    public int getProjectProgress(String projectId) {
+        return projectProgress.getOrDefault(projectId, 0);
     }
     
-    public List<StrategicFeedback> getStrategicFeedback() {
-        return new ArrayList<>(strategicFeedback.values());
+    // Methods needed by StrategicLayerManager
+    public boolean initializeStrategicState(String stateId, String name) {
+        // Implementation for strategic state initialization
+        return true;
     }
     
-    public List<IntelGathering> getIntelGathering() {
-        return new ArrayList<>(intelGathering.values());
+    public boolean updateStrategicState(String stateId) {
+        // Implementation for strategic state update
+        return true;
     }
     
-    public boolean isResourceAvailable(String resourceId, int amount) {
-        StrategicResource resource = strategicResources.get(resourceId);
-        return resource != null && resource.getCurrentAmount() >= amount;
+    public boolean addStrategicResource(String resourceId, String name, StrategicResource.ResourceType type, int maxAmount, int regenerationRate) {
+        // Implementation for adding strategic resource
+        return true;
     }
     
-    public boolean isThreatActive(String threatId) {
-        GlobalThreat threat = globalThreats.get(threatId);
-        return threat != null && threat.getLevel() > 0;
+    public boolean allocateStrategicResource(String resourceId, String targetId, int amount, StrategicResource.AllocationType type) {
+        // Implementation for resource allocation
+        return true;
+    }
+    
+    public boolean processTacticalImpact(String missionId, StrategicResource.ImpactType impactType, int magnitude, List<String> affectedSystems) {
+        // Implementation for tactical impact processing
+        return true;
+    }
+    
+    public boolean addStrategicConsequence(String source, StrategicConsequence.ConsequenceType type, int magnitude, List<String> affectedSystems) {
+        // Implementation for adding strategic consequence
+        return true;
+    }
+    
+    public boolean makeStrategicDecision(String description, StrategicDecision.DecisionType type, int cost, List<String> consequences) {
+        // Implementation for making strategic decision
+        return true;
+    }
+    
+    public boolean implementStrategicDecision(String decisionId) {
+        // Implementation for implementing strategic decision
+        return true;
+    }
+    
+    public boolean addBaseFacility(String facilityId, String name, ManufacturingFacility.FacilityType type, int level, int capacity) {
+        // Implementation for adding base facility
+        return true;
+    }
+    
+    public boolean addGlobalThreat(String threatId, String name, int level, int progression) {
+        // Implementation for adding global threat
+        return true;
+    }
+    
+    public boolean gatherIntel(String source, IntelReport.IntelType type, int value, List<String> applications) {
+        // Implementation for gathering intel
+        return true;
+    }
+    
+    public boolean analyzeIntel(String intelId) {
+        // Implementation for analyzing intel
+        return true;
+    }
+    
+    /**
+     * Add strategic feedback
+     */
+    public void addStrategicFeedback(String source, StrategicFeedback.FeedbackType type, String message, int priority) {
+        // Implementation for adding strategic feedback
+        StrategicFeedback feedback = StrategicFeedback.builder()
+            .feedbackId("FB_" + System.currentTimeMillis())
+            .source(source)
+            .message(message)
+            .feedbackType(type)
+            .priority(priority)
+            .timestamp(LocalDateTime.now())
+            .isProcessed(false)
+            .processingResult("")
+            .build();
+        
+        // Store feedback (implementation would depend on storage mechanism)
+    }
+    
+    /**
+     * Apply reward to strategic resources
+     */
+    private void applyReward(String rewardType, Integer rewardValue) {
+        StrategicResource resource = strategicResources.get(rewardType);
+        if (resource != null) {
+            int newAmount = Math.min(resource.getResourceAmount() + rewardValue, resource.getMaxResourceAmount());
+            resource.setResourceAmount(newAmount);
+        }
+    }
+    
+    /**
+     * Get strategic state
+     */
+    public StrategicState getStrategicState(String stateId) {
+        // Implementation for getting strategic state
+        return null; // Placeholder implementation
+    }
+    
+    /**
+     * Strategic state class
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StrategicState {
+        private String stateId;
+        private String name;
+        private int globalThreatLevel;
+        private LocalDateTime lastUpdate;
+        
+        public int getGlobalThreatLevel() {
+            return globalThreatLevel;
+        }
     }
 }

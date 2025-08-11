@@ -8,5 +8,6 @@ public enum UnitType {
     ALIEN,          // Alien enemy
     ALIEN_RULER,    // Special alien ruler boss
     CIVILIAN,       // Civilian NPC
-    VEHICLE         // Vehicle unit
+    VEHICLE,        // Vehicle unit
+    ROBOTIC         // Robotic unit (can be controlled by psychic dominance)
 } 

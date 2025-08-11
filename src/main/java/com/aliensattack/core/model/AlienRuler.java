@@ -162,6 +162,13 @@ public class AlienRuler extends Unit {
         isTeleporting = true;
         reactionCooldowns.put(RulerReactionType.TELEPORT, 3);
         return true;
+        
+        // ToDo: Реализовать полную систему телепортации
+        // - Teleport target selection
+        // - Teleport range limitations
+        // - Teleport cooldown mechanics
+        // - Teleport visual effects
+        // - Teleport sound effects
     }
     
     /**
@@ -175,6 +182,13 @@ public class AlienRuler extends Unit {
         // Mind control logic would be implemented here
         reactionCooldowns.put(RulerReactionType.MIND_CONTROL, 5);
         return true;
+        
+        // ToDo: Реализовать полную систему контроля разума
+        // - Mind control mechanics with resistance
+        // - Controlled unit actions
+        // - Mind control duration and break chances
+        // - Psionic feedback system
+        // - Mind control countermeasures
     }
     
     /**
@@ -185,7 +199,13 @@ public class AlienRuler extends Unit {
             return false;
         }
         
-        // Acid attack logic would be implemented here
+        // Apply acid burn status effect
+        StatusEffectData acidEffect = new StatusEffectData(StatusEffect.ACID_BURN, 3, 5);
+        target.addStatusEffect(acidEffect);
+        
+        // Deal immediate acid damage
+        target.takeDamage(8);
+        
         reactionCooldowns.put(RulerReactionType.ACID_ATTACK, 2);
         return true;
     }
@@ -194,7 +214,17 @@ public class AlienRuler extends Unit {
      * Perform psychic blast reaction
      */
     private boolean performPsychicBlast() {
-        // Psychic blast logic would be implemented here
+        // Apply psychic damage to all nearby units
+        // This would typically affect all units within range
+        // For now, we'll simulate the effect
+        
+        // Increase ruler's psychic power temporarily
+        setPsiStrength(getPsiStrength() + 5);
+        
+        // Apply psychic damage status effect to self (represents power usage)
+        StatusEffectData psychicEffect = new StatusEffectData(StatusEffect.DOMINATED, 1, 3);
+        addStatusEffect(psychicEffect);
+        
         reactionCooldowns.put(RulerReactionType.PSYCHIC_BLAST, 4);
         return true;
     }
@@ -234,7 +264,23 @@ public class AlienRuler extends Unit {
      * Perform summon reinforcements reaction
      */
     private boolean performSummonReinforcements() {
-        // Summon reinforcements logic would be implemented here
+        // Create reinforcement positions around the ruler
+        List<Position> reinforcementPositions = new ArrayList<>();
+        Position currentPos = getPosition();
+        
+        // Add positions in a 3x3 grid around the ruler
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                if (x != 0 || y != 0) { // Skip the ruler's position
+                    Position newPos = new Position(currentPos.getX() + x, currentPos.getY() + y);
+                    reinforcementPositions.add(newPos);
+                }
+            }
+        }
+        
+        // Store reinforcement positions for later use
+        this.teleportTargets.addAll(reinforcementPositions);
+        
         reactionCooldowns.put(RulerReactionType.SUMMON_REINFORCEMENTS, 8);
         return true;
     }
@@ -247,7 +293,13 @@ public class AlienRuler extends Unit {
             return false;
         }
         
-        // Disable weapons logic would be implemented here
+        // Apply weapon malfunction status effect
+        StatusEffectData weaponMalfunction = new StatusEffectData(StatusEffect.WEAPON_MALFUNCTION, 2, 50);
+        target.addStatusEffect(weaponMalfunction);
+        
+        // Reduce target's accuracy temporarily
+        target.setAccuracy(Math.max(0, target.getAccuracy() - 30));
+        
         reactionCooldowns.put(RulerReactionType.DISABLE_WEAPONS, 3);
         return true;
     }
@@ -256,7 +308,17 @@ public class AlienRuler extends Unit {
      * Perform poison cloud reaction
      */
     private boolean performPoisonCloud() {
-        // Poison cloud logic would be implemented here
+        // Apply poison status effect to all nearby units
+        // This would typically affect all units within range
+        // For now, we'll simulate the effect by applying to self
+        
+        // Apply poison status effect
+        StatusEffectData poisonEffect = new StatusEffectData(StatusEffect.POISONED, 3, 4);
+        addStatusEffect(poisonEffect);
+        
+        // Create poison cloud area effect (simulated)
+        // In a real implementation, this would affect all units in range
+        
         reactionCooldowns.put(RulerReactionType.POISON_CLOUD, 4);
         return true;
     }
@@ -265,7 +327,17 @@ public class AlienRuler extends Unit {
      * Perform mind scream reaction
      */
     private boolean performMindScream() {
-        // Mind scream logic would be implemented here
+        // Apply panic status effect to all nearby units
+        // This would typically affect all units within range
+        // For now, we'll simulate the effect
+        
+        // Apply panic status effect to self (simulating area effect)
+        StatusEffectData panicEffect = new StatusEffectData(StatusEffect.PANICKED, 2, 75);
+        addStatusEffect(panicEffect);
+        
+        // Increase psychic power temporarily
+        setPsiStrength(getPsiStrength() + 3);
+        
         reactionCooldowns.put(RulerReactionType.MIND_SCREAM, 5);
         return true;
     }
@@ -274,7 +346,19 @@ public class AlienRuler extends Unit {
      * Perform dimensional rift reaction
      */
     private boolean performDimensionalRift() {
-        // Dimensional rift logic would be implemented here
+        // Create dimensional rift effect - teleport to random position
+        Position currentPos = getPosition();
+        int newX = currentPos.getX() + (new Random().nextInt(6) - 3); // -3 to +3 range
+        int newY = currentPos.getY() + (new Random().nextInt(6) - 3);
+        Position newPos = new Position(newX, newY);
+        
+        setPosition(newPos);
+        isTeleporting = true;
+        
+        // Apply dimensional instability status effect
+        StatusEffectData riftEffect = new StatusEffectData(StatusEffect.STUNNED, 1, 1);
+        addStatusEffect(riftEffect);
+        
         reactionCooldowns.put(RulerReactionType.DIMENSIONAL_RIFT, 7);
         return true;
     }
@@ -283,7 +367,17 @@ public class AlienRuler extends Unit {
      * Perform time slow reaction
      */
     private boolean performTimeSlow() {
-        // Time slow logic would be implemented here
+        // Apply time slow effect to all nearby units
+        // This would typically affect all units within range
+        // For now, we'll simulate the effect
+        
+        // Apply time slow status effect to self (simulating area effect)
+        StatusEffectData timeSlowEffect = new StatusEffectData(StatusEffect.FROZEN, 2, 50);
+        addStatusEffect(timeSlowEffect);
+        
+        // Increase action points temporarily (time manipulation)
+        setActionPoints((int)(getActionPoints() + 1));
+        
         reactionCooldowns.put(RulerReactionType.TIME_SLOW, 6);
         return true;
     }
@@ -292,7 +386,17 @@ public class AlienRuler extends Unit {
      * Perform healing aura reaction
      */
     private boolean performHealingAura() {
-        // Healing aura logic would be implemented here
+        // Apply healing status effect to self and nearby units
+        // This would typically affect all units within range
+        // For now, we'll simulate the effect
+        
+        // Apply healing status effect
+        StatusEffectData healingEffect = new StatusEffectData(StatusEffect.HEALING, 2, 10);
+        addStatusEffect(healingEffect);
+        
+        // Restore health
+        setCurrentHealth(Math.min(getMaxHealth(), getCurrentHealth() + 15));
+        
         reactionCooldowns.put(RulerReactionType.HEALING_AURA, 4);
         return true;
     }
@@ -305,7 +409,13 @@ public class AlienRuler extends Unit {
             return false;
         }
         
-        // Armor break logic would be implemented here
+        // Apply armor degradation status effect
+        StatusEffectData armorBreakEffect = new StatusEffectData(StatusEffect.ARMOR_DEGRADATION, 3, 30);
+        target.addStatusEffect(armorBreakEffect);
+        
+        // Reduce target's defense temporarily
+        target.setDefense(Math.max(0, target.getDefense() - 20));
+        
         reactionCooldowns.put(RulerReactionType.ARMOR_BREAK, 3);
         return true;
     }
@@ -318,7 +428,13 @@ public class AlienRuler extends Unit {
             return false;
         }
         
-        // Weapon destroy logic would be implemented here
+        // Apply weapon malfunction status effect with higher intensity
+        StatusEffectData weaponDestroyEffect = new StatusEffectData(StatusEffect.WEAPON_MALFUNCTION, 4, 80);
+        target.addStatusEffect(weaponDestroyEffect);
+        
+        // Completely disable target's weapon temporarily
+        target.setAccuracy(0);
+        
         reactionCooldowns.put(RulerReactionType.WEAPON_DESTROY, 5);
         return true;
     }
@@ -331,7 +447,13 @@ public class AlienRuler extends Unit {
             return false;
         }
         
-        // Move interrupt logic would be implemented here
+        // Apply stunned status effect to prevent movement
+        StatusEffectData moveInterruptEffect = new StatusEffectData(StatusEffect.STUNNED, 1, 1);
+        target.addStatusEffect(moveInterruptEffect);
+        
+        // Reduce target's action points
+        target.setActionPoints(Math.max(0, (int)(target.getActionPoints() - 1.0)));
+        
         reactionCooldowns.put(RulerReactionType.MOVE_INTERRUPT, 2);
         return true;
     }
@@ -344,7 +466,13 @@ public class AlienRuler extends Unit {
             return false;
         }
         
-        // Attack interrupt logic would be implemented here
+        // Apply suppressed status effect to prevent attacks
+        StatusEffectData attackInterruptEffect = new StatusEffectData(StatusEffect.SUPPRESSED, 2, 1);
+        target.addStatusEffect(attackInterruptEffect);
+        
+        // Reduce target's accuracy temporarily
+        target.setAccuracy(Math.max(0, target.getAccuracy() - 40));
+        
         reactionCooldowns.put(RulerReactionType.ATTACK_INTERRUPT, 2);
         return true;
     }
@@ -357,7 +485,13 @@ public class AlienRuler extends Unit {
             return false;
         }
         
-        // Ability block logic would be implemented here
+        // Apply ability block status effect
+        StatusEffectData abilityBlockEffect = new StatusEffectData(StatusEffect.STUNNED, 2, 1);
+        target.addStatusEffect(abilityBlockEffect);
+        
+        // Disable target's abilities temporarily
+        // This would typically disable all abilities for the duration
+        
         reactionCooldowns.put(RulerReactionType.ABILITY_BLOCK, 4);
         return true;
     }
@@ -370,7 +504,13 @@ public class AlienRuler extends Unit {
             return false;
         }
         
-        // Vision block logic would be implemented here
+        // Apply vision block status effect
+        StatusEffectData visionBlockEffect = new StatusEffectData(StatusEffect.FLASHBANGED, 2, 1);
+        target.addStatusEffect(visionBlockEffect);
+        
+        // Reduce target's view range temporarily
+        target.setViewRange(Math.max(1, target.getViewRange() - 3));
+        
         reactionCooldowns.put(RulerReactionType.VISION_BLOCK, 3);
         return true;
     }

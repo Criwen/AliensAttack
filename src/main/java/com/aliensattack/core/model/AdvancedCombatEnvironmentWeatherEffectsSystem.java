@@ -222,29 +222,7 @@ public class AdvancedCombatEnvironmentWeatherEffectsSystem {
         private int weatherLevel;
     }
     
-    /**
-     * Constructor to initialize the system
-     */
-    public AdvancedCombatEnvironmentWeatherEffectsSystem() {
-        // Initialize maps
-        weatherConditions = new HashMap<>();
-        environmentalHazards = new HashMap<>();
-        weatherBasedTactics = new HashMap<>();
-        environmentalInteractions = new HashMap<>();
-        weatherProgressions = new HashMap<>();
-        weatherEvents = new HashMap<>();
-        weatherIntensity = new HashMap<>();
-        hazardLevels = new HashMap<>();
-        weatherActive = new HashMap<>();
-        activeWeatherEffects = new HashMap<>();
-        affectedUnits = new HashMap<>();
-        weatherDuration = new HashMap<>();
-        weatherBonuses = new HashMap<>();
-        tacticalModifiers = new HashMap<>();
-        
-        // Initialize the system
-        initializeSystem();
-    }
+
     
     /**
      * Initialize the combat environment and weather effects system

@@ -41,24 +41,33 @@ public class Mission {
      */
     private void setDefaultObjectives() {
         switch (type) {
-            case ELIMINATION -> objectives.add("Eliminate all enemy units");
-            case EXTRACTION -> objectives.add("Extract VIP to designated area");
-            case DEFENSE -> objectives.add("Defend position for " + turnLimit + " turns");
-            case SABOTAGE -> objectives.add("Destroy target objective");
-            case RECONNAISSANCE -> objectives.add("Scout and gather intelligence");
-            case ESCORT -> objectives.add("Escort VIP to extraction point");
-            case TIMED_ASSAULT -> objectives.add("Complete objective within " + turnLimit + " turns");
-            case ASSASSINATION -> objectives.add("Eliminate specific target");
-            case HACKING -> objectives.add("Hack terminals or systems");
-            case DESTROY -> objectives.add("Destroy alien facilities");
-            case RESCUE -> objectives.add("Rescue captured soldiers");
-            case INFILTRATION -> objectives.add("Stealth infiltration mission");
-            case RETALIATION -> objectives.add("Retaliation strike mission");
-            case GUERRILLA -> objectives.add("Guerrilla warfare mission");
-            case SUPPLY_RAID -> objectives.add("Raid supply convoy");
-            case TERROR -> objectives.add("Defend against terror attack");
-            case COUNCIL -> objectives.add("Complete council mission");
+            case RETALIATION -> objectives.add("Eliminate all enemies");
+            case SUPPLY_RAID -> objectives.add("Recover supplies");
+            case SABOTAGE -> objectives.add("Sabotage facility");
+            case RESCUE -> objectives.add("Extract VIP");
+            case EXTRACTION -> objectives.add("Extract all soldiers");
+            case DEFENSE -> objectives.add("Defend position");
+            case HACKING -> objectives.add("Hack objective");
+            case ELIMINATION -> objectives.add("Recover item");
+            case RECONNAISSANCE -> objectives.add("Gather intelligence");
+            case TERROR -> objectives.add("Defend civilians");
+            case COUNCIL -> objectives.add("Complete council objective");
+            case GUERRILLA -> objectives.add("Conduct guerrilla operations");
+            case ESCORT -> objectives.add("Escort VIP to extraction");
+            case ASSASSINATION -> objectives.add("Eliminate target");
+            case INFILTRATION -> objectives.add("Infiltrate facility");
+            case DESTROY -> objectives.add("Destroy facility");
+            case TIMED_ASSAULT -> objectives.add("Complete assault within time limit");
         }
+        
+        // ToDo: Реализовать полную систему миссий
+        // - Mission timer system with pressure mechanics
+        // - Mission value calculation and rewards
+        // - Mission failure conditions
+        // - Mission success conditions
+        // - Mission status tracking
+        // - Mission planning and preparation
+        // - Strategic layer integration
     }
     
     /**

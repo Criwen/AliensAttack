@@ -3,6 +3,7 @@ package com.aliensattack.combat;
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
 import com.aliensattack.field.OptimizedTacticalField;
+import com.aliensattack.core.interfaces.IUnit;
 
 import lombok.Getter;
 import java.util.*;
@@ -116,9 +117,17 @@ public class ComprehensiveCombatManager extends AdvancedCombatManager {
     /**
      * Get units in initiative order
      */
-    public List<Unit> getUnitsInInitiativeOrder() {
-        List<Unit> allUnits = getAllUnits();
-        allUnits.sort((u1, u2) -> Integer.compare(u2.getInitiative(), u1.getInitiative()));
+    @Override
+    public List<IUnit> getUnitsInInitiativeOrder() {
+        List<IUnit> allUnits = new ArrayList<>();
+        allUnits.addAll(getAllUnits());
+        // Sort by initiative - cast to Unit to access getInitiative method
+        allUnits.sort((u1, u2) -> {
+            if (u1 instanceof Unit && u2 instanceof Unit) {
+                return Integer.compare(((Unit) u2).getInitiative(), ((Unit) u1).getInitiative());
+            }
+            return 0;
+        });
         return allUnits;
     }
     
@@ -126,10 +135,10 @@ public class ComprehensiveCombatManager extends AdvancedCombatManager {
      * Process initiative and turn order
      */
     public void processInitiative() {
-        List<Unit> unitsInOrder = getUnitsInInitiativeOrder();
+        List<IUnit> unitsInOrder = getUnitsInInitiativeOrder();
         
         // Reset action points for all units
-        for (Unit unit : unitsInOrder) {
+        for (IUnit unit : unitsInOrder) {
             if (unit.isAlive()) {
                 unit.resetActionPoints();
             }
