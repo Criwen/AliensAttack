@@ -3,7 +3,7 @@ package com.aliensattack.actions;
 import com.aliensattack.core.GameLogManager;
 import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.core.enums.StatusEffect;
-import com.aliensattack.core.model.StatusEffectData;
+import com.aliensattack.core.data.StatusEffectData;
 
 /**
  * Action for taking a defensive position

@@ -6,6 +6,7 @@ import com.aliensattack.core.enums.StatusEffect;
 import com.aliensattack.core.enums.SoldierClass;
 import com.aliensattack.core.enums.VisibilityType;
 import com.aliensattack.core.config.GameConfig;
+import com.aliensattack.core.data.StatusEffectData;
 
 import java.util.List;
 import java.util.ArrayList;

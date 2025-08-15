@@ -5,8 +5,13 @@ import com.aliensattack.core.enums.StatusEffect;
 import com.aliensattack.core.enums.SoldierClass;
 import com.aliensattack.core.enums.VisibilityType;
 import com.aliensattack.core.enums.ReactiveAbilityType;
+import com.aliensattack.core.enums.ConcealmentStatus;
+import com.aliensattack.core.enums.CoverType;
 import com.aliensattack.core.config.GameConfig;
 import com.aliensattack.core.interfaces.IUnit;
+import com.aliensattack.core.data.StatusEffectData;
+import com.aliensattack.core.data.ConcealmentLevel;
+import com.aliensattack.core.data.DetectionLevel;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -64,6 +69,11 @@ public class Unit implements IUnit {
     
     // Squad information
     private String squadId;
+    
+    // Concealment and detection properties
+    private ConcealmentLevel concealmentLevel;
+    private DetectionLevel detectionLevel;
+    private ConcealmentStatus concealmentStatus;
     
     public Unit(String name, int maxHealth, int movementRange, int attackRange, int attackDamage, UnitType unitType) {
         this.id = "UNIT_" + System.currentTimeMillis() + "_" + name.replaceAll("\\s+", "_");
@@ -347,11 +357,23 @@ public class Unit implements IUnit {
     
     // Explosives methods
     public List<Explosive> getExplosives() {
-        return new ArrayList<>(explosives);
+        List<Explosive> result = new ArrayList<>(explosives);
+        
+        // Debug logging
+        if (log.isDebugEnabled()) {
+            log.debug("Unit {} getExplosives: explosives={}, result.size={}", name, explosives, result.size());
+        }
+        
+        return result;
     }
     
     public void addExplosive(Explosive explosive) {
         explosives.add(explosive);
+        
+        // Debug logging
+        if (log.isDebugEnabled()) {
+            log.debug("Unit {} addExplosive: added {}, total explosives={}", name, explosive.getName(), explosives.size());
+        }
     }
     
     public void removeExplosive(Explosive explosive) {
@@ -1201,7 +1223,16 @@ public class Unit implements IUnit {
     }
     
     public boolean canPerformGrenade() {
-        return isAlive() && actionPoints >= 1.0 && explosives != null && !explosives.isEmpty();
+        boolean hasExplosives = explosives != null && !explosives.isEmpty();
+        boolean canPerform = isAlive() && actionPoints >= 1.0 && hasExplosives;
+        
+        // Debug logging
+        if (log.isDebugEnabled()) {
+            log.debug("Unit {} canPerformGrenade check: alive={}, actionPoints={}, explosives={}, hasExplosives={}, result={}", 
+                name, isAlive(), actionPoints, explosives, hasExplosives, canPerform);
+        }
+        
+        return canPerform;
     }
     
     public boolean canPerformMedikit() {
@@ -1314,5 +1345,79 @@ public class Unit implements IUnit {
      */
     public void setSquadId(String squadId) {
         this.squadId = squadId;
+    }
+    
+    // Concealment methods
+    public ConcealmentLevel getConcealmentLevel() {
+        if (concealmentLevel == null) {
+            concealmentLevel = new ConcealmentLevel();
+        }
+        return concealmentLevel;
+    }
+    
+    public void setConcealmentLevel(ConcealmentLevel level) {
+        this.concealmentLevel = level;
+    }
+    
+    public DetectionLevel getDetectionLevel() {
+        if (detectionLevel == null) {
+            detectionLevel = DetectionLevel.BASIC;
+        }
+        return detectionLevel;
+    }
+    
+    public void setDetectionLevel(DetectionLevel level) {
+        this.detectionLevel = level;
+    }
+    
+    public ConcealmentStatus getConcealmentStatus() {
+        return concealmentStatus != null ? concealmentStatus : ConcealmentStatus.VISIBLE;
+    }
+    
+    public void setConcealmentStatus(ConcealmentStatus status) {
+        this.concealmentStatus = status;
+    }
+    
+    // Status effect methods
+    public void addStatusEffect(String effectName, int duration) {
+        // Create a default status effect for the given name
+        StatusEffect statusEffect = StatusEffect.valueOf(effectName.toUpperCase());
+        StatusEffectData effect = new StatusEffectData(statusEffect, duration, 1);
+        statusEffects.add(effect);
+    }
+    
+    // Suppression methods
+    public int getSuppressionSkill() {
+        return 1; // Default suppression skill level
+    }
+    
+    public double getSuppressionWeaponBonus() {
+        if (weapon != null && weapon.isSuppressionWeapon()) {
+            return 0.3; // 30% bonus for suppression weapons
+        }
+        return 0.0;
+    }
+    
+    public boolean hasSuppressionWeapon() {
+        return weapon != null && weapon.isSuppressionWeapon();
+    }
+    
+    public boolean hasCover() {
+        // Check if unit has cover at current position
+        return position != null && getCoverType() != CoverType.NONE;
+    }
+    
+    private CoverType getCoverType() {
+        // Simplified cover check - in real implementation would check tactical field
+        return CoverType.LIGHT; // Default to light cover
+    }
+    
+    // Flanking methods
+    public boolean hasFlankingSpecialist() {
+        return soldierClass == SoldierClass.RANGER || soldierClass == SoldierClass.SPECIALIST;
+    }
+    
+    public boolean hasFlankingWeapon() {
+        return weapon != null && weapon.isFlankingWeapon();
     }
 } 

@@ -1,6 +1,7 @@
 package com.aliensattack.core.model;
 
 import com.aliensattack.core.enums.*;
+import com.aliensattack.core.data.StatusEffectData;
 import lombok.Getter;
 import lombok.Setter;
 

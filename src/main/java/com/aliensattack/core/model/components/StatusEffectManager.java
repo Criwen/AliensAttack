@@ -1,7 +1,7 @@
 package com.aliensattack.core.model.components;
 
 import com.aliensattack.core.enums.StatusEffect;
-import com.aliensattack.core.model.StatusEffectData;
+import com.aliensattack.core.data.StatusEffectData;
 import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,12 @@
 package com.aliensattack.combat;
 
-import com.aliensattack.core.model.*;
+import com.aliensattack.core.model.Unit;
+import com.aliensattack.core.model.Position;
+import com.aliensattack.core.model.EnvironmentObject;
+import com.aliensattack.core.model.SoldierAbility;
+import com.aliensattack.combat.CombatResult;
 import com.aliensattack.core.enums.*;
+import com.aliensattack.core.data.StatusEffectData;
 import com.aliensattack.field.TacticalField;
 import com.aliensattack.core.config.GameConfig;
 

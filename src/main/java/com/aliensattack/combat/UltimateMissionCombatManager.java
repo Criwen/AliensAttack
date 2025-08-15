@@ -1,6 +1,12 @@
 package com.aliensattack.combat;
 
-import com.aliensattack.core.model.*;
+import com.aliensattack.core.model.Unit;
+import com.aliensattack.core.model.Mission;
+import com.aliensattack.core.model.VIP;
+import com.aliensattack.core.model.ExtractionPoint;
+import com.aliensattack.core.model.ObjectiveTarget;
+import com.aliensattack.core.model.HackingTerminal;
+import com.aliensattack.core.model.DefensePosition;
 import com.aliensattack.field.ITacticalField;
 import com.aliensattack.field.TacticalField;
 import lombok.Getter;

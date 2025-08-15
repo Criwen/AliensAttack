@@ -5,7 +5,7 @@ import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.actions.interfaces.IAction;
 import com.aliensattack.core.model.GameContext;
 import com.aliensattack.actions.ActionFactory;
-import com.aliensattack.core.model.AIBehaviorTree;
+import com.aliensattack.core.ai.AIBehaviorTree;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;

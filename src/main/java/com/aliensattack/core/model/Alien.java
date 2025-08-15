@@ -3,7 +3,9 @@ package com.aliensattack.core.model;
 import com.aliensattack.core.enums.UnitType;
 import com.aliensattack.core.enums.AlienType;
 import com.aliensattack.core.enums.PsionicType;
+import com.aliensattack.core.enums.StatusEffect;
 import com.aliensattack.core.model.PsionicAbility;
+import com.aliensattack.core.data.StatusEffectData;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -223,15 +225,15 @@ public class Alien extends BaseUnit {
     @Override
     public void setSuppressed(boolean suppressed) {
         if (suppressed) {
-            addStatusEffect(new com.aliensattack.core.model.StatusEffectData(com.aliensattack.core.enums.StatusEffect.SUPPRESSED, 2, 1));
+            addStatusEffect(new StatusEffectData(StatusEffect.SUPPRESSED, 2, 1));
         } else {
-            removeStatusEffect(new com.aliensattack.core.model.StatusEffectData(com.aliensattack.core.enums.StatusEffect.SUPPRESSED, 0, 0));
+            removeStatusEffect(new StatusEffectData(StatusEffect.SUPPRESSED, 0, 0));
         }
     }
     
     @Override
     public void applySuppression(int turns) {
-        addStatusEffect(new com.aliensattack.core.model.StatusEffectData(com.aliensattack.core.enums.StatusEffect.SUPPRESSED, turns, 1));
+        addStatusEffect(new StatusEffectData(StatusEffect.SUPPRESSED, turns, 1));
     }
     
     @Override
@@ -254,7 +256,7 @@ public class Alien extends BaseUnit {
         return getStatusEffects().stream()
             .filter(e -> e.getEffect() == com.aliensattack.core.enums.StatusEffect.SUPPRESSED)
             .findFirst()
-            .map(com.aliensattack.core.model.StatusEffectData::getDuration)
+            .map(StatusEffectData::getDuration)
             .orElse(0);
     }
     
@@ -263,7 +265,7 @@ public class Alien extends BaseUnit {
         // Remove existing suppression and apply new duration
         getStatusEffects().removeIf(e -> e.getEffect() == com.aliensattack.core.enums.StatusEffect.SUPPRESSED);
         if (turns > 0) {
-            addStatusEffect(new com.aliensattack.core.model.StatusEffectData(com.aliensattack.core.enums.StatusEffect.SUPPRESSED, turns, 1));
+            addStatusEffect(new StatusEffectData(StatusEffect.SUPPRESSED, turns, 1));
         }
     }
     

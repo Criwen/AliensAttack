@@ -1,6 +1,12 @@
 package com.aliensattack.combat;
 
-import com.aliensattack.core.model.*;
+import com.aliensattack.core.model.Unit;
+import com.aliensattack.core.model.Weapon;
+import com.aliensattack.core.model.Explosive;
+import com.aliensattack.core.model.Position;
+import com.aliensattack.core.model.CoverObject;
+import com.aliensattack.core.model.Armor;
+import com.aliensattack.combat.CombatResult;
 import com.aliensattack.core.enums.*;
 import com.aliensattack.field.ITacticalField;
 import com.aliensattack.field.TacticalField;

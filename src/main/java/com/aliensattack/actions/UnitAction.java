@@ -4,7 +4,7 @@ import com.aliensattack.core.model.Position;
 import com.aliensattack.core.model.Unit;
 import com.aliensattack.core.model.Weapon;
 import com.aliensattack.core.enums.StatusEffect;
-import com.aliensattack.core.model.StatusEffectData;
+import com.aliensattack.core.data.StatusEffectData;
 
 import lombok.Getter;
 import lombok.Setter;

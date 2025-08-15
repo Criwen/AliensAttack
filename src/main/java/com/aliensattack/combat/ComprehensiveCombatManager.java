@@ -1,6 +1,8 @@
 package com.aliensattack.combat;
 
-import com.aliensattack.core.model.*;
+import com.aliensattack.core.model.Unit;
+import com.aliensattack.core.model.Mission;
+import com.aliensattack.core.model.Position;
 import com.aliensattack.core.enums.*;
 import com.aliensattack.field.TacticalField;
 import com.aliensattack.core.interfaces.IUnit;

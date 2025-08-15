@@ -2,8 +2,11 @@ package com.aliensattack.core.model;
 
 import com.aliensattack.core.enums.SoldierClass;
 import com.aliensattack.core.enums.UnitType;
+import com.aliensattack.core.enums.StatusEffect;
 import com.aliensattack.core.model.Weapon;
 import com.aliensattack.core.model.Armor;
+import com.aliensattack.core.data.StatusEffectData;
+import com.aliensattack.core.data.AmmoTypeData;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +25,7 @@ public class Soldier extends BaseUnit {
     private List<SoldierAbility> abilities;
     private Weapon weapon;
     private Armor armor;
+    private List<AmmoTypeData> ammunition; // Added ammunition storage
     private int experience;
     private int rank;
     private boolean isConcealed;
@@ -34,6 +38,7 @@ public class Soldier extends BaseUnit {
         this.abilities = new ArrayList<>();
         this.weapon = null;
         this.armor = null;
+        this.ammunition = new ArrayList<>(); // Initialize ammunition list
         this.experience = 0;
         this.rank = 1;
         this.isConcealed = false;
@@ -251,6 +256,81 @@ public class Soldier extends BaseUnit {
         });
     }
     
+    /**
+     * Add ammunition to soldier's inventory
+     */
+    public void addAmmunition(AmmoTypeData ammo) {
+        if (ammo != null) {
+            this.ammunition.add(ammo);
+        }
+    }
+    
+    /**
+     * Add multiple ammunition types
+     */
+    public void addAmmunition(List<AmmoTypeData> ammoList) {
+        if (ammoList != null) {
+            this.ammunition.addAll(ammoList);
+        }
+    }
+    
+    /**
+     * Remove ammunition from soldier's inventory
+     */
+    public void removeAmmunition(AmmoTypeData ammo) {
+        this.ammunition.remove(ammo);
+    }
+    
+    /**
+     * Clear all ammunition
+     */
+    public void clearAmmunition() {
+        this.ammunition.clear();
+    }
+    
+    /**
+     * Get ammunition by type
+     */
+    public List<AmmoTypeData> getAmmunitionByType(com.aliensattack.core.enums.AmmoType type) {
+        return this.ammunition.stream()
+                .filter(ammo -> ammo.getType() == type)
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    /**
+     * Get total ammunition count
+     */
+    public int getAmmunitionCount() {
+        return this.ammunition.size();
+    }
+    
+    /**
+     * Check if soldier has ammunition
+     */
+    public boolean hasAmmunition() {
+        return !this.ammunition.isEmpty();
+    }
+    
+    /**
+     * Get ammunition summary
+     */
+    public String getAmmunitionSummary() {
+        if (ammunition.isEmpty()) {
+            return "Амуниция не выбрана";
+        }
+        
+        StringBuilder summary = new StringBuilder();
+        summary.append("Амуниция (").append(ammunition.size()).append(" типов):\n");
+        
+        for (AmmoTypeData ammo : ammunition) {
+            summary.append("- ").append(ammo.getName())
+                   .append(" (").append(ammo.getDamageBonus()).append(" бонус урона, ")
+                   .append(ammo.getCurrentUses()).append(" шт.)\n");
+        }
+        
+        return summary.toString();
+    }
+    
     @Override
     public String toString() {
         return String.format("Soldier[name='%s', class=%s, rank=%d, health=%d/%d, concealed=%s]",
@@ -270,15 +350,15 @@ public class Soldier extends BaseUnit {
     @Override
     public void setSuppressed(boolean suppressed) {
         if (suppressed) {
-            addStatusEffect(new com.aliensattack.core.model.StatusEffectData(com.aliensattack.core.enums.StatusEffect.SUPPRESSED, 2, 1));
+            addStatusEffect(new StatusEffectData(StatusEffect.SUPPRESSED, 2, 1));
         } else {
-            removeStatusEffect(new com.aliensattack.core.model.StatusEffectData(com.aliensattack.core.enums.StatusEffect.SUPPRESSED, 0, 0));
+            removeStatusEffect(new StatusEffectData(StatusEffect.SUPPRESSED, 0, 0));
         }
     }
     
     @Override
     public void applySuppression(int turns) {
-        addStatusEffect(new com.aliensattack.core.model.StatusEffectData(com.aliensattack.core.enums.StatusEffect.SUPPRESSED, turns, 1));
+        addStatusEffect(new StatusEffectData(StatusEffect.SUPPRESSED, turns, 1));
     }
     
     @Override
@@ -301,7 +381,7 @@ public class Soldier extends BaseUnit {
         return getStatusEffects().stream()
             .filter(e -> e.getEffect() == com.aliensattack.core.enums.StatusEffect.SUPPRESSED)
             .findFirst()
-            .map(com.aliensattack.core.model.StatusEffectData::getDuration)
+            .map(StatusEffectData::getDuration)
             .orElse(0);
     }
     
@@ -309,7 +389,7 @@ public class Soldier extends BaseUnit {
     public void setSuppressionTurns(int turns) {
         getStatusEffects().removeIf(e -> e.getEffect() == com.aliensattack.core.enums.StatusEffect.SUPPRESSED);
         if (turns > 0) {
-            addStatusEffect(new com.aliensattack.core.model.StatusEffectData(com.aliensattack.core.enums.StatusEffect.SUPPRESSED, turns, 1));
+            addStatusEffect(new StatusEffectData(StatusEffect.SUPPRESSED, turns, 1));
         }
     }
     

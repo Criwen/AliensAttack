@@ -46,5 +46,10 @@ public enum StatusEffect {
     MIND_MERGED,    // Unit is in mind merge state
     DOMINATED,      // Unit is dominated by psionic power
     PSYCHIC_SHIELD, // Unit has psychic shield protection
-    MIND_SHIELD     // Unit has mind shield protection
+    MIND_SHIELD,    // Unit has mind shield protection
+    CONCEALMENT_BREAK_PENALTY, // Penalty for breaking concealment
+    DETECTED,       // Unit has been detected
+    MOVEMENT_PENALTY, // Movement penalty
+    ABILITY_COOLDOWN, // Ability cooldown penalty
+    CONCEALMENT_LOSS  // Loss of concealment
 } 

@@ -6,6 +6,7 @@ import com.aliensattack.core.enums.VisibilityType;
 import com.aliensattack.core.enums.StatusEffect;
 import com.aliensattack.core.model.components.*;
 import com.aliensattack.core.interfaces.IUnit;
+import com.aliensattack.core.data.StatusEffectData;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;

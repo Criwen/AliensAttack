@@ -20,6 +20,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Unified game window displaying all XCOM 2 mechanics and actions
@@ -41,6 +42,15 @@ public class GameWindow extends JFrame {
     private JPanel actionPanel;
     private JPanel mechanicsPanel;
     private JPanel shootingPanel;
+    private JPanel missionControlPanel;
+    
+    // Mission preparation panel
+    private JPanel missionPreparationPanel;
+    private com.aliensattack.ui.panels.SoldierSelectionForm soldierSelectionForm;
+    
+    // Main content switcher
+    private JPanel mainContentPanel;
+    private CardLayout cardLayout;
     
     // Views
     private com.aliensattack.ui.panels.TacticalMapView tacticalMapView;
@@ -58,6 +68,10 @@ public class GameWindow extends JFrame {
     private Position grenadePreviewCenter; // центр предпросмотра AOE
     private int grenadePreviewRadius; // радиус предпросмотра AOE
     
+    // Mission preparation state
+    private List<Soldier> preparedSoldiers;
+    private boolean isMissionPrepared;
+    
     public GameWindow() {
         initializeWindow();
         initializeComponents();
@@ -68,7 +82,6 @@ public class GameWindow extends JFrame {
     
     private void initializeWindow() {
         setTitle("Aliens Attack - XCOM 2 Tactical Combat");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1400, 900);
         setLocationRelativeTo(null);
         setResizable(true);
@@ -107,6 +120,21 @@ public class GameWindow extends JFrame {
         shootingPanel.setBorder(BorderFactory.createTitledBorder("Система Стрельбы"));
         shootingPanel.setLayout(new BoxLayout(shootingPanel, BoxLayout.Y_AXIS));
 
+        // Mission control panel
+        missionControlPanel = new JPanel();
+        missionControlPanel.setBorder(BorderFactory.createTitledBorder("Управление Миссией"));
+        missionControlPanel.setLayout(new BoxLayout(missionControlPanel, BoxLayout.Y_AXIS));
+
+        // Mission preparation panel
+        missionPreparationPanel = new JPanel(new BorderLayout());
+        soldierSelectionForm = new com.aliensattack.ui.panels.SoldierSelectionForm();
+        soldierSelectionForm.setOnGameStartCallback(this::onSoldierPreparationComplete);
+        missionPreparationPanel.add(soldierSelectionForm, BorderLayout.CENTER);
+        
+        // Main content switcher
+        cardLayout = new CardLayout();
+        mainContentPanel = new JPanel(cardLayout);
+        
         // Views initialization
         tacticalMapView = new com.aliensattack.ui.panels.TacticalMapView(tacticalMapPanel, 10, 10);
         unitInfoPanelView = new com.aliensattack.ui.panels.UnitInfoPanelView(unitInfoPanel);
@@ -116,8 +144,26 @@ public class GameWindow extends JFrame {
     private void setupLayout() {
         setLayout(new BorderLayout());
         
-        // Main content area
-        JPanel mainContent = new JPanel(new BorderLayout());
+        // Main content area with CardLayout for switching
+        JPanel tacticalContent = createTacticalContent();
+        
+        // Add both panels to card layout
+        mainContentPanel.add(missionPreparationPanel, "MISSION_PREP");
+        mainContentPanel.add(tacticalContent, "TACTICAL");
+        
+        // Start with mission preparation
+        cardLayout.show(mainContentPanel, "MISSION_PREP");
+        
+        // Bottom panel - Game log
+        JScrollPane logScrollPane = new JScrollPane(gameLog);
+        logScrollPane.setPreferredSize(new Dimension(1400, 200));
+        
+        add(mainContentPanel, BorderLayout.CENTER);
+        add(logScrollPane, BorderLayout.SOUTH);
+    }
+    
+    private JPanel createTacticalContent() {
+        JPanel tacticalContent = new JPanel(new BorderLayout());
         
         // Left panel - Tactical map and unit info
         JPanel leftPanel = new JPanel(new BorderLayout());
@@ -128,21 +174,17 @@ public class GameWindow extends JFrame {
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(actionPanel, BorderLayout.CENTER);
         
-        // Bottom panel for mechanics and shooting
+        // Bottom panel for mechanics, shooting and mission control
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.add(mechanicsPanel, BorderLayout.WEST);
-        bottomPanel.add(shootingPanel, BorderLayout.EAST);
+        bottomPanel.add(shootingPanel, BorderLayout.CENTER);
+        bottomPanel.add(missionControlPanel, BorderLayout.EAST);
         rightPanel.add(bottomPanel, BorderLayout.SOUTH);
         
-        mainContent.add(leftPanel, BorderLayout.CENTER);
-        mainContent.add(rightPanel, BorderLayout.EAST);
+        tacticalContent.add(leftPanel, BorderLayout.CENTER);
+        tacticalContent.add(rightPanel, BorderLayout.EAST);
         
-        // Bottom panel - Game log
-        JScrollPane logScrollPane = new JScrollPane(gameLog);
-        logScrollPane.setPreferredSize(new Dimension(1400, 200));
-        
-        add(mainContent, BorderLayout.CENTER);
-        add(logScrollPane, BorderLayout.SOUTH);
+        return tacticalContent;
     }
     
     private void setupEventHandlers() {
@@ -150,9 +192,29 @@ public class GameWindow extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                cleanup();
+                int choice = JOptionPane.showConfirmDialog(
+                    GameWindow.this,
+                    "Вы уверены, что хотите выйти из игры?",
+                    "Подтверждение выхода",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+                );
+                
+                if (choice == JOptionPane.YES_OPTION) {
+                    cleanup();
+                    System.exit(0);
+                }
+            }
+            
+            @Override
+            public void windowActivated(WindowEvent e) {
+                // Keep the window active
+                requestFocusInWindow();
             }
         });
+        
+        // Prevent automatic disposal
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     }
     
     private void initializeGame() {
@@ -177,6 +239,10 @@ public class GameWindow extends JFrame {
         grenadePreviewCenter = null;
         grenadePreviewRadius = 0;
         
+        // Initialize mission preparation state
+        preparedSoldiers = new ArrayList<>();
+        isMissionPrepared = false;
+        
         // Create sample units
         createSampleUnits();
         
@@ -186,6 +252,7 @@ public class GameWindow extends JFrame {
         updateActionPanel();
         updateMechanicsPanel();
         updateShootingPanel();
+        updateMissionControlPanel();
         
         logMessage("=== ALIENS ATTACK - XCOM 2 TACTICAL COMBAT ===");
         logMessage("Turn " + currentTurn + " started");
@@ -739,6 +806,306 @@ public class GameWindow extends JFrame {
         mechanicsPanel.add(label);
     }
     
+    private void updateMissionControlPanel() {
+        missionControlPanel.removeAll();
+        
+        // Mission preparation button
+        JButton prepareMissionButton = new JButton("Подготовка к миссии");
+        prepareMissionButton.setFont(new Font("Arial", Font.BOLD, 12));
+        prepareMissionButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        prepareMissionButton.addActionListener(e -> openSoldierSelectionForm());
+        
+        // Start battle button (initially disabled)
+        JButton startBattleButton = new JButton("Начать бой");
+        startBattleButton.setFont(new Font("Arial", Font.BOLD, 12));
+        startBattleButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        startBattleButton.setEnabled(false); // Will be enabled after soldier preparation
+        startBattleButton.addActionListener(e -> startBattle());
+        
+        // Reset preparation button (initially disabled)
+        JButton resetPreparationButton = new JButton("Сбросить подготовку");
+        resetPreparationButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        resetPreparationButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        resetPreparationButton.setEnabled(false); // Will be enabled after preparation
+        resetPreparationButton.addActionListener(e -> resetPreparation());
+        
+        // Return to mission preparation button
+        JButton returnToPreparationButton = new JButton("← Вернуться к подготовке");
+        returnToPreparationButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        returnToPreparationButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        returnToPreparationButton.addActionListener(e -> returnToMissionPreparation());
+        
+        // Mission status label
+        JLabel missionStatusLabel = new JLabel("Статус: Требуется подготовка");
+        missionStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        missionStatusLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        
+        // Add components
+        missionControlPanel.add(Box.createVerticalStrut(10));
+        missionControlPanel.add(prepareMissionButton);
+        missionControlPanel.add(Box.createVerticalStrut(10));
+        missionControlPanel.add(startBattleButton);
+        missionControlPanel.add(Box.createVerticalStrut(5));
+        missionControlPanel.add(resetPreparationButton);
+        missionControlPanel.add(Box.createVerticalStrut(10));
+        missionControlPanel.add(returnToPreparationButton);
+        missionControlPanel.add(Box.createVerticalStrut(10));
+        missionControlPanel.add(missionStatusLabel);
+        missionControlPanel.add(Box.createVerticalGlue());
+        
+        // Store references for later updates
+        missionControlPanel.putClientProperty("startBattleButton", startBattleButton);
+        missionControlPanel.putClientProperty("resetPreparationButton", resetPreparationButton);
+        missionControlPanel.putClientProperty("missionStatusLabel", missionStatusLabel);
+        
+        missionControlPanel.revalidate();
+        missionControlPanel.repaint();
+    }
+    
+    private void enableBattleStart() {
+        // Enable start battle button and update status
+        JButton startBattleButton = (JButton) missionControlPanel.getClientProperty("startBattleButton");
+        JButton resetPreparationButton = (JButton) missionControlPanel.getClientProperty("resetPreparationButton");
+        JLabel missionStatusLabel = (JLabel) missionControlPanel.getClientProperty("missionStatusLabel");
+        
+        if (startBattleButton != null) {
+            startBattleButton.setEnabled(true);
+        }
+        
+        if (resetPreparationButton != null) {
+            resetPreparationButton.setEnabled(true);
+        }
+        
+        if (missionStatusLabel != null) {
+            missionStatusLabel.setText("Статус: Готов к бою");
+            missionStatusLabel.setForeground(new Color(0, 128, 0)); // Green color
+        }
+        
+        logMessage("Миссия готова! Можно начинать бой.");
+        if (!preparedSoldiers.isEmpty()) {
+            logMessage("Подготовлен солдат: " + preparedSoldiers.get(0).getName() + 
+                      " с оружием: " + (preparedSoldiers.get(0).getWeapon() != null ? preparedSoldiers.get(0).getWeapon().getName() : "нет") +
+                      " и бронёй: " + (preparedSoldiers.get(0).getArmor() != null ? preparedSoldiers.get(0).getArmor().getName() : "нет"));
+        }
+    }
+    
+    private void disableBattleStart() {
+        // Disable start battle button and update status
+        JButton startBattleButton = (JButton) missionControlPanel.getClientProperty("startBattleButton");
+        JButton resetPreparationButton = (JButton) missionControlPanel.getClientProperty("resetPreparationButton");
+        JLabel missionStatusLabel = (JLabel) missionControlPanel.getClientProperty("missionStatusLabel");
+        
+        if (startBattleButton != null) {
+            startBattleButton.setEnabled(false);
+        }
+        
+        if (resetPreparationButton != null) {
+            resetPreparationButton.setEnabled(false);
+        }
+        
+        if (missionStatusLabel != null) {
+            missionStatusLabel.setText("Статус: Требуется подготовка");
+            missionStatusLabel.setForeground(Color.BLACK);
+        }
+    }
+    
+    private void startBattle() {
+        logMessage("=== БОЙ НАЧАТ! ===");
+        
+        if (isMissionPrepared && !preparedSoldiers.isEmpty()) {
+            // Replace default soldiers with prepared ones
+            replaceSoldiersWithPrepared();
+            logMessage("Поле боя загружено с подготовленными солдатами!");
+        } else {
+            logMessage("Используются стандартные солдаты (подготовка не завершена)");
+        }
+        
+        logMessage("Тактическая карта активирована");
+        logMessage("Выберите юнита и действие для начала боя");
+        
+        // Update mission status
+        JLabel missionStatusLabel = (JLabel) missionControlPanel.getClientProperty("missionStatusLabel");
+        if (missionStatusLabel != null) {
+            missionStatusLabel.setText("Статус: Бой в процессе");
+            missionStatusLabel.setForeground(new Color(255, 140, 0)); // Orange color
+        }
+        
+        // Focus on tactical map
+        tacticalMapPanel.requestFocusInWindow();
+    }
+    
+    private void replaceSoldiersWithPrepared() {
+        logMessage("Замена солдат на подготовленных...");
+        
+        // Clear existing soldiers from tactical field and units list
+        List<Unit> soldiersToRemove = units.stream()
+            .filter(unit -> unit.getUnitType() == UnitType.SOLDIER)
+            .collect(Collectors.toList());
+        
+        for (Unit soldier : soldiersToRemove) {
+            tacticalField.removeUnit(soldier);
+            units.remove(soldier);
+        }
+        
+        // Add prepared soldiers to tactical field
+        for (int i = 0; i < preparedSoldiers.size(); i++) {
+            Soldier preparedSoldier = preparedSoldiers.get(i);
+            
+            // Convert Soldier to Unit for tactical field
+            Unit tacticalSoldier = convertSoldierToUnit(preparedSoldier, i);
+            
+            // Add to tactical field and units list
+            tacticalField.addUnit(tacticalSoldier);
+            units.add(tacticalSoldier);
+            
+            // Initialize actions for the soldier
+            actionManager.initializeActionsForUnit(tacticalSoldier);
+            
+            logMessage("Добавлен солдат: " + tacticalSoldier.getName() + 
+                      " с оружием: " + (tacticalSoldier.getWeapon() != null ? tacticalSoldier.getWeapon().getName() : "нет") +
+                      " и бронёй: " + (tacticalSoldier.getArmor() != null ? tacticalSoldier.getArmor().getName() : "нет"));
+        }
+        
+        // Update UI
+        updateTacticalMap();
+        updateUnitInfo();
+        updateActionPanel();
+        
+        // Set first prepared soldier as selected
+        if (!units.isEmpty()) {
+            selectedUnit = units.stream()
+                .filter(unit -> unit.getUnitType() == UnitType.SOLDIER)
+                .findFirst()
+                .orElse(units.get(0));
+            updateUnitInfo();
+        }
+        
+        logMessage("Подготовленные солдаты успешно загружены на поле боя!");
+    }
+    
+    private Unit convertSoldierToUnit(Soldier soldier, int index) {
+        // Create Unit from Soldier with equipment
+        Unit unit = new Unit(soldier.getName(), soldier.getCurrentHealth(), 
+                           soldier.getMovementRange(), soldier.getAttackRange(), 
+                           soldier.getAttackDamage(), UnitType.SOLDIER);
+        
+        // Set soldier class
+        unit.setSoldierClass(soldier.getSoldierClass());
+        
+        // Set weapon if equipped
+        if (soldier.getWeapon() != null) {
+            unit.setWeapon(soldier.getWeapon());
+        }
+        
+        // Set armor if equipped
+        if (soldier.getArmor() != null) {
+            unit.setArmor(soldier.getArmor());
+        }
+        
+        // Set position (distribute soldiers across the field)
+        int x = 2 + (index * 2);
+        int y = 2 + (index % 2) * 2;
+        unit.setPosition(new Position(x, y));
+        
+        // Add abilities
+        if (soldier.getAbilities() != null) {
+            for (SoldierAbility ability : soldier.getAbilities()) {
+                unit.addAbility(ability);
+            }
+        }
+        
+        return unit;
+    }
+    
+    private void resetPreparation() {
+        logMessage("=== ПОДГОТОВКА СБРОШЕНА ===");
+        logMessage("Солдаты возвращены в исходное состояние");
+        logMessage("Требуется повторная подготовка к миссии");
+        
+        // Reset mission status
+        JButton startBattleButton = (JButton) missionControlPanel.getClientProperty("startBattleButton");
+        JButton resetPreparationButton = (JButton) missionControlPanel.getClientProperty("resetPreparationButton");
+        JLabel missionStatusLabel = (JLabel) missionControlPanel.getClientProperty("missionStatusLabel");
+        
+        if (startBattleButton != null) {
+            startBattleButton.setEnabled(false);
+        }
+        
+        if (resetPreparationButton != null) {
+            resetPreparationButton.setEnabled(false);
+        }
+        
+        if (missionStatusLabel != null) {
+            missionStatusLabel.setText("Статус: Требуется подготовка");
+            missionStatusLabel.setForeground(Color.BLACK); // Default color
+        }
+        
+        // Reset mission preparation state
+        preparedSoldiers.clear();
+        isMissionPrepared = false;
+        
+        // Reset selected unit to first available soldier
+        if (!units.isEmpty()) {
+            selectedUnit = units.stream()
+                .filter(unit -> unit.getUnitType() == UnitType.SOLDIER)
+                .findFirst()
+                .orElse(units.get(0));
+            updateUnitInfo();
+            updateActionPanel();
+        }
+    }
+    
+    private void returnToMissionPreparation() {
+        logMessage("=== ВОЗВРАЩЕНИЕ К ПОДГОТОВКЕ ===");
+        cardLayout.show(mainContentPanel, "MISSION_PREP");
+        logMessage("Переключено на подготовку миссии.");
+        
+        // Reset mission state
+        preparedSoldiers.clear();
+        isMissionPrepared = false;
+        
+        // Reset soldier selection form
+        soldierSelectionForm.resetForm();
+        
+        // Disable battle start buttons
+        disableBattleStart();
+        
+        // Update mission control panel to reflect preparation mode
+        updateMissionControlPanel();
+    }
+    
+    private void openSoldierSelectionForm() {
+        JDialog formDialog = new JDialog(this, "Выбор солдат и снаряжения", true);
+        formDialog.setLayout(new BorderLayout());
+        
+        // Create the soldier selection form
+        com.aliensattack.ui.panels.SoldierSelectionFormSimple soldierForm = new com.aliensattack.ui.panels.SoldierSelectionFormSimple();
+        
+        // Add form to dialog
+        formDialog.add(soldierForm, BorderLayout.CENTER);
+        
+        // Set dialog properties
+        formDialog.setSize(1200, 800);
+        formDialog.setLocationRelativeTo(this);
+        formDialog.setResizable(true);
+        
+        // Show dialog
+        formDialog.setVisible(true);
+        
+        // After dialog closes, check if soldier was equipped
+        if (soldierForm.isFormComplete()) {
+            Soldier equippedSoldier = soldierForm.getEquippedSoldier();
+            logMessage("Солдат " + equippedSoldier.getName() + " подготовлен к миссии!");
+            
+            // Store the prepared soldier
+            preparedSoldiers.clear(); // Clear previous preparations
+            preparedSoldiers.add(equippedSoldier);
+            isMissionPrepared = true;
+            
+            enableBattleStart(); // Enable battle start button
+        }
+    }
+    
     private void updateShootingPanel() {
         shootingPanel.removeAll();
         
@@ -1170,6 +1537,20 @@ public class GameWindow extends JFrame {
     public void showWindow() {
         setVisible(true);
         logMessage("XCOM 2 Tactical Combat System loaded successfully!");
+        
+        // Add additional protection against automatic closure
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                // Prevent window from being deactivated
+                if (isVisible()) {
+                    requestFocusInWindow();
+                }
+            }
+        });
+        
+        // Keep the window focused
+        requestFocusInWindow();
     }
 
     /**
@@ -1191,4 +1572,69 @@ public class GameWindow extends JFrame {
     }
     
     // checkAutoEndTurnAndUpdateUI removed as unused
+
+    /**
+     * Переключает окно на режим боя.
+     */
+    private void switchToTacticalMode() {
+        logMessage("=== ПЕРЕКЛЮЧЕНИЕ НА РЕЖИМ БОЯ ===");
+        cardLayout.show(mainContentPanel, "TACTICAL");
+        logMessage("Переключено на режим боя. Выберите юнита и действие.");
+        
+        // Initialize tactical field with prepared soldiers if available
+        if (isMissionPrepared && !preparedSoldiers.isEmpty()) {
+            replaceSoldiersWithPrepared();
+            logMessage("Поле боя загружено с подготовленными солдатами!");
+        } else {
+            logMessage("Используются стандартные солдаты (подготовка не завершена)");
+        }
+        
+        // Update all UI components
+        updateTacticalMap();
+        updateUnitInfo();
+        updateActionPanel();
+        updateMechanicsPanel();
+        updateShootingPanel();
+        updateMissionControlPanel();
+        
+        // Focus on tactical map
+        tacticalMapPanel.requestFocusInWindow();
+    }
+
+    /**
+     * Callback method for when soldier preparation is complete.
+     * This method is called when the soldier selection form is closed
+     * and the user has selected soldiers for the mission.
+     */
+    private void onSoldierPreparationComplete() {
+        logMessage("=== ПОДГОТОВКА СОЛДАТА ЗАВЕРШЕНА ===");
+        
+        // Get the prepared soldier from the form
+        Soldier preparedSoldier = soldierSelectionForm.getMissionReadySoldier();
+        if (preparedSoldier != null) {
+            preparedSoldiers.clear();
+            preparedSoldiers.add(preparedSoldier);
+            isMissionPrepared = true;
+            
+            logMessage("Солдат " + preparedSoldier.getName() + " успешно подготовлен для миссии!");
+            logMessage("Оружие: " + (preparedSoldier.getWeapon() != null ? preparedSoldier.getWeapon().getName() : "нет"));
+            logMessage("Броня: " + (preparedSoldier.getArmor() != null ? preparedSoldier.getArmor().getName() : "нет"));
+            logMessage("Амуниция: " + (preparedSoldier.hasAmmunition() ? preparedSoldier.getAmmunitionCount() + " типов" : "не выбрана"));
+            
+            // Enable battle start button and update status
+            enableBattleStart();
+            
+            // Update mission control panel to reflect preparation mode
+            updateMissionControlPanel();
+            
+            // Switch to tactical mode to start the battle
+            switchToTacticalMode();
+        } else {
+            logMessage("Ошибка: Не удалось получить подготовленного солдата!");
+            JOptionPane.showMessageDialog(this, 
+                "Ошибка подготовки солдата. Пожалуйста, попробуйте снова.",
+                "Ошибка подготовки", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
 } 

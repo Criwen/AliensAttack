@@ -355,4 +355,13 @@ public class Weapon {
     public String getWeaponType() {
         return type.name();
     }
+    
+    // Suppression and flanking methods
+    public boolean isSuppressionWeapon() {
+        return type == WeaponType.HEAVY_WEAPON || type == WeaponType.RIFLE;
+    }
+    
+    public boolean isFlankingWeapon() {
+        return type == WeaponType.SHOTGUN || type == WeaponType.SNIPER_RIFLE;
+    }
 } 

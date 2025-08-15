@@ -1,6 +1,13 @@
 package com.aliensattack.combat;
 
-import com.aliensattack.core.model.*;
+import com.aliensattack.core.model.Unit;
+import com.aliensattack.core.model.AlienRuler;
+import com.aliensattack.core.model.Chosen;
+import com.aliensattack.core.model.AlienPod;
+import com.aliensattack.core.model.MissionTimer;
+import com.aliensattack.core.model.AlienReinforcement;
+import com.aliensattack.core.model.Position;
+import com.aliensattack.core.model.Mission;
 import com.aliensattack.core.enums.*;
 import com.aliensattack.field.ITacticalField;
 import lombok.Getter;

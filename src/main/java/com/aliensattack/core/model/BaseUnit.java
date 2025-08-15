@@ -4,6 +4,7 @@ import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.core.enums.UnitType;
 import com.aliensattack.core.enums.StatusEffect;
 import com.aliensattack.core.config.GameConfig;
+import com.aliensattack.core.data.StatusEffectData;
 
 import lombok.Getter;
 import lombok.Setter;
