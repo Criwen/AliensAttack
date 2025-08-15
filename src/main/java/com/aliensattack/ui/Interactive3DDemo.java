@@ -5,8 +5,8 @@ import com.aliensattack.core.model.Unit;
 import com.aliensattack.core.model.CoverObject;
 import com.aliensattack.core.enums.CoverType;
 import com.aliensattack.core.enums.UnitType;
-import com.aliensattack.field.OptimizedTacticalField;
-import com.aliensattack.combat.OptimizedCombatManager;
+import com.aliensattack.field.TacticalField;
+import com.aliensattack.combat.DefaultCombatManager;
 import com.aliensattack.actions.ActionManager;
 import com.aliensattack.actions.ActionType;
 import com.aliensattack.actions.UnitAction;
@@ -31,8 +31,8 @@ import java.util.HashMap;
  */
 public class Interactive3DDemo extends Application {
     
-    private OptimizedTacticalField field;
-    private OptimizedCombatManager combatManager;
+    private TacticalField field;
+    private DefaultCombatManager combatManager;
     private ActionManager actionManager;
     private Combat3DVisualizer visualizer;
     
@@ -60,8 +60,8 @@ public class Interactive3DDemo extends Application {
     
     private void setupGameLogic() {
         // Создаем тактическое поле
-        field = new OptimizedTacticalField(64, 64);
-        combatManager = new OptimizedCombatManager(field);
+        field = new TacticalField(64, 64);
+        combatManager = new DefaultCombatManager(field);
         actionManager = new ActionManager(field, combatManager);
         
         // Создаем юнитов
@@ -345,7 +345,7 @@ public class Interactive3DDemo extends Application {
     
     private void updateUnitList() {
         unitList.getItems().clear();
-        List<Unit> playerUnits = combatManager.getPlayerUnitsOptimized();
+        List<Unit> playerUnits = combatManager.getPlayerUnits();
         unitList.getItems().addAll(playerUnits);
         
         // Автоматически выбираем первого солдате если ничего не выбрано
@@ -502,7 +502,7 @@ public class Interactive3DDemo extends Application {
      */
     private void selectNextSoldier() {
         System.out.println("selectNextSoldier() called"); // Отладка
-        List<Unit> playerUnits = combatManager.getPlayerUnitsOptimized();
+        List<Unit> playerUnits = combatManager.getPlayerUnits();
         if (playerUnits.isEmpty()) {
             System.out.println("No player units found!"); // Отладка
             return;

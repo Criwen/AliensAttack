@@ -2,7 +2,7 @@ package com.aliensattack.combat;
 
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
-import com.aliensattack.field.OptimizedTacticalField;
+import com.aliensattack.field.TacticalField;
 
 import lombok.Getter;
 import java.util.*;
@@ -17,11 +17,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Area of effect attacks
  */
 @Getter
-public class EnhancedCombatManager extends OptimizedCombatManager {
+public class EnhancedCombatManager extends DefaultCombatManager {
     private final Map<String, List<Unit>> overwatchTargets; // Units that can be overwatched
     private final Random random;
     
-    public EnhancedCombatManager(OptimizedTacticalField field) {
+    public EnhancedCombatManager(TacticalField field) {
         super(field);
         this.overwatchTargets = new ConcurrentHashMap<>();
         this.random = new Random();
@@ -52,7 +52,7 @@ public class EnhancedCombatManager extends OptimizedCombatManager {
         // Calculate hit chance with height and cover bonuses
         int baseHitChance = attacker.getWeapon() != null ? attacker.getWeapon().getAccuracy() : 80;
         int heightBonus = calculateHeightBonus(attacker, target);
-        CoverType targetCover = ((OptimizedTacticalField)getField()).getCoverTypeAt(targetPos.getX(), targetPos.getY());
+        CoverType targetCover = ((TacticalField)getField()).getCoverTypeAt(targetPos.getX(), targetPos.getY());
         int coverBonus = calculateCoverBonus(targetCover);
         int finalHitChance = baseHitChance + heightBonus - coverBonus;
         
@@ -101,7 +101,7 @@ public class EnhancedCombatManager extends OptimizedCombatManager {
         int areaRadius = weapon.getAreaRadius();
         
         // Get all units in area
-        List<Unit> unitsInArea = ((OptimizedTacticalField)getField()).getUnitsInRangeOptimized(targetPos, areaRadius);
+        List<Unit> unitsInArea = ((TacticalField)getField()).getUnitsInRange(targetPos, areaRadius);
         
         for (Unit target : unitsInArea) {
             if (target.isAlive()) {
@@ -302,14 +302,13 @@ public class EnhancedCombatManager extends OptimizedCombatManager {
      */
     private boolean isUnitVisible(Unit observer, Unit target) {
         Object field = getField();
-        if (field instanceof OptimizedTacticalField) {
-            return ((OptimizedTacticalField) field).isPositionVisible(observer.getPosition(), target.getPosition(), observer.getViewRange());
+        if (field instanceof TacticalField) {
+            return ((TacticalField) field).isPositionVisible(observer.getPosition(), target.getPosition(), observer.getViewRange());
         }
         return false;
     }
     
-    @Override
-    public void endTurnOptimized() {
+    public void endTurnRound() {
         // Process status effects before ending turn
         processAllStatusEffects();
         
@@ -318,6 +317,6 @@ public class EnhancedCombatManager extends OptimizedCombatManager {
             unit.setOverwatching(false);
         }
         
-        super.endTurnOptimized();
+        super.endTurnCore();
     }
 } 

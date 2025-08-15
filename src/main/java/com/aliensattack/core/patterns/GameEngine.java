@@ -3,7 +3,8 @@ package com.aliensattack.core.patterns;
 import com.aliensattack.combat.ICombatManager;
 import com.aliensattack.combat.*;
 import com.aliensattack.field.ITacticalField;
-import com.aliensattack.field.OptimizedTacticalField;
+import com.aliensattack.field.TacticalField;
+import com.aliensattack.field.TacticalField;
 import com.aliensattack.ui.GameWindow;
 import com.aliensattack.actions.ActionManager;
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +19,7 @@ public class GameEngine {
     private static final Logger log = LogManager.getLogger(GameEngine.class);
     private static final AtomicReference<GameEngine> INSTANCE = new AtomicReference<>();
     
-    private OptimizedTacticalField tacticalField;
+    private TacticalField tacticalField;
     private ICombatManager combatManager;
     private ActionManager actionManager;
     private GameWindow gameWindow;
@@ -47,13 +48,13 @@ public class GameEngine {
         log.debug("Initializing game systems");
         
         // Initialize tactical field
-        tacticalField = new OptimizedTacticalField(10, 10);
+        tacticalField = new TacticalField(10, 10);
         
         // Initialize combat manager using Strategy pattern
-        combatManager = new OptimizedCombatManager(tacticalField);
+        combatManager = new CombatManagerBase(tacticalField);
         
         // Initialize action manager
-        actionManager = new ActionManager(tacticalField, (OptimizedCombatManager) combatManager);
+        actionManager = new ActionManager(tacticalField, combatManager);
         
         // Initialize game state
         gameState = new GameState();

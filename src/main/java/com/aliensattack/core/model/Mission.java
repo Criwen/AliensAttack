@@ -4,6 +4,7 @@ import com.aliensattack.core.enums.MissionType;
 import com.aliensattack.core.config.GameConfig;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -12,6 +13,7 @@ import java.util.ArrayList;
  */
 @Getter
 @Setter
+@Log4j2
 public class Mission {
     private String name;
     private MissionType type;
@@ -31,6 +33,8 @@ public class Mission {
         this.completedObjectives = new ArrayList<>();
         this.isCompleted = false;
         this.isFailed = false;
+        
+        log.info("Mission created: {} (Type: {}, Turn Limit: {})", name, type, this.turnLimit);
         
         // Set default objectives based on mission type
         setDefaultObjectives();
@@ -90,6 +94,11 @@ public class Mission {
     public void completeObjective(String objective) {
         if (objectives.contains(objective) && !completedObjectives.contains(objective)) {
             completedObjectives.add(objective);
+            log.info("Mission {}: Objective '{}' completed ({}/{})", 
+                    name, objective, completedObjectives.size(), objectives.size());
+        } else {
+            log.warn("Mission {}: Cannot complete objective '{}' (not found or already completed)", 
+                    name, objective);
         }
     }
     
@@ -105,8 +114,12 @@ public class Mission {
      */
     public void advanceTurn() {
         currentTurn++;
+        log.debug("Mission {}: Turn advanced to {}/{}", name, currentTurn, turnLimit);
+        
         if (currentTurn > turnLimit && turnLimit > 0) {
             isFailed = true;
+            log.warn("Mission {}: Failed due to time limit exceeded (turn: {}, limit: {})", 
+                    name, currentTurn, turnLimit);
         }
     }
     

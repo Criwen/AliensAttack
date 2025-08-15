@@ -30,5 +30,10 @@ public enum SquadTacticType {
     OVERWATCH_NETWORK,      // Overwatch network with ambush
     CONCEALED_AMBUSH,       // Concealed ambush with stealth
     CHAIN_REACTION,         // Chain reaction with explosive bonuses
-    HEALING_CIRCLE          // Healing circle with medical support
+    HEALING_CIRCLE,         // Healing circle with medical support
+    
+    // Formation types for SquadCohesionManager
+    OFFENSIVE,              // Offensive formation
+    FLANKING,               // Flanking formation
+    SUPPORT                 // Support formation
 } 

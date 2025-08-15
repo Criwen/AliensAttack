@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Configuration utility for loading game parameters from multiple properties files
  */
 public class GameConfig {
+    private static final Logger log = LogManager.getLogger(GameConfig.class);
     private static final Properties properties = new Properties();
     private static boolean initialized = false;
     
@@ -45,14 +49,15 @@ public class GameConfig {
                         }
                     }
                 } else {
-                    System.err.println(configFile + " not found, skipping");
+                    log.warn("{} not found on classpath, skipping", configFile);
                 }
             } catch (IOException e) {
-                System.err.println("Error loading " + configFile + ": " + e.getMessage());
+                log.error("Error loading {}: {}", configFile, e.getMessage());
             }
         }
         
         initialized = true;
+        log.debug("GameConfig initialized with {} properties", properties.size());
     }
     
     /**
@@ -73,7 +78,7 @@ public class GameConfig {
             try {
                 return Integer.parseInt(value.trim());
             } catch (NumberFormatException e) {
-                System.err.println("Invalid integer value for " + key + ": " + value);
+                log.warn("Invalid integer value for {}: {}", key, value);
             }
         }
         return defaultValue;
@@ -89,7 +94,7 @@ public class GameConfig {
             try {
                 return Double.parseDouble(value);
             } catch (NumberFormatException e) {
-                System.err.println("Invalid double value for " + key + ": " + value);
+                log.warn("Invalid double value for {}: {}", key, value);
             }
         }
         return defaultValue;
@@ -257,4 +262,4 @@ public class GameConfig {
     public static int getPsiAbilityCooldown() {
         return getInt("game.psi.ability.cooldown", 3);
     }
-} 
+}

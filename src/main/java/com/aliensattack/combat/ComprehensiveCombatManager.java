@@ -2,7 +2,7 @@ package com.aliensattack.combat;
 
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
-import com.aliensattack.field.OptimizedTacticalField;
+import com.aliensattack.field.TacticalField;
 import com.aliensattack.core.interfaces.IUnit;
 
 import lombok.Getter;
@@ -17,13 +17,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Medical system and stabilization
  * - Mission objectives and time limits
  */
-@Getter
-public class ComprehensiveCombatManager extends AdvancedCombatManager {
+public class ComprehensiveCombatManager extends CombatManagerExtended {
     private final Map<String, Unit> initiativeOrder;
     private final Mission currentMission;
     private final Random random;
     
-    public ComprehensiveCombatManager(OptimizedTacticalField field, Mission mission) {
+    public ComprehensiveCombatManager(TacticalField field, Mission mission) {
         super(field);
         this.initiativeOrder = new ConcurrentHashMap<>();
         this.currentMission = mission;
@@ -56,7 +55,7 @@ public class ComprehensiveCombatManager extends AdvancedCombatManager {
      */
     private boolean checkFlanking(Unit attacker, Unit target) {
         // Simple flanking check - if target has cover, attacker might be flanking
-        CoverType targetCover = ((OptimizedTacticalField)getField()).getCoverTypeAt(
+        CoverType targetCover = ((TacticalField)getField()).getCoverTypeAt(
             target.getPosition().getX(), target.getPosition().getY());
         
         if (targetCover == CoverType.NONE) {
@@ -294,8 +293,7 @@ public class ComprehensiveCombatManager extends AdvancedCombatManager {
         return true;
     }
     
-    @Override
-    public void endTurnOptimized() {
+    public void endTurnRound() {
         // Check mission objectives
         checkMissionObjectives();
         
@@ -310,7 +308,7 @@ public class ComprehensiveCombatManager extends AdvancedCombatManager {
             }
         }
         
-        super.endTurnOptimized();
+        super.endTurnCore();
     }
     
     @Override

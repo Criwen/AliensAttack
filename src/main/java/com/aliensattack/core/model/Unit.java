@@ -10,6 +10,7 @@ import com.aliensattack.core.interfaces.IUnit;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -18,6 +19,7 @@ import java.util.ArrayList;
  */
 @Getter
 @Setter
+@Log4j2
 public class Unit implements IUnit {
     private String id;
     private String name;
@@ -60,6 +62,9 @@ public class Unit implements IUnit {
     private List<String> mutations; // Active mutations
     private List<ReactiveAbility> reactiveAbilities; // Reactive abilities like Bladestorm
     
+    // Squad information
+    private String squadId;
+    
     public Unit(String name, int maxHealth, int movementRange, int attackRange, int attackDamage, UnitType unitType) {
         this.id = "UNIT_" + System.currentTimeMillis() + "_" + name.replaceAll("\\s+", "_");
         this.name = name;
@@ -98,6 +103,9 @@ public class Unit implements IUnit {
         this.evolutionLevel = 0;
         this.mutations = new ArrayList<>();
         this.reactiveAbilities = new ArrayList<>();
+        
+        log.debug("Unit created: {} (Type: {}, Health: {}, Movement: {}, Attack: {})", 
+                name, unitType, maxHealth, movementRange, attackRange);
         
         // Set view range based on unit type
         this.viewRange = getDefaultViewRange(unitType);
@@ -150,9 +158,13 @@ public class Unit implements IUnit {
     }
     
     public boolean takeDamage(int damage) {
+        log.info("Unit {} taking {} damage (current: {} -> {})", 
+                name, damage, currentHealth, currentHealth - damage);
+        
         currentHealth -= damage;
         if (currentHealth <= 0) {
             currentHealth = 0;
+            log.warn("Unit {} has died from damage", name);
             return true; // Unit is dead
         }
         return false;
@@ -186,7 +198,11 @@ public class Unit implements IUnit {
      */
     public void heal(int amount) {
         if (isAlive()) {
+            int oldHealth = currentHealth;
             currentHealth = Math.min(currentHealth + amount, maxHealth);
+            log.info("Unit {} healed for {} ({} -> {})", name, amount, oldHealth, currentHealth);
+        } else {
+            log.warn("Cannot heal dead unit: {}", name);
         }
     }
     
@@ -1277,5 +1293,26 @@ public class Unit implements IUnit {
     
     public void setMovementPoints(int movementPoints) {
         this.movementRange = movementPoints;
+    }
+    
+    /**
+     * Get unit name
+     */
+    public String getUnitName() {
+        return name;
+    }
+    
+    /**
+     * Get squad ID
+     */
+    public String getSquadId() {
+        return squadId;
+    }
+    
+    /**
+     * Set squad ID
+     */
+    public void setSquadId(String squadId) {
+        this.squadId = squadId;
     }
 } 

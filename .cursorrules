@@ -1,0 +1,213 @@
+# Cursor Rules for AliensAttack Project
+
+## 🎯 Project Overview
+AliensAttack is a sophisticated XCOM2-style tactical combat system built in Java 21 with advanced combat mechanics, psionic abilities, environmental systems, and strategic gameplay elements.
+
+## 🏗️ Architecture & Design Patterns
+
+### Core Principles
+- **OOP First**: Use interfaces, abstract classes, and inheritance properly
+- **SOLID Principles**: Single responsibility, open/closed, Liskov substitution, interface segregation, dependency inversion
+- **Clean Architecture**: Separate concerns between UI, business logic, and data layers
+- **Factory Pattern**: Use for creating game objects (weapons, armor, aliens, etc.)
+- **Strategy Pattern**: For different combat managers and AI behaviors
+- **Observer Pattern**: For game events and state changes
+
+### Package Structure
+```
+src/main/java/com/aliensattack/
+├── actions/          # Action system (Move, Attack, Defend, etc.)
+├── combat/           # Combat mechanics and managers
+├── core/             # Core game systems and models
+├── field/            # Tactical field and positioning
+├── ui/               # User interface components
+└── visualization/    # 3D rendering and visual effects
+```
+
+## 📝 Coding Standards
+
+### Java Conventions
+- **Java 21**: Use latest language features (records, pattern matching, etc.)
+- **Lombok**: Use annotations for boilerplate reduction (@Data, @Builder, @Slf4j)
+- **Naming**: 
+  - Classes: PascalCase (AlienRuler, CombatManager)
+  - Methods: camelCase (performAttack, calculateDamage)
+  - Constants: UPPER_SNAKE_CASE (MAX_ACTION_POINTS)
+  - Enums: PascalCase (AlienType, WeaponType)
+
+### Code Quality
+- **No Magic Numbers**: Use constants for game values
+- **Single Responsibility**: Each class should have one clear purpose
+- **Dependency Injection**: Use constructor injection for dependencies
+- **Immutable Objects**: Prefer immutability for game state objects
+- **Exception Handling**: Use custom exceptions (CombatException, GameException)
+
+### Documentation
+- **JavaDoc**: Required for public methods and classes
+- **README Updates**: Update docs/ directory when adding new features
+- **Code Comments**: Explain complex game mechanics, not obvious code
+
+## 🎮 Game-Specific Rules
+
+### Combat System
+- **Action Points**: All actions must consume appropriate action points
+- **Cover System**: Implement proper cover mechanics with percentage bonuses
+- **Line of Sight**: Use visibility calculations for targeting
+- **Damage Calculation**: Consider armor, cover, and status effects
+
+### Psionic Abilities
+- **Energy Management**: Track psionic energy consumption
+- **Resistance System**: Implement proper resistance calculations
+- **School Bonuses**: Apply appropriate school-specific modifiers
+- **Cooldowns**: Respect ability cooldown periods
+
+### Environmental Systems
+- **Hazard Types**: Support 6 hazard types (Fire, Toxic, Electrical, Radiation, Acid, Plasma)
+- **Chain Reactions**: Implement environmental interaction chains
+- **Weather Effects**: Apply weather modifiers to combat
+- **Destructible Terrain**: Allow environment destruction
+
+### AI Behavior
+- **Pod Coordination**: Aliens should coordinate within pods
+- **Adaptive Learning**: AI should learn from player tactics
+- **Tactical Decisions**: Use proper decision trees for AI actions
+- **Difficulty Scaling**: Implement progressive difficulty increases
+
+## 🧪 Testing Requirements
+
+### Test Coverage
+- **Unit Tests**: Required for all business logic classes
+- **Integration Tests**: For complex systems (combat, psionic)
+- **Test Resources**: Use test-specific properties files
+- **Mocking**: Use mocks for external dependencies
+
+### Test Structure
+```
+src/test/java/com/aliensattack/
+├── core/             # Core system tests
+├── combat/           # Combat system tests
+└── model/            # Model and entity tests
+```
+
+## 🚀 Performance Guidelines
+
+### Memory Management
+- **Object Pooling**: For frequently created/destroyed objects
+- **Lazy Loading**: Load game assets on demand
+- **Efficient Collections**: Use appropriate data structures
+- **Garbage Collection**: Minimize object creation in hot paths
+
+### Rendering
+- **3D Optimization**: Use efficient rendering techniques
+- **LOD System**: Implement level-of-detail for complex scenes
+- **Texture Management**: Optimize texture memory usage
+- **Frame Rate**: Maintain consistent 60 FPS
+
+## 🔧 Development Workflow
+
+### Git Practices
+- **Branch Naming**: feature/combat-system, bugfix/psionic-bug
+- **Commit Messages**: Use conventional commits (feat:, fix:, docs:)
+- **Pull Requests**: Required for all changes
+- **Code Review**: Mandatory before merging
+
+### Build & Run
+- **Maven**: Use Maven for dependency management and building
+- **Java Path**: Ensure Java 21 is in PATH
+- **Dependencies**: Keep dependencies up to date
+- **Profiles**: Use Maven profiles for different environments
+
+## 📚 Required Knowledge
+
+### Core Technologies
+- **Java 21**: Latest language features and patterns
+- **JavaFX**: For 3D visualization and UI
+- **Lombok**: For reducing boilerplate code
+- **Log4j2**: For comprehensive logging
+- **JUnit 5**: For testing framework
+
+### Game Development
+- **XCOM2 Mechanics**: Understand tactical combat systems
+- **Turn-Based Strategy**: Game flow and state management
+- **3D Graphics**: Basic 3D rendering concepts
+- **AI Programming**: Behavior trees and decision making
+
+## ⚠️ Common Pitfalls to Avoid
+
+### Code Issues
+- **Hardcoded Values**: Always use configuration or constants
+- **Deep Nesting**: Keep method complexity low
+- **God Classes**: Avoid classes with too many responsibilities
+- **Circular Dependencies**: Maintain clean dependency graph
+
+### Game Logic
+- **State Inconsistency**: Ensure game state remains valid
+- **Memory Leaks**: Properly dispose of resources
+- **Race Conditions**: Handle concurrent access properly
+- **Performance Bottlenecks**: Profile and optimize critical paths
+
+## 🎯 Implementation Priorities
+
+### Phase 1 (Critical)
+- Complete alien evolution system
+- Implement advanced squad tactics
+- Add injury and recovery system
+
+### Phase 2 (Important)
+- Enhance weather and environmental systems
+- Complete equipment degradation
+- Implement strategic layer
+
+### Phase 3 (Enhancement)
+- Advanced AI behaviors
+- Performance optimizations
+- Additional content and features
+
+## 📖 Documentation Requirements
+
+### Code Documentation
+- **API Documentation**: Document all public interfaces
+- **Game Mechanics**: Explain complex game rules
+- **Architecture Decisions**: Document design choices
+- **Configuration**: Document all configurable parameters
+
+### User Documentation
+- **Installation Guide**: Clear setup instructions
+- **Game Manual**: Explain game mechanics and controls
+- **Troubleshooting**: Common issues and solutions
+- **API Reference**: For modding and extensions
+
+## 🔍 Code Review Checklist
+
+### Before Submitting
+- [ ] All tests pass
+- [ ] Code follows project conventions
+- [ ] No hardcoded values
+- [ ] Proper exception handling
+- [ ] Documentation updated
+- [ ] Performance considerations addressed
+- [ ] Security concerns addressed
+
+### Review Focus Areas
+- **Architecture**: Does the design fit the overall system?
+- **Performance**: Are there obvious performance issues?
+- **Maintainability**: Is the code easy to understand and modify?
+- **Testing**: Is there adequate test coverage?
+- **Documentation**: Are changes properly documented?
+
+## 🚨 Emergency Procedures
+
+### Critical Bugs
+- **Game Breaking**: Immediate hotfix required
+- **Data Loss**: Stop development, investigate root cause
+- **Security Issues**: Immediate security review required
+- **Performance Issues**: Performance testing and optimization
+
+### Rollback Strategy
+- **Feature Flags**: Use toggles for new features
+- **Database Migrations**: Ensure rollback capability
+- **Version Control**: Maintain stable release branches
+- **Backup Systems**: Regular backups of game state
+
+Remember: This is a complex tactical combat system. Every change affects multiple interconnected systems. Test thoroughly, document clearly, and maintain the high quality standards that make this game engaging and bug-free.
+

@@ -1,6 +1,6 @@
 package com.aliensattack.combat;
 
-import com.aliensattack.combat.interfaces.ICombatManager;
+import com.aliensattack.combat.interfaces.ICombatManagerExtended;
 import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.core.model.Position;
 import com.aliensattack.field.ITacticalField;
@@ -13,12 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 /**
- * Base implementation of ICombatManager interface
- * Contains core functionality shared by all combat manager implementations
+ * Base combat manager that provides common functionality
+ * for all combat manager implementations.
  */
 @Getter
 @Setter
-public abstract class BaseCombatManager implements ICombatManager {
+public abstract class BaseCombatManager implements ICombatManagerExtended {
     
     protected ITacticalField field; // Tactical field
     protected List<IUnit> units;

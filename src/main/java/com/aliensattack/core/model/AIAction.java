@@ -1,83 +1,164 @@
 package com.aliensattack.core.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import com.aliensattack.core.enums.AIBehaviorType;
+import com.aliensattack.core.model.AIBehaviorTree.BehaviorNode;
+import com.aliensattack.core.model.AIBehaviorTree.DecisionTree;
+
+import java.util.*;
 
 /**
- * AI Action - Represents AI decision and action
- * Implements XCOM 2 AI Action System
+ * Advanced AI Action System for XCOM 2 Tactical Combat
+ * Manages AI actions, decision making, and tactical responses
  */
-@Getter
-@Setter
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AIAction {
     
-    private String actionType;
-    private Unit target;
-    private Position position;
-    private String ability;
-    private int priority;
-    private String description;
-    private boolean isExecuted;
+    private AIBehaviorTree behaviorTree;
+    private Map<String, BehaviorNode> actionBehaviors;
+    private Map<String, DecisionTree> actionDecisions;
+    private String actionId;
+    private String actionName;
+    private AIBehaviorTree.AIBehaviorType behaviorType;
+    private int actionCost;
+    private int actionDuration;
+    private boolean isActive;
+    private boolean isSuccessful;
+    private Random random;
     
-    public AIAction() {
-        this.actionType = "MOVE";
-        this.priority = 50;
-        this.isExecuted = false;
-    }
-    
-    public AIAction(String actionType, Unit target, int priority) {
-        this.actionType = actionType;
-        this.target = target;
-        this.priority = priority;
-        this.isExecuted = false;
+    /**
+     * Initialize the AI action
+     */
+    public void initialize() {
+        if (behaviorTree == null) {
+            behaviorTree = new AIBehaviorTree();
+        }
+        if (actionBehaviors == null) {
+            actionBehaviors = new HashMap<>();
+        }
+        if (actionDecisions == null) {
+            actionDecisions = new HashMap<>();
+        }
+        if (random == null) {
+            random = new Random();
+        }
+        
+        isActive = false;
+        isSuccessful = false;
+        
+        initializeActionBehaviors();
+        initializeActionDecisions();
     }
     
     /**
-     * Execute the AI action
+     * Initialize action behaviors
      */
-    public boolean execute() {
-        if (isExecuted) {
-            return false;
-        }
+    private void initializeActionBehaviors() {
+        // Create action behavior nodes
+        BehaviorNode executeBehavior = BehaviorNode.builder()
+                .nodeId("EXECUTE_ACTION")
+                .nodeName("Execute Action")
+                .nodeType("EXECUTION")
+                .behaviorType(behaviorType)
+                .successRate(0.8)
+                .failureRate(0.2)
+                .energyCost(actionCost)
+                .energyGained(0)
+                .isActive(false)
+                .isSuccessful(false)
+                .behaviorDescription("Execute AI action")
+                .build();
         
-        // Mark as executed
-        isExecuted = true;
+        actionBehaviors.put(executeBehavior.getNodeId(), executeBehavior);
         
-        // Generate description
-        generateDescription();
+        BehaviorNode planBehavior = BehaviorNode.builder()
+                .nodeId("PLAN_ACTION")
+                .nodeName("Plan Action")
+                .nodeType("PLANNING")
+                .behaviorType(AIBehaviorTree.AIBehaviorType.BALANCED)
+                .successRate(0.9)
+                .failureRate(0.1)
+                .energyCost(actionCost / 2)
+                .energyGained(0)
+                .isActive(false)
+                .isSuccessful(false)
+                .behaviorDescription("Plan AI action")
+                .build();
         
-        return true;
+        actionBehaviors.put(planBehavior.getNodeId(), planBehavior);
     }
     
-    private void generateDescription() {
-        switch (actionType) {
-            case "ATTACK":
-                description = "AI attacks " + (target != null ? target.getName() : "target");
-                break;
-            case "FLANK":
-                description = "AI flanks " + (target != null ? target.getName() : "target");
-                break;
-            case "SUPPORT":
-                description = "AI supports " + (target != null ? target.getName() : "ally");
-                break;
-            case "RETREAT":
-                description = "AI retreats to " + (position != null ? position.toString() : "safe position");
-                break;
-            case "USE_ABILITY":
-                description = "AI uses " + ability + " on " + (target != null ? target.getName() : "target");
-                break;
-            case "MOVE":
-                description = "AI moves to " + (position != null ? position.toString() : "position");
-                break;
-            default:
-                description = "AI performs " + actionType;
-        }
+    /**
+     * Initialize action decisions
+     */
+    private void initializeActionDecisions() {
+        // Create decision tree for action execution
+        DecisionTree executionTree = DecisionTree.builder()
+                .treeId("EXECUTION_TREE")
+                .treeName("Action Execution Decision Tree")
+                .treeType("EXECUTION")
+                .rootNodeId("EXECUTE_ACTION")
+                .decisionNodes(new HashMap<>())
+                .isActive(true)
+                .build();
+        
+        actionDecisions.put(executionTree.getTreeId(), executionTree);
+        
+        // Create decision tree for action planning
+        DecisionTree planningTree = DecisionTree.builder()
+                .treeId("PLANNING_TREE")
+                .treeName("Action Planning Decision Tree")
+                .treeType("PLANNING")
+                .rootNodeId("PLAN_ACTION")
+                .decisionNodes(new HashMap<>())
+                .isActive(true)
+                .build();
+        
+        actionDecisions.put(planningTree.getTreeId(), planningTree);
     }
     
-    @Override
-    public String toString() {
-        return String.format("AIAction{type='%s', priority=%d, executed=%s, description='%s'}", 
-                actionType, priority, isExecuted, description);
+    /**
+     * Execute action
+     */
+    public boolean executeAction() {
+        if (!isActive && actionCost > 0) {
+            isActive = true;
+            
+            // Simulate action execution
+            boolean success = random.nextDouble() < 0.8; // 80% success rate
+            isSuccessful = success;
+            
+            // Deactivate after execution
+            isActive = false;
+            
+            return success;
+        }
+        return false;
+    }
+    
+    /**
+     * Get action status
+     */
+    public String getActionStatus() {
+        StringBuilder status = new StringBuilder();
+        status.append("AI Action Status:\n");
+        status.append("- Action ID: ").append(actionId).append("\n");
+        status.append("- Action Name: ").append(actionName).append("\n");
+        status.append("- Behavior Type: ").append(behaviorType).append("\n");
+        status.append("- Action Cost: ").append(actionCost).append("\n");
+        status.append("- Action Duration: ").append(actionDuration).append("\n");
+        status.append("- Is Active: ").append(isActive).append("\n");
+        status.append("- Is Successful: ").append(isSuccessful).append("\n");
+        status.append("- Active Behaviors: ").append(actionBehaviors.values().stream().filter(BehaviorNode::isActive).count()).append("\n");
+        status.append("- Active Decision Trees: ").append(actionDecisions.values().stream().filter(DecisionTree::isActive).count()).append("\n");
+        
+        return status.toString();
     }
 }
 

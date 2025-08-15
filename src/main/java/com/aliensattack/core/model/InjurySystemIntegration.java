@@ -12,8 +12,12 @@ public class InjurySystemIntegration {
     private final InjurySystem injurySystem;
     
     public InjurySystemIntegration() {
-        this.injurySystem = new InjurySystem();
-        this.injurySystem.initialize();
+        InjurySystem shared = InjurySystem.getInstance();
+        if (shared == null) {
+            shared = new InjurySystem();
+            shared.initialize();
+        }
+        this.injurySystem = shared;
     }
     
     /**

@@ -2,12 +2,11 @@ package com.aliensattack.ui;
 
 import com.aliensattack.combat.ShootingSystem;
 import com.aliensattack.combat.CombatResult;
-import com.aliensattack.combat.OptimizedCombatManager;
-import com.aliensattack.combat.interfaces.ICombatManager;
+import com.aliensattack.combat.DefaultCombatManager;
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
 import com.aliensattack.field.ITacticalField;
-import com.aliensattack.field.OptimizedTacticalField;
+import com.aliensattack.field.TacticalField;
 import com.aliensattack.actions.ActionManager;
 import com.aliensattack.actions.ActionType;
 import com.aliensattack.actions.UnitAction;
@@ -31,7 +30,7 @@ public class GameWindow extends JFrame {
     private static final Logger log = LogManager.getLogger(GameWindow.class);
     
     private ITacticalField tacticalField;
-    private OptimizedCombatManager combatManager;
+    private DefaultCombatManager combatManager;
     private ShootingSystem shootingSystem;
     private ActionManager actionManager; // Добавляем ActionManager
     
@@ -42,6 +41,11 @@ public class GameWindow extends JFrame {
     private JPanel actionPanel;
     private JPanel mechanicsPanel;
     private JPanel shootingPanel;
+    
+    // Views
+    private com.aliensattack.ui.panels.TacticalMapView tacticalMapView;
+    private com.aliensattack.ui.panels.UnitInfoPanelView unitInfoPanelView;
+    private com.aliensattack.ui.panels.ActionPanelView actionPanelView;
     
     // Game State
     private List<Unit> units;
@@ -102,6 +106,11 @@ public class GameWindow extends JFrame {
         shootingPanel = new JPanel();
         shootingPanel.setBorder(BorderFactory.createTitledBorder("Система Стрельбы"));
         shootingPanel.setLayout(new BoxLayout(shootingPanel, BoxLayout.Y_AXIS));
+
+        // Views initialization
+        tacticalMapView = new com.aliensattack.ui.panels.TacticalMapView(tacticalMapPanel, 10, 10);
+        unitInfoPanelView = new com.aliensattack.ui.panels.UnitInfoPanelView(unitInfoPanel);
+        actionPanelView = new com.aliensattack.ui.panels.ActionPanelView(actionPanel, null);
     }
     
     private void setupLayout() {
@@ -148,14 +157,13 @@ public class GameWindow extends JFrame {
     
     private void initializeGame() {
         // Initialize tactical field
-        tacticalField = new OptimizedTacticalField(10, 10);
+        tacticalField = new TacticalField(10, 10);
         
         // Initialize combat manager
-        combatManager = new OptimizedCombatManager((OptimizedTacticalField) tacticalField);
+        combatManager = new DefaultCombatManager((TacticalField) tacticalField);
         
-        // Initialize action manager - используем OptimizedCombatManager вместо FinalXCOM2CombatManager
-        OptimizedCombatManager optimizedCombatManager = new OptimizedCombatManager((OptimizedTacticalField) tacticalField);
-        actionManager = new ActionManager((OptimizedTacticalField) tacticalField, optimizedCombatManager);
+        // Initialize action manager
+        actionManager = new ActionManager(tacticalField, combatManager);
         
         // Initialize shooting system
         shootingSystem = new ShootingSystem(tacticalField, combatManager);
@@ -264,88 +272,13 @@ public class GameWindow extends JFrame {
     
     private void updateTacticalMap() {
         log.debug("Updating tactical map");
-        tacticalMapPanel.removeAll();
-        tacticalMapPanel.setLayout(new GridLayout(10, 10, 2, 2));
-        
-        for (int y = 0; y < 10; y++) {
-            for (int x = 0; x < 10; x++) {
-                JButton tileButton = createTileButton(x, y);
-                tacticalMapPanel.add(tileButton);
-            }
-        }
-        
-        tacticalMapPanel.revalidate();
-        tacticalMapPanel.repaint();
-        log.debug("Tactical map updated");
+        tacticalMapView.setOnTileClick((x, y) -> handleTileClick(x, y));
+        tacticalMapView.render(highlightedPositions, isHighlightingMovePositions,
+                isWaitingForGrenadeTarget, grenadePreviewCenter, grenadePreviewRadius, units);
+        checkAutoEndTurn();
     }
     
-    private JButton createTileButton(int x, int y) {
-        JButton button = new JButton();
-        button.setPreferredSize(new Dimension(50, 50));
-        button.setFont(new Font("Arial", Font.BOLD, 10));
-        
-        // Check if unit is at this position
-        Unit unitAtPosition = getUnitAtPosition(x, y);
-        if (unitAtPosition != null) {
-            if (unitAtPosition.getUnitType() == UnitType.SOLDIER) {
-                button.setBackground(Color.BLUE);
-                button.setText(unitAtPosition.getName().substring(0, 1));
-            } else {
-                button.setBackground(Color.RED);
-                button.setText("A");
-            }
-            button.setForeground(Color.WHITE);
-        } else {
-            // Проверяем, является ли эта позиция подсвеченной для движения
-            Position currentPos = new Position(x, y);
-            if (isHighlightingMovePositions && highlightedPositions.contains(currentPos)) {
-                button.setBackground(Color.GREEN);
-                button.setText("M");
-                button.setForeground(Color.WHITE);
-            } else if (isWaitingForGrenadeTarget && grenadePreviewCenter != null) {
-                // Подсветка AOE для гранаты: рисуем красный круг радиуса
-                int dx = Math.abs(grenadePreviewCenter.getX() - x);
-                int dy = Math.abs(grenadePreviewCenter.getY() - y);
-                int manhattan = dx + dy;
-                if (manhattan <= grenadePreviewRadius) {
-                    button.setBackground(new Color(255, 100, 100));
-                    button.setText("G");
-                    button.setForeground(Color.WHITE);
-                } else {
-                    button.setBackground(Color.LIGHT_GRAY);
-                    button.setText("");
-                }
-            } else {
-                button.setBackground(Color.LIGHT_GRAY);
-                button.setText("");
-            }
-        }
-        
-        button.addActionListener(e -> handleTileClick(x, y));
-
-        // Перестраиваем предпросмотр AOE при наведении мыши
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (isWaitingForGrenadeTarget && selectedUnit != null) {
-                    grenadePreviewCenter = new Position(x, y);
-                    // Возьмем радиус первой доступной гранаты
-                    List<Explosive> explosives = selectedUnit.getExplosives();
-                    grenadePreviewRadius = (explosives != null && !explosives.isEmpty()) ? Math.max(0, explosives.get(0).getRadius()) : 0;
-                    updateTacticalMap();
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (isWaitingForGrenadeTarget) {
-                    // оставляем центр, чтобы пользователь видел текущий предпросмотр
-                }
-            }
-        });
-        
-        return button;
-    }
+    // createTileButton moved to TacticalMapView
     
     private Unit getUnitAtPosition(int x, int y) {
         // Используем тактическое поле для получения юнита
@@ -358,6 +291,23 @@ public class GameWindow extends JFrame {
     
     private void handleTileClick(int x, int y) {
         try {
+            logMessage("=== КЛИК ПО ПОЗИЦИИ (" + x + ", " + y + ") ===");
+            logMessage("Режим движения: " + (isWaitingForTargetPosition ? "ДА" : "НЕТ"));
+            logMessage("Режим гранаты: " + (isWaitingForGrenadeTarget ? "ДА" : "НЕТ"));
+            logMessage("Выбранный юнит: " + (selectedUnit != null ? selectedUnit.getName() : "НЕТ"));
+            logMessage("Количество подсвеченных позиций: " + highlightedPositions.size());
+            
+            log.debug("Click at ({}, {}) - move mode: {}, grenade mode: {}, highlighted count: {}", 
+                     x, y, isWaitingForTargetPosition, isWaitingForGrenadeTarget, highlightedPositions.size());
+            
+            // Дополнительная отладочная информация для режима гранаты
+            if (isWaitingForGrenadeTarget) {
+                log.debug("Grenade mode active - selectedUnit: {}, explosives: {}", 
+                         selectedUnit != null ? selectedUnit.getName() : "null",
+                         selectedUnit != null && selectedUnit.getExplosives() != null ? selectedUnit.getExplosives().size() : 0);
+                log.debug("Highlighted positions: {}", highlightedPositions);
+            }
+            
             Unit unitAtPosition = getUnitAtPosition(x, y);
             Position clickedPosition = new Position(x, y);
             
@@ -368,8 +318,13 @@ public class GameWindow extends JFrame {
                     actionManager.selectUnit(selectedUnit);
                     isWaitingForTargetPosition = false;
                     
-                    // Очищаем подсветку при выборе нового юнита
+                    // Очищаем подсветку при выборе нового юнита, но сохраняем режим гранаты если он активен
+                    boolean wasWaitingForGrenade = isWaitingForGrenadeTarget;
                     clearHighlighting();
+                    if (wasWaitingForGrenade) {
+                        isWaitingForGrenadeTarget = true;
+                        highlightGrenadePositions();
+                    }
                     
                     updateUnitInfo();
                     logMessage("Selected unit: " + unitAtPosition.getName());
@@ -413,6 +368,8 @@ public class GameWindow extends JFrame {
                             highlightMovePositions();
                         } else {
                             clearHighlighting(); // Очищаем подсветку только если AP закончились
+                            // Автоматически выбираем следующего солдата с AP
+                            onMovementCompleted();
                         }
                     } else {
                         String errorMsg = moveAction != null ? moveAction.getResult() : "ActionManager.executeAction() returned null";
@@ -426,25 +383,107 @@ public class GameWindow extends JFrame {
                 }
             } else if (isWaitingForGrenadeTarget && selectedUnit != null) {
                 // Бросок гранаты по выбранной позиции
+                logMessage("=== РЕЖИМ ГРАНАТЫ АКТИВЕН ===");
+                logMessage("Клик по позиции (" + x + ", " + y + ")");
+                
+                Position unitPos = selectedUnit.getPosition();
+                Position targetPosition = new Position(x, y, unitPos.getHeight());
+                log.debug("Grenade target selected at: {} for unit: {} (unit height: {})", targetPosition, selectedUnit.getName(), unitPos.getHeight());
+                
+                // Проверяем, что клик был по подсвеченной позиции
+                log.debug("Checking if target position {} is in highlighted positions: {}", targetPosition, highlightedPositions);
+                log.debug("Highlighted positions count: {}", highlightedPositions.size());
+                
+                // Упрощенная проверка - ищем позицию по координатам
+                boolean foundInHighlighted = false;
+                for (Position pos : highlightedPositions) {
+                    log.debug("Checking position: {} against target ({}, {})", pos, x, y);
+                    if (pos.getX() == x && pos.getY() == y) {
+                        foundInHighlighted = true;
+                        log.debug("Found matching position: {} at ({}, {})", pos, x, y);
+                        break;
+                    }
+                }
+                
+                if (!foundInHighlighted) {
+                    logMessage("Клик не по подсвеченной позиции для броска гранаты!");
+                    log.debug("Target position ({}, {}) not found in highlighted positions", x, y);
+                    log.debug("Highlighted positions: {}", highlightedPositions);
+                    return;
+                }
+                
+                // Гранаты можно бросать в любую позицию в радиусе, включая позиции с врагами
+                log.debug("Grenade target validation passed - grenades can target enemy positions");
+                
+                logMessage("Обрабатываем бросок гранаты в позицию (" + x + ", " + y + ")");
+                
                 List<Explosive> explosives = selectedUnit.getExplosives();
                 if (explosives != null && !explosives.isEmpty()) {
                     Explosive explosive = explosives.get(0);
-                    List<CombatResult> results = combatManager.throwGrenade(selectedUnit, explosive, clickedPosition);
-                    log.info("{} throws '{}' to {} with radius {}", selectedUnit.getName(), explosive.getName(), clickedPosition, explosive.getRadius());
-                    for (CombatResult r : results) {
-                        if (r.getDamage() > 0) {
-                            log.debug("Grenade result: {} dmg, msg='{}'", r.getDamage(), r.getMessage());
-                        } else {
-                            log.trace("Grenade peripheral effect: {}", r.getMessage());
-                        }
-                        logMessage(r.getMessage() + " (" + r.getDamage() + " dmg)");
+                    
+                    // Проверяем, что позиция в радиусе броска (используем Manhattan distance для консистентности)
+                    int distance = Math.abs(unitPos.getX() - x) + Math.abs(unitPos.getY() - y);
+                    logMessage("Расстояние до цели: " + distance + ", радиус гранаты: " + explosive.getRadius());
+                    
+                    if (distance > explosive.getRadius()) {
+                        logMessage("Цель слишком далеко! Радиус гранаты: " + explosive.getRadius() + ", расстояние: " + distance);
+                        return;
                     }
+                    
+                    // Бросаем гранату
+                    logMessage(selectedUnit.getName() + " бросает " + explosive.getName() + " в позицию (" + x + ", " + y + ")");
+                    
+                    // Наносим урон по области вокруг выбранной позиции
+                    int grenadeRadius = explosive.getRadius();
+                    int damage = explosive.getDamage();
+                    List<CombatResult> results = new ArrayList<>();
+                    
+                    // Проверяем всех юнитов в радиусе гранаты
+                    for (Unit unit : units) {
+                        if (unit.isAlive() && unit.getUnitType() == UnitType.ALIEN) {
+                            Position enemyPos = unit.getPosition();
+                            int enemyDistance = Math.abs(enemyPos.getX() - x) + Math.abs(enemyPos.getY() - y);
+                            
+                            if (enemyDistance <= grenadeRadius) {
+                                // Враг в радиусе гранаты - наносим урон
+                                boolean killed = unit.takeDamage(damage);
+                                String message = killed ? 
+                                    unit.getName() + " уничтожен гранатой!" : 
+                                    unit.getName() + " получил " + damage + " урона от гранаты!";
+                                
+                                results.add(new CombatResult(true, damage, message));
+                                logMessage(message);
+                            }
+                        }
+                    }
+                    
+                    // Если никого не задели, все равно считаем бросок успешным
+                    if (results.isEmpty()) {
+                        results.add(new CombatResult(true, 0, "Граната взорвалась, но никого не задела"));
+                        logMessage("Граната взорвалась, но никого не задела");
+                    }
+                    
+                    // Тратим очки действия и удаляем гранату
+                    selectedUnit.spendActionPoint();
+                    selectedUnit.removeExplosive(explosive);
+                    logMessage(selectedUnit.getName() + " потратил 1 AP на бросок гранаты");
+                    logMessage("Граната " + explosive.getName() + " удалена из инвентаря");
+                    
+                    // Очищаем состояние
                     isWaitingForGrenadeTarget = false;
                     grenadePreviewCenter = null;
                     grenadePreviewRadius = 0;
+                    clearHighlighting();
+                    
+                    // Обновляем UI
                     updateTacticalMap();
                     updateUnitInfo();
                     updateActionPanel();
+                    
+                    // Автоматически выбираем следующего солдата с AP только если у текущего не осталось AP
+                    if (selectedUnit.getActionPoints() <= 0) {
+                        onMovementCompleted();
+                    }
                 } else {
                     log.warn("No explosives available for {}", selectedUnit.getName());
                     logMessage("Нет доступных гранат у " + selectedUnit.getName());
@@ -461,7 +500,10 @@ public class GameWindow extends JFrame {
     
     private void highlightMovePositions() {
         if (selectedUnit != null && selectedUnit.isAlive() && selectedUnit.canMove()) {
-            highlightedPositions.clear();
+            // Don't clear if we're in grenade mode
+            if (!isWaitingForGrenadeTarget) {
+                highlightedPositions.clear();
+            }
             isHighlightingMovePositions = true;
             
             // Получаем все доступные позиции для движения
@@ -479,133 +521,106 @@ public class GameWindow extends JFrame {
             
             updateTacticalMap();
             logMessage("Highlighted " + highlightedPositions.size() + " valid move positions for " + selectedUnit.getName());
+            
+            // Проверяем автоматическое завершение хода после подсветки позиций для движения
+            checkAutoEndTurn();
         }
     }
     
     private void clearHighlighting() {
         try {
+            log.debug("Clearing highlighting - current state: move={}, grenade={}", isHighlightingMovePositions, isWaitingForGrenadeTarget);
+            
+            // Очищаем все подсветки
             highlightedPositions.clear();
             isHighlightingMovePositions = false;
+            isWaitingForGrenadeTarget = false;
+            grenadePreviewCenter = null;
+            grenadePreviewRadius = 0;
             updateTacticalMap();
+            
+            // Проверяем автоматическое завершение хода после очистки подсветки
+            checkAutoEndTurn();
         } catch (Exception e) {
             System.err.println("Error clearing highlighting: " + e.getMessage());
             e.printStackTrace();
         }
     }
     
-    private void updateUnitInfo() {
-        try {
-            unitInfoPanel.removeAll();
-            
-            if (selectedUnit != null) {
-                try {
-                    addUnitInfoLabel("Name: " + selectedUnit.getName());
-                    addUnitInfoLabel("Health: " + selectedUnit.getCurrentHealth() + "/" + selectedUnit.getMaxHealth());
-                    
-                    Position position = selectedUnit.getPosition();
-                    if (position != null) {
-                        addUnitInfoLabel("Position: (" + position.getX() + ", " + position.getY() + ")");
-                    } else {
-                        addUnitInfoLabel("Position: Unknown");
-                    }
-                    
-                    addUnitInfoLabel("Unit Type: " + selectedUnit.getUnitType());
-                    addUnitInfoLabel("Action Points: " + selectedUnit.getActionPoints());
-                    
-                    if (selectedUnit.getWeapon() != null) {
-                        try {
-                            Weapon weapon = selectedUnit.getWeapon();
-                            addUnitInfoLabel("Weapon: " + weapon.getName());
+    /**
+     * Highlight valid grenade throw positions
+     */
+    private void highlightGrenadePositions() {
+        logMessage("=== ПОДСВЕТКА ПОЗИЦИЙ ДЛЯ ГРАНАТЫ ===");
+        
+        if (selectedUnit != null && selectedUnit.isAlive()) {
+            List<Explosive> explosives = selectedUnit.getExplosives();
+            if (explosives != null && !explosives.isEmpty()) {
+                Explosive explosive = explosives.get(0);
+                int grenadeRange = explosive.getRadius();
+                log.debug("Using explosive: {} with radius: {}", explosive.getName(), grenadeRange);
+                logMessage("Граната: " + explosive.getName() + " (радиус: " + grenadeRange + ")");
+                
+                // Очищаем предыдущие подсвеченные позиции
+                highlightedPositions.clear();
+                log.debug("Cleared previous highlighted positions");
+                logMessage("Очищены предыдущие позиции");
+                
+                // Подсвечиваем все позиции в радиусе броска гранаты, включая позиции с врагами
+                Position unitPos = selectedUnit.getPosition();
+                log.debug("Unit position: {} (x={}, y={})", unitPos, unitPos.getX(), unitPos.getY());
+                logMessage("Позиция юнита: (" + unitPos.getX() + ", " + unitPos.getY() + ")");
+                
+                for (int dx = -grenadeRange; dx <= grenadeRange; dx++) {
+                    for (int dy = -grenadeRange; dy <= grenadeRange; dy++) {
+                        if (Math.abs(dx) + Math.abs(dy) <= grenadeRange) {
+                            int newX = unitPos.getX() + dx;
+                            int newY = unitPos.getY() + dy;
                             
-                            // Показываем специальные свойства инопланетного оружия
-                            if (weapon.isAlienWeapon()) {
-                                addUnitInfoLabel("Type: ALIEN WEAPON");
-                                addUnitInfoLabel("Damage: " + weapon.getTotalAlienWeaponDamage() + " (Base: " + weapon.getBaseDamage() + " + " + weapon.getAlienWeaponDamageBonus() + ")");
-                                addUnitInfoLabel("Accuracy: " + weapon.getTotalAlienWeaponAccuracy() + "% (Base: " + weapon.getAccuracy() + "% + " + weapon.getAlienWeaponAccuracyBonus() + "%)");
+                            // Исключаем позицию самого солдата
+                            if (newX == unitPos.getX() && newY == unitPos.getY()) {
+                                log.trace("Skipping unit's own position: ({}, {})", newX, newY);
+                                continue;
+                            }
+                            
+                            if (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
+                                // Create position with same height as unit for consistency
+                                Position pos = new Position(newX, newY, unitPos.getHeight());
                                 
-                                if (weapon.isPlasmaWeapon()) {
-                                    addUnitInfoLabel("Special: Plasma Technology");
-                                } else if (weapon.isLaserWeapon()) {
-                                    addUnitInfoLabel("Special: Laser Technology");
-                                }
+                                // Добавляем все позиции в радиусе - гранаты могут бросаться в врагов
+                                highlightedPositions.add(pos);
+                                log.debug("Added grenade position: {} (x={}, y={}, height={})", pos, newX, newY, unitPos.getHeight());
                             } else {
-                                addUnitInfoLabel("Damage: " + weapon.getBaseDamage());
-                                addUnitInfoLabel("Accuracy: " + weapon.getAccuracy() + "%");
-                            }
-                            
-                            addUnitInfoLabel("Ammo: " + weapon.getCurrentAmmo() + "/" + weapon.getAmmoCapacity());
-                        } catch (Exception e) {
-                            System.err.println("Error displaying weapon info: " + e.getMessage());
-                            addUnitInfoLabel("Weapon: Error displaying weapon info");
-                        }
-                    }
-                    
-                    // Показываем гранаты
-                    try {
-                        List<Explosive> explosives = selectedUnit.getExplosives();
-                        if (explosives != null && !explosives.isEmpty()) {
-                            addUnitInfoLabel("--- GRENADES ---");
-                            for (Explosive explosive : explosives) {
-                                addUnitInfoLabel(explosive.getName() + " (" + explosive.getDamage() + " dmg, " + explosive.getRadius() + " radius)");
+                                log.trace("Position ({}, {}) out of bounds, skipping", newX, newY);
                             }
                         }
-                    } catch (Exception e) {
-                        System.err.println("Error displaying explosives info: " + e.getMessage());
                     }
-                    
-                    // Показываем способности (включая медикаменты)
-                    try {
-                        List<SoldierAbility> abilities = selectedUnit.getAbilities();
-                        if (abilities != null && !abilities.isEmpty()) {
-                            addUnitInfoLabel("--- ABILITIES ---");
-                            for (SoldierAbility ability : abilities) {
-                                addUnitInfoLabel(ability.getName() + " (AP: " + ability.getActionPointCost() + ")");
-                            }
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error displaying abilities info: " + e.getMessage());
-                    }
-                    
-                    if (selectedUnit.getSoldierClass() != null) {
-                        addUnitInfoLabel("Class: " + selectedUnit.getSoldierClass());
-                    }
-                    
-                    // Show special abilities
-                    try {
-                        if (selectedUnit.hasBladestorm()) {
-                            addUnitInfoLabel("Bladestorm: Active");
-                        }
-                        
-                        if (selectedUnit.isConcealed()) {
-                            addUnitInfoLabel("Status: Concealed");
-                        }
-                        
-                        if (selectedUnit.isSuppressed()) {
-                            addUnitInfoLabel("Status: Suppressed");
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error displaying special abilities: " + e.getMessage());
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error updating unit info: " + e.getMessage());
-                    e.printStackTrace();
-                    addUnitInfoLabel("Error: Could not display unit information");
                 }
+                
+                log.debug("Total highlighted positions: {}", highlightedPositions.size());
+                logMessage("Всего подсвечено позиций: " + highlightedPositions.size());
+                updateTacticalMap();
+                logMessage("Подсвечены " + highlightedPositions.size() + " позиций для броска гранаты (радиус: " + grenadeRange + ")");
+                log.debug("Подсвеченные позиции: {}", highlightedPositions);
+                
+                // Проверяем автоматическое завершение хода после подсветки позиций для гранаты
+                checkAutoEndTurn();
+            } else {
+                log.warn("No explosives found for unit: {}", selectedUnit.getName());
+                logMessage("ОШИБКА: У юнита нет гранат!");
             }
-            
-            unitInfoPanel.revalidate();
-            unitInfoPanel.repaint();
-        } catch (Exception e) {
-            System.err.println("Critical error in updateUnitInfo: " + e.getMessage());
-            e.printStackTrace();
+        } else {
+            log.warn("Cannot highlight grenade positions - unit is null or not alive");
+            logMessage("ОШИБКА: Юнит недоступен!");
         }
     }
     
-    private void addUnitInfoLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
-        unitInfoPanel.add(label);
+    private void updateUnitInfo() {
+        unitInfoPanelView.render(selectedUnit);
+            checkAutoEndTurn();
     }
+    
+    // addUnitInfoLabel moved to UnitInfoPanelView
     
     private void updateActionPanel() {
         try {
@@ -617,7 +632,10 @@ public class GameWindow extends JFrame {
                     addActionButtonIfAvailable("Move", e -> handleMoveAction(), selectedUnit.canPerformMove());
                     addActionButtonIfAvailable("Attack", e -> handleAttackAction(), selectedUnit.canPerformAttack());
                     addActionButtonIfAvailable("Overwatch", e -> handleOverwatchAction(), selectedUnit.canPerformOverwatch());
-                    addActionButtonIfAvailable("End Turn", e -> handleEndTurnAction(), true); // Always available
+                    
+                    // End Turn button - only available when no soldiers have action points
+                    boolean canEndTurn = !hasSoldiersWithActionPoints();
+                    addActionButtonIfAvailable("End Turn", e -> handleEndTurnAction(), canEndTurn);
                     
                     // Special abilities - check if unit has them
                     addActionButtonIfAvailable("Conceal", e -> handleConcealAction(), selectedUnit.canPerformConceal());
@@ -640,6 +658,9 @@ public class GameWindow extends JFrame {
             
             actionPanel.revalidate();
             actionPanel.repaint();
+            
+            // Проверяем автоматическое завершение хода после обновления панели
+            checkAutoEndTurn();
         } catch (Exception e) {
             System.err.println("Critical error in updateActionPanel: " + e.getMessage());
             e.printStackTrace();
@@ -665,6 +686,18 @@ public class GameWindow extends JFrame {
             button.setBackground(Color.LIGHT_GRAY);
             actionPanel.add(button);
         }
+    }
+    
+    /**
+     * Check if any soldiers have action points remaining
+     */
+    private boolean hasSoldiersWithActionPoints() {
+        for (Unit unit : units) {
+            if (unit.getUnitType() == UnitType.SOLDIER && unit.isAlive() && unit.getActionPoints() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private void updateMechanicsPanel() {
@@ -694,6 +727,9 @@ public class GameWindow extends JFrame {
         
         mechanicsPanel.revalidate();
         mechanicsPanel.repaint();
+        
+        // Проверяем автоматическое завершение хода после обновления панели механик
+        checkAutoEndTurn();
     }
     
     private void addMechanicsLabel(String text) {
@@ -772,6 +808,9 @@ public class GameWindow extends JFrame {
                      // Если у юнита закончились очки действия, очищаем подсветку
                      if (selectedUnit != null && selectedUnit.getActionPoints() <= 0) {
                          clearHighlighting();
+                         
+                         // Автоматически выбираем следующего солдата с AP или завершаем ход
+                         onMovementCompleted();
                      }
                  });
                 fireButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -781,6 +820,9 @@ public class GameWindow extends JFrame {
         
         shootingPanel.revalidate();
         shootingPanel.repaint();
+        
+        // Проверяем автоматическое завершение хода после обновления панели стрельбы
+        checkAutoEndTurn();
     }
     
     // Action handlers
@@ -792,6 +834,57 @@ public class GameWindow extends JFrame {
             highlightMovePositions();
             logMessage("Select target position for " + selectedUnit.getName() + " to move to");
             logMessage("Available AP: " + selectedUnit.getActionPoints());
+            
+            // Проверяем автоматическое завершение хода после выбора действия движения
+            checkAutoEndTurn();
+        }
+    }
+    
+    /**
+     * Called after movement is completed to auto-select next soldier
+     */
+    public void onMovementCompleted() {
+        // Проверяем автоматическое завершение хода
+        if (!hasSoldiersWithActionPoints()) {
+            logMessage("=== АВТОМАТИЧЕСКОЕ ЗАВЕРШЕНИЕ ХОДА ===");
+            logMessage("У всех солдат закончились очки действий");
+            handleEndTurnAction();
+            return;
+        }
+        
+        // Если у текущего юнита нет AP, выбираем следующего
+        if (selectedUnit != null && selectedUnit.getActionPoints() <= 0) {
+            autoSelectNextSoldier();
+        }
+    }
+    
+    /**
+     * Auto-select next soldier with action points
+     */
+    private void autoSelectNextSoldier() {
+        if (selectedUnit != null && selectedUnit.getActionPoints() <= 0) {
+            // Find next soldier with action points
+            for (Unit unit : units) {
+                if (unit.getUnitType() == UnitType.SOLDIER && unit.isAlive() && unit.getActionPoints() > 0) {
+                    selectedUnit = unit;
+                    logMessage("Автоматически выбран: " + unit.getName() + " (AP: " + unit.getActionPoints() + ")");
+                    
+                    // Очищаем режим гранаты при смене юнита
+                    isWaitingForGrenadeTarget = false;
+                    grenadePreviewCenter = null;
+                    grenadePreviewRadius = 0;
+                    
+                    updateUnitInfo();
+                    updateActionPanel();
+                    updateTacticalMap();
+                    return;
+                }
+            }
+            
+            // Если не нашли солдата с AP - автоматически завершаем ход
+            logMessage("=== АВТОМАТИЧЕСКОЕ ЗАВЕРШЕНИЕ ХОДА ===");
+            logMessage("У всех солдат закончились очки действий");
+            handleEndTurnAction();
         }
     }
     
@@ -830,12 +923,30 @@ public class GameWindow extends JFrame {
             selectedUnit.setOverwatching(true);
             updateUnitInfo();
             updateActionPanel(); // Обновляем панель действий
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
     private void handleEndTurnAction() {
+        // Проверяем, есть ли у солдат очки действий
+        boolean hasUnitsWithActions = false;
+        for (Unit unit : units) {
+            if (unit.getUnitType() == UnitType.SOLDIER && unit.isAlive() && unit.getActionPoints() > 0) {
+                hasUnitsWithActions = true;
+                break;
+            }
+        }
+        
+        if (hasUnitsWithActions) {
+            logMessage("⚠️ Нельзя завершить ход! У некоторых солдат остались очки действий.");
+            return;
+        }
+        
         currentTurn++;
         logMessage("=== TURN " + currentTurn + " ===");
+        logMessage("Ход завершен - все солдаты потратили очки действий");
         
         // Reset action points for all units
         for (Unit unit : units) {
@@ -851,6 +962,9 @@ public class GameWindow extends JFrame {
             selectedUnit.conceal();
             logMessage(selectedUnit.getName() + " enters concealment");
             updateUnitInfo();
+            
+            // Проверяем автоматическое завершение хода после использования способности маскировки
+            checkAutoEndTurn();
         }
     }
     
@@ -868,6 +982,9 @@ public class GameWindow extends JFrame {
             logMessage(selectedUnit.getName() + " uses suppression fire (AP spent: ALL)");
             updateUnitInfo();
             updateActionPanel(); // Обновляем панель действий
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
@@ -878,13 +995,41 @@ public class GameWindow extends JFrame {
                 return;
             }
 
-            // Входим в режим выбора точки броска гранаты и показываем предпросмотр AOE
+            // Проверяем, есть ли у юнита гранаты
+            List<Explosive> explosives = selectedUnit.getExplosives();
+            if (explosives == null || explosives.isEmpty()) {
+                logMessage("У " + selectedUnit.getName() + " нет гранат!");
+                return;
+            }
+
+            logMessage("=== АКТИВАЦИЯ РЕЖИМА ГРАНАТЫ ===");
+            logMessage("Юнит: " + selectedUnit.getName());
+            logMessage("Гранаты: " + explosives.size() + " шт.");
+            log.debug("Grenade action triggered for unit: {} with {} explosives", selectedUnit.getName(), explosives.size());
+            log.debug("Unit position: {}", selectedUnit.getPosition());
+
+            // Очищаем предыдущую подсветку и входим в режим гранаты
+            clearHighlighting();
             isWaitingForGrenadeTarget = true;
             grenadePreviewCenter = null;
             grenadePreviewRadius = 0;
+            
+            log.debug("Grenade mode flags set: isWaitingForGrenadeTarget={}", isWaitingForGrenadeTarget);
+            logMessage("Режим гранаты активирован!");
+            
             actionManager.selectAction(ActionType.GRENADE);
-            logMessage("Выберите клетку для броска гранаты. Подсветка покажет область поражения.");
+            logMessage("Выберите клетку для броска гранаты. Красная подсветка покажет доступные позиции.");
+            log.debug("Grenade mode activated for unit: {}", selectedUnit.getName());
+            
+            // Подсвечиваем доступные позиции для броска гранаты
+            highlightGrenadePositions();
             updateTacticalMap();
+            
+            log.debug("Grenade mode setup completed. Highlighted positions count: {}", highlightedPositions.size());
+            logMessage("Подсветка завершена. Позиций: " + highlightedPositions.size());
+            
+            // Проверяем автоматическое завершение хода после активации режима гранаты
+            checkAutoEndTurn();
         }
     }
     
@@ -899,6 +1044,9 @@ public class GameWindow extends JFrame {
             selectedUnit.spendActionPoint();
             updateUnitInfo();
             updateActionPanel(); // Обновляем панель действий
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
@@ -908,6 +1056,9 @@ public class GameWindow extends JFrame {
             ReactiveAbility bladestorm = new ReactiveAbility("Bladestorm", ReactiveAbilityType.BLADESTORM, 1);
             selectedUnit.addReactiveAbility(bladestorm);
             updateUnitInfo();
+            
+            // Проверяем автоматическое завершение хода после активации способности Bladestorm
+            checkAutoEndTurn();
         }
     }
     
@@ -915,8 +1066,9 @@ public class GameWindow extends JFrame {
         if (selectedUnit != null && selectedUnit.getWeapon() != null && selectedUnit.getWeapon().canUseRapidFire()) {
             logMessage(selectedUnit.getName() + " uses Rapid Fire");
             selectedUnit.spendActionPoint();
-            updateUnitInfo();
-            updateActionPanel(); // Обновляем панель действий
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
@@ -926,6 +1078,9 @@ public class GameWindow extends JFrame {
             selectedUnit.spendActionPoint();
             updateUnitInfo();
             updateActionPanel(); // Обновляем панель действий
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
@@ -935,6 +1090,9 @@ public class GameWindow extends JFrame {
             selectedUnit.spendActionPoint();
             updateUnitInfo();
             updateActionPanel(); // Обновляем панель действий
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
@@ -952,6 +1110,9 @@ public class GameWindow extends JFrame {
             }
             updateUnitInfo();
             updateActionPanel(); // Обновляем панель действий после перезарядки
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
@@ -966,6 +1127,9 @@ public class GameWindow extends JFrame {
             selectedUnit.spendActionPoint();
             updateUnitInfo();
             updateActionPanel(); // Обновляем панель действий
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
@@ -980,6 +1144,9 @@ public class GameWindow extends JFrame {
             selectedUnit.spendActionPoint();
             updateUnitInfo();
             updateActionPanel(); // Обновляем панель действий
+            
+            // Автоматически выбираем следующего солдата с AP или завершаем ход
+            onMovementCompleted();
         }
     }
     
@@ -1004,4 +1171,24 @@ public class GameWindow extends JFrame {
         setVisible(true);
         logMessage("XCOM 2 Tactical Combat System loaded successfully!");
     }
+
+    /**
+     * Проверяет нужно ли автоматически завершить ход
+     */
+    private void checkAutoEndTurn() {
+        if (selectedUnit != null && selectedUnit.getActionPoints() <= 0) {
+            // Проверяем, есть ли у других солдат очки действий
+            if (!hasSoldiersWithActionPoints()) {
+                logMessage("=== АВТОМАТИЧЕСКОЕ ЗАВЕРШЕНИЕ ХОДА ===");
+                logMessage("У всех солдат закончились очки действий");
+                handleEndTurnAction();
+                return; // Не выбираем следующего солдата если ход завершен
+            } else {
+                // Автоматически выбираем следующего солдата с AP
+                autoSelectNextSoldier();
+            }
+        }
+    }
+    
+    // checkAutoEndTurnAndUpdateUI removed as unused
 } 

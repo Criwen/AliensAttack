@@ -1,405 +1,382 @@
 package com.aliensattack.core.model;
 
+import lombok.extern.log4j.Log4j2;
 import java.util.*;
-import java.time.LocalDateTime;
 
 /**
- * Alien Technology Factory - Factory class for creating technology components and projects
- * Provides standardized creation methods for technology-related objects
+ * Factory for creating alien technology components
  */
+@Log4j2
 public class AlienTechnologyFactory {
     
-    private static final Random random = new Random();
-    
     /**
-     * Create a weapon system technology project
+     * Create weapon system technology project
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyProject createWeaponSystemProject(
+    public static AlienResearchTechnologySystem.TechnologyProject createWeaponSystemProject(
             String projectId, String name, int complexity) {
         
-        return AdvancedAlienResearchTechnologySystem.TechnologyProject.builder()
-                .projectId(projectId)
-                .name(name)
-                .type(AdvancedAlienResearchTechnologySystem.TechnologyType.WEAPON_SYSTEM)
-                .complexity(complexity)
-                .progress(0)
-                .requiredProgress(complexity * 200)
-                .startDate(LocalDateTime.now())
-                .expectedCompletionDate(LocalDateTime.now().plusDays(complexity * 14))
-                .isCompleted(false)
-                .dependencies(new ArrayList<>())
-                .effects(new ArrayList<>())
-                .build();
+        return AlienResearchTechnologySystem.TechnologyProject.builder()
+            .projectId(projectId)
+            .name(name)
+            .type(AlienResearchTechnologySystem.TechnologyType.WEAPON_SYSTEM)
+            .category(AlienResearchTechnologySystem.TechnologyCategory.WEAPON)
+            .level(AlienResearchTechnologySystem.TechnologyLevel.HUMAN_TECH)
+            .complexity(complexity)
+            .progress(0)
+            .status(AlienResearchTechnologySystem.ProjectStatus.IN_PROGRESS)
+            .engineerTeam("ENGINEER_TEAM_001")
+            .build();
     }
     
     /**
-     * Create a defense system technology project
+     * Create defense system technology project
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyProject createDefenseSystemProject(
+    public static AlienResearchTechnologySystem.TechnologyProject createDefenseSystemProject(
             String projectId, String name, int complexity) {
         
-        return AdvancedAlienResearchTechnologySystem.TechnologyProject.builder()
-                .projectId(projectId)
-                .name(name)
-                .type(AdvancedAlienResearchTechnologySystem.TechnologyType.DEFENSE_SYSTEM)
-                .complexity(complexity)
-                .progress(0)
-                .requiredProgress(complexity * 200)
-                .startDate(LocalDateTime.now())
-                .expectedCompletionDate(LocalDateTime.now().plusDays(complexity * 14))
-                .isCompleted(false)
-                .dependencies(new ArrayList<>())
-                .effects(new ArrayList<>())
-                .build();
+        return AlienResearchTechnologySystem.TechnologyProject.builder()
+            .projectId(projectId)
+            .name(name)
+            .type(AlienResearchTechnologySystem.TechnologyType.DEFENSE_SYSTEM)
+            .category(AlienResearchTechnologySystem.TechnologyCategory.DEFENSE)
+            .level(AlienResearchTechnologySystem.TechnologyLevel.HUMAN_TECH)
+            .complexity(complexity)
+            .progress(0)
+            .status(AlienResearchTechnologySystem.ProjectStatus.IN_PROGRESS)
+            .engineerTeam("ENGINEER_TEAM_001")
+            .build();
     }
     
     /**
-     * Create a psychic amplifier technology project
+     * Create psychic amplifier technology project
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyProject createPsychicAmplifierProject(
+    public static AlienResearchTechnologySystem.TechnologyProject createPsychicAmplifierProject(
             String projectId, String name, int complexity) {
         
-        return AdvancedAlienResearchTechnologySystem.TechnologyProject.builder()
-                .projectId(projectId)
-                .name(name)
-                .type(AdvancedAlienResearchTechnologySystem.TechnologyType.PSYCHIC_AMPLIFIER)
-                .complexity(complexity)
-                .progress(0)
-                .requiredProgress(complexity * 400)
-                .startDate(LocalDateTime.now())
-                .expectedCompletionDate(LocalDateTime.now().plusDays(complexity * 28))
-                .isCompleted(false)
-                .dependencies(new ArrayList<>())
-                .effects(new ArrayList<>())
-                .build();
+        return AlienResearchTechnologySystem.TechnologyProject.builder()
+            .projectId(projectId)
+            .name(name)
+            .type(AlienResearchTechnologySystem.TechnologyType.PSYCHIC_AMPLIFIER)
+            .category(AlienResearchTechnologySystem.TechnologyCategory.PSYCHIC)
+            .level(AlienResearchTechnologySystem.TechnologyLevel.HUMAN_TECH)
+            .complexity(complexity)
+            .progress(0)
+            .status(AlienResearchTechnologySystem.ProjectStatus.IN_PROGRESS)
+            .engineerTeam("ENGINEER_TEAM_001")
+            .build();
     }
     
     /**
-     * Create a medical device technology project
+     * Create medical device technology project
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyProject createMedicalDeviceProject(
+    public static AlienResearchTechnologySystem.TechnologyProject createMedicalDeviceProject(
             String projectId, String name, int complexity) {
         
-        return AdvancedAlienResearchTechnologySystem.TechnologyProject.builder()
-                .projectId(projectId)
-                .name(name)
-                .type(AdvancedAlienResearchTechnologySystem.TechnologyType.MEDICAL_DEVICE)
-                .complexity(complexity)
-                .progress(0)
-                .requiredProgress(complexity * 200)
-                .startDate(LocalDateTime.now())
-                .expectedCompletionDate(LocalDateTime.now().plusDays(complexity * 14))
-                .isCompleted(false)
-                .dependencies(new ArrayList<>())
-                .effects(new ArrayList<>())
-                .build();
+        return AlienResearchTechnologySystem.TechnologyProject.builder()
+            .projectId(projectId)
+            .name(name)
+            .type(AlienResearchTechnologySystem.TechnologyType.MEDICAL_DEVICE)
+            .category(AlienResearchTechnologySystem.TechnologyCategory.MEDICAL)
+            .level(AlienResearchTechnologySystem.TechnologyLevel.HUMAN_TECH)
+            .complexity(complexity)
+            .progress(0)
+            .status(AlienResearchTechnologySystem.ProjectStatus.IN_PROGRESS)
+            .engineerTeam("ENGINEER_TEAM_001")
+            .build();
     }
     
     /**
-     * Create a stealth system technology project
+     * Create stealth system technology project
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyProject createStealthSystemProject(
+    public static AlienResearchTechnologySystem.TechnologyProject createStealthSystemProject(
             String projectId, String name, int complexity) {
         
-        return AdvancedAlienResearchTechnologySystem.TechnologyProject.builder()
-                .projectId(projectId)
-                .name(name)
-                .type(AdvancedAlienResearchTechnologySystem.TechnologyType.STEALTH_SYSTEM)
-                .complexity(complexity)
-                .progress(0)
-                .requiredProgress(complexity * 400)
-                .startDate(LocalDateTime.now())
-                .expectedCompletionDate(LocalDateTime.now().plusDays(complexity * 28))
-                .isCompleted(false)
-                .dependencies(new ArrayList<>())
-                .effects(new ArrayList<>())
-                .build();
+        return AlienResearchTechnologySystem.TechnologyProject.builder()
+            .projectId(projectId)
+            .name(name)
+            .type(AlienResearchTechnologySystem.TechnologyType.STEALTH_SYSTEM)
+            .category(AlienResearchTechnologySystem.TechnologyCategory.STEALTH)
+            .level(AlienResearchTechnologySystem.TechnologyLevel.HUMAN_TECH)
+            .complexity(complexity)
+            .progress(0)
+            .status(AlienResearchTechnologySystem.ProjectStatus.IN_PROGRESS)
+            .engineerTeam("ENGINEER_TEAM_001")
+            .build();
     }
     
     /**
-     * Create an experimental system technology project
+     * Create experimental system technology project
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyProject createExperimentalSystemProject(
+    public static AlienResearchTechnologySystem.TechnologyProject createExperimentalSystemProject(
             String projectId, String name, int complexity) {
         
-        return AdvancedAlienResearchTechnologySystem.TechnologyProject.builder()
-                .projectId(projectId)
-                .name(name)
-                .type(AdvancedAlienResearchTechnologySystem.TechnologyType.EXPERIMENTAL_SYSTEM)
-                .complexity(complexity)
-                .progress(0)
-                .requiredProgress(complexity * 600)
-                .startDate(LocalDateTime.now())
-                .expectedCompletionDate(LocalDateTime.now().plusDays(complexity * 42))
-                .isCompleted(false)
-                .dependencies(new ArrayList<>())
-                .effects(new ArrayList<>())
-                .build();
+        return AlienResearchTechnologySystem.TechnologyProject.builder()
+            .projectId(projectId)
+            .name(name)
+            .type(AlienResearchTechnologySystem.TechnologyType.EXPERIMENTAL_SYSTEM)
+            .category(AlienResearchTechnologySystem.TechnologyCategory.EXPERIMENTAL)
+            .level(AlienResearchTechnologySystem.TechnologyLevel.HUMAN_TECH)
+            .complexity(complexity)
+            .progress(0)
+            .status(AlienResearchTechnologySystem.ProjectStatus.IN_PROGRESS)
+            .engineerTeam("ENGINEER_TEAM_001")
+            .build();
     }
     
     /**
-     * Create an alien technology
+     * Create alien technology
      */
-    public static AdvancedAlienResearchTechnologySystem.AlienTechnology createAlienTechnology(
+    public static AlienResearchTechnologySystem.AlienTechnology createAlienTechnology(
             String technologyId, String name,
-            AdvancedAlienResearchTechnologySystem.TechnologyCategory category,
-            AdvancedAlienResearchTechnologySystem.TechnologyLevel level) {
+            AlienResearchTechnologySystem.TechnologyCategory category,
+            AlienResearchTechnologySystem.TechnologyLevel level) {
         
-        return AdvancedAlienResearchTechnologySystem.AlienTechnology.builder()
-                .technologyId(technologyId)
-                .name(name)
-                .category(category)
-                .level(level)
-                .power(calculateTechnologyPower(level, category))
-                .complexity(calculateTechnologyComplexity(level, category))
-                .discoveryDate(LocalDateTime.now())
-                .isUnderstood(false)
-                .isReplicable(false)
-                .capabilities(new ArrayList<>())
-                .build();
+        return AlienResearchTechnologySystem.AlienTechnology.builder()
+            .technologyId(technologyId)
+            .name(name)
+            .category(category)
+            .level(level)
+            .power(calculateTechnologyPower(level, category))
+            .complexity(calculateTechnologyComplexity(level, category))
+            .unlockRequirements(new ArrayList<>())
+            .effects(new ArrayList<>())
+            .capabilities(new ArrayList<>())
+            .build();
     }
     
     /**
-     * Create a technology effect
+     * Create technology effect
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyEffect createTechnologyEffect(
-            String effectId, AdvancedAlienResearchTechnologySystem.TechnologyEffectType type,
+    public static AlienResearchTechnologySystem.TechnologyEffect createTechnologyEffect(
+            String effectId, AlienResearchTechnologySystem.TechnologyEffectType type,
             int magnitude, String description) {
         
-        return AdvancedAlienResearchTechnologySystem.TechnologyEffect.builder()
-                .effectId(effectId)
-                .type(type)
-                .magnitude(magnitude)
-                .description(description)
-                .isActive(false)
-                .build();
+        return AlienResearchTechnologySystem.TechnologyEffect.builder()
+            .effectId(effectId)
+            .type(type)
+            .magnitude(magnitude)
+            .description(description)
+            .duration(5)
+            .build();
     }
     
     /**
-     * Create a technology capability
+     * Create technology capability
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyCapability createTechnologyCapability(
-            String capabilityId, String name,
-            AdvancedAlienResearchTechnologySystem.CapabilityType type, int power) {
+    public static AlienResearchTechnologySystem.TechnologyCapability createTechnologyCapability(
+            String capabilityId,
+            AlienResearchTechnologySystem.CapabilityType type, int power) {
         
-        return AdvancedAlienResearchTechnologySystem.TechnologyCapability.builder()
-                .capabilityId(capabilityId)
-                .name(name)
-                .type(type)
-                .power(power)
-                .description("Technology capability")
-                .isActive(true)
-                .build();
+        return AlienResearchTechnologySystem.TechnologyCapability.builder()
+            .capabilityId(capabilityId)
+            .type(type)
+            .power(power)
+            .cooldown(3)
+            .build();
     }
     
     /**
-     * Create a technology project
+     * Create random technology project
      */
-    public static AlienTechnologyManager.TechnologyProject createTechnologyProject(
-            String projectId, String name,
-            AdvancedAlienResearchTechnologySystem.TechnologyType type,
-            int complexity, String teamId) {
+    public static AlienResearchTechnologySystem.TechnologyProject createRandomTechnologyProject(String projectId) {
+        AlienResearchTechnologySystem.TechnologyType[] types = 
+            AlienResearchTechnologySystem.TechnologyType.values();
         
-        return new AlienTechnologyManager.TechnologyProject(projectId, name, type, complexity, teamId);
+        AlienResearchTechnologySystem.TechnologyType type = 
+            types[new Random().nextInt(types.length)];
+        
+        return AlienResearchTechnologySystem.TechnologyProject.builder()
+            .projectId(projectId)
+            .name("Random " + type.name())
+            .type(type)
+            .category(AlienResearchTechnologySystem.TechnologyCategory.WEAPON)
+            .level(AlienResearchTechnologySystem.TechnologyLevel.HUMAN_TECH)
+            .complexity(3)
+            .progress(0)
+            .status(AlienResearchTechnologySystem.ProjectStatus.IN_PROGRESS)
+            .engineerTeam("ENGINEER_TEAM_001")
+            .build();
     }
     
     /**
-     * Create a technology analysis
+     * Create weapon alien technology
      */
-    public static AlienTechnologyManager.TechnologyAnalysis createTechnologyAnalysis(
-            String technologyId,
-            AdvancedAlienResearchTechnologySystem.TechnologyCategory category,
-            AdvancedAlienResearchTechnologySystem.TechnologyLevel level) {
+    public static AlienResearchTechnologySystem.AlienTechnology createWeaponAlienTechnology(
+            String technologyId, String name, 
+            AlienResearchTechnologySystem.TechnologyLevel level) {
         
-        return new AlienTechnologyManager.TechnologyAnalysis(technologyId, category, level);
+        return createAlienTechnology(technologyId, name,
+            AlienResearchTechnologySystem.TechnologyCategory.WEAPON, level);
     }
     
     /**
-     * Create a technology deployment
+     * Create defense alien technology
      */
-    public static AlienTechnologyManager.TechnologyDeployment createTechnologyDeployment(
-            String technologyId, String deploymentLocation, String deploymentTeam) {
+    public static AlienResearchTechnologySystem.AlienTechnology createDefenseAlienTechnology(
+            String technologyId, String name, 
+            AlienResearchTechnologySystem.TechnologyLevel level) {
         
-        return new AlienTechnologyManager.TechnologyDeployment(technologyId, deploymentLocation, deploymentTeam);
+        return createAlienTechnology(technologyId, name,
+            AlienResearchTechnologySystem.TechnologyCategory.DEFENSE, level);
     }
     
     /**
-     * Create a technology breakthrough
+     * Create psychic alien technology
      */
-    public static AlienTechnologyManager.TechnologyBreakthrough createTechnologyBreakthrough(
-            String technologyId, String description) {
+    public static AlienResearchTechnologySystem.AlienTechnology createPsychicAlienTechnology(
+            String technologyId, String name, 
+            AlienResearchTechnologySystem.TechnologyLevel level) {
         
-        return new AlienTechnologyManager.TechnologyBreakthrough(technologyId, description, LocalDateTime.now());
+        return createAlienTechnology(technologyId, name,
+            AlienResearchTechnologySystem.TechnologyCategory.PSYCHIC, level);
     }
     
     /**
-     * Create a random technology project
+     * Create biological alien technology
      */
-    public static AdvancedAlienResearchTechnologySystem.TechnologyProject createRandomTechnologyProject(String projectId) {
-        AdvancedAlienResearchTechnologySystem.TechnologyType[] types = 
-                AdvancedAlienResearchTechnologySystem.TechnologyType.values();
+    public static AlienResearchTechnologySystem.AlienTechnology createBiologicalAlienTechnology(
+            String technologyId, String name, 
+            AlienResearchTechnologySystem.TechnologyLevel level) {
         
-        AdvancedAlienResearchTechnologySystem.TechnologyType type = 
-                types[random.nextInt(types.length)];
-        
-        String name = "Random Technology " + projectId;
-        int complexity = random.nextInt(5) + 1;
-        
-        return AdvancedAlienResearchTechnologySystem.TechnologyProject.builder()
-                .projectId(projectId)
-                .name(name)
-                .type(type)
-                .complexity(complexity)
-                .progress(0)
-                .requiredProgress(complexity * 200)
-                .startDate(LocalDateTime.now())
-                .expectedCompletionDate(LocalDateTime.now().plusDays(complexity * 14))
-                .isCompleted(false)
-                .dependencies(new ArrayList<>())
-                .effects(new ArrayList<>())
-                .build();
+        return createAlienTechnology(technologyId, name,
+            AlienResearchTechnologySystem.TechnologyCategory.BIOLOGICAL, level);
     }
     
     /**
-     * Create a weapon alien technology
+     * Create experimental alien technology
      */
-    public static AdvancedAlienResearchTechnologySystem.AlienTechnology createWeaponAlienTechnology(
-            String technologyId, String name, AdvancedAlienResearchTechnologySystem.TechnologyLevel level) {
+    public static AlienResearchTechnologySystem.AlienTechnology createExperimentalAlienTechnology(
+            String technologyId, String name, 
+            AlienResearchTechnologySystem.TechnologyLevel level) {
         
-        return createAlienTechnology(technologyId, name, 
-                AdvancedAlienResearchTechnologySystem.TechnologyCategory.WEAPON, level);
-    }
-    
-    /**
-     * Create a defense alien technology
-     */
-    public static AdvancedAlienResearchTechnologySystem.AlienTechnology createDefenseAlienTechnology(
-            String technologyId, String name, AdvancedAlienResearchTechnologySystem.TechnologyLevel level) {
-        
-        return createAlienTechnology(technologyId, name, 
-                AdvancedAlienResearchTechnologySystem.TechnologyCategory.DEFENSE, level);
-    }
-    
-    /**
-     * Create a psychic alien technology
-     */
-    public static AdvancedAlienResearchTechnologySystem.AlienTechnology createPsychicAlienTechnology(
-            String technologyId, String name, AdvancedAlienResearchTechnologySystem.TechnologyLevel level) {
-        
-        return createAlienTechnology(technologyId, name, 
-                AdvancedAlienResearchTechnologySystem.TechnologyCategory.PSYCHIC, level);
-    }
-    
-    /**
-     * Create a biological alien technology
-     */
-    public static AdvancedAlienResearchTechnologySystem.AlienTechnology createBiologicalAlienTechnology(
-            String technologyId, String name, AdvancedAlienResearchTechnologySystem.TechnologyLevel level) {
-        
-        return createAlienTechnology(technologyId, name, 
-                AdvancedAlienResearchTechnologySystem.TechnologyCategory.BIOLOGICAL, level);
-    }
-    
-    /**
-     * Create an experimental alien technology
-     */
-    public static AdvancedAlienResearchTechnologySystem.AlienTechnology createExperimentalAlienTechnology(
-            String technologyId, String name, AdvancedAlienResearchTechnologySystem.TechnologyLevel level) {
-        
-        return createAlienTechnology(technologyId, name, 
-                AdvancedAlienResearchTechnologySystem.TechnologyCategory.EXPERIMENTAL, level);
+        return createAlienTechnology(technologyId, name,
+            AlienResearchTechnologySystem.TechnologyCategory.EXPERIMENTAL, level);
     }
     
     /**
      * Get all technology types
      */
-    public static List<AdvancedAlienResearchTechnologySystem.TechnologyType> getAllTechnologyTypes() {
-        return Arrays.asList(AdvancedAlienResearchTechnologySystem.TechnologyType.values());
+    public static List<AlienResearchTechnologySystem.TechnologyType> getAllTechnologyTypes() {
+        return Arrays.asList(AlienResearchTechnologySystem.TechnologyType.values());
     }
     
     /**
      * Get all technology categories
      */
-    public static List<AdvancedAlienResearchTechnologySystem.TechnologyCategory> getAllTechnologyCategories() {
-        return Arrays.asList(AdvancedAlienResearchTechnologySystem.TechnologyCategory.values());
+    public static List<AlienResearchTechnologySystem.TechnologyCategory> getAllTechnologyCategories() {
+        return Arrays.asList(AlienResearchTechnologySystem.TechnologyCategory.values());
     }
     
     /**
      * Get all technology levels
      */
-    public static List<AdvancedAlienResearchTechnologySystem.TechnologyLevel> getAllTechnologyLevels() {
-        return Arrays.asList(AdvancedAlienResearchTechnologySystem.TechnologyLevel.values());
+    public static List<AlienResearchTechnologySystem.TechnologyLevel> getAllTechnologyLevels() {
+        return Arrays.asList(AlienResearchTechnologySystem.TechnologyLevel.values());
     }
     
     /**
      * Get all technology effect types
      */
-    public static List<AdvancedAlienResearchTechnologySystem.TechnologyEffectType> getAllTechnologyEffectTypes() {
-        return Arrays.asList(AdvancedAlienResearchTechnologySystem.TechnologyEffectType.values());
+    public static List<AlienResearchTechnologySystem.TechnologyEffectType> getAllTechnologyEffectTypes() {
+        return Arrays.asList(AlienResearchTechnologySystem.TechnologyEffectType.values());
     }
     
     /**
      * Get all capability types
      */
-    public static List<AdvancedAlienResearchTechnologySystem.CapabilityType> getAllCapabilityTypes() {
-        return Arrays.asList(AdvancedAlienResearchTechnologySystem.CapabilityType.values());
+    public static List<AlienResearchTechnologySystem.CapabilityType> getAllCapabilityTypes() {
+        return Arrays.asList(AlienResearchTechnologySystem.CapabilityType.values());
     }
     
-    // Helper methods for calculating technology properties
-    
-    private static int calculateTechnologyPower(AdvancedAlienResearchTechnologySystem.TechnologyLevel level, 
-                                              AdvancedAlienResearchTechnologySystem.TechnologyCategory category) {
-        int basePower = level.getLevel() * 10;
+    /**
+     * Calculate technology power based on level and category
+     */
+    private static int calculateTechnologyPower(AlienResearchTechnologySystem.TechnologyLevel level,
+                                               AlienResearchTechnologySystem.TechnologyCategory category) {
+        int basePower = 10;
+        
+        switch (level) {
+            case HUMAN_TECH:
+                basePower = 15;
+                break;
+            case ALIEN_TECH:
+                basePower = 25;
+                break;
+            case BEYOND_HUMAN:
+                basePower = 35;
+                break;
+            case EXPERIMENTAL:
+                basePower = 45;
+                break;
+        }
         
         switch (category) {
             case WEAPON:
-                return basePower * 2;
+                basePower += 5;
+                break;
             case DEFENSE:
-                return basePower * 1;
+                basePower += 3;
+                break;
             case PSYCHIC:
-                return basePower * 3;
-            case BIOLOGICAL:
-                return basePower * 2;
-            case TRANSPORT:
-                return basePower * 1;
-            case COMMUNICATION:
-                return basePower * 1;
-            case STEALTH:
-                return basePower * 2;
+                basePower += 7;
+                break;
             case MEDICAL:
-                return basePower * 1;
+                basePower += 2;
+                break;
+            case STEALTH:
+                basePower += 4;
+                break;
             case EXPERIMENTAL:
-                return basePower * 4;
-            default:
-                return basePower;
+                basePower += 10;
+                break;
         }
+        
+        return basePower;
     }
     
-    private static int calculateTechnologyComplexity(AdvancedAlienResearchTechnologySystem.TechnologyLevel level,
-                                                   AdvancedAlienResearchTechnologySystem.TechnologyCategory category) {
-        int baseComplexity = level.getLevel() * 5;
+    /**
+     * Calculate technology complexity based on level and category
+     */
+    private static int calculateTechnologyComplexity(AlienResearchTechnologySystem.TechnologyLevel level,
+                                                     AlienResearchTechnologySystem.TechnologyCategory category) {
+        int baseComplexity = 1;
+        
+        switch (level) {
+            case HUMAN_TECH:
+                baseComplexity = 2;
+                break;
+            case ALIEN_TECH:
+                baseComplexity = 4;
+                break;
+            case BEYOND_HUMAN:
+                baseComplexity = 6;
+                break;
+            case EXPERIMENTAL:
+                baseComplexity = 8;
+                break;
+        }
         
         switch (category) {
             case WEAPON:
-                return baseComplexity * 1;
+                baseComplexity += 1;
+                break;
             case DEFENSE:
-                return baseComplexity * 1;
+                baseComplexity += 1;
+                break;
             case PSYCHIC:
-                return baseComplexity * 3;
-            case BIOLOGICAL:
-                return baseComplexity * 2;
-            case TRANSPORT:
-                return baseComplexity * 2;
-            case COMMUNICATION:
-                return baseComplexity * 1;
-            case STEALTH:
-                return baseComplexity * 2;
+                baseComplexity += 2;
+                break;
             case MEDICAL:
-                return baseComplexity * 1;
+                baseComplexity += 1;
+                break;
+            case STEALTH:
+                baseComplexity += 1;
+                break;
             case EXPERIMENTAL:
-                return baseComplexity * 4;
-            default:
-                return baseComplexity;
+                baseComplexity += 3;
+                break;
         }
+        
+        return baseComplexity;
     }
 }

@@ -18,6 +18,13 @@ import java.time.temporal.ChronoUnit;
 @AllArgsConstructor
 public class InjurySystem {
     
+    // Singleton support to ensure shared state across integrations and tests
+    private static InjurySystem instance;
+    
+    public static synchronized InjurySystem getInstance() {
+        return instance;
+    }
+    
     // Core injury management
     private Map<String, List<Injury>> soldierInjuries;
     private Map<String, RecoveryStatus> recoveryStatuses;
@@ -50,6 +57,8 @@ public class InjurySystem {
         this.availableMedicalCapacity = 10;
         
         initializeMedicalFacilities();
+        // Register this initialized instance as the shared singleton
+        instance = this;
     }
     
     @Data

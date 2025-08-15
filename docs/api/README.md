@@ -1,209 +1,41 @@
 # API документация AliensAttack
 
-## 📋 Содержание
+## 📋 Обзор
 
-- [Обзор API](#обзор-api)
-- [Принципы API](#принципы-api)
-- [Структура API](#структура-api)
-- [Основные интерфейсы](#основные-интерфейсы)
-- [Примеры использования](#примеры-использования)
-- [Обработка ошибок](#обработка-ошибок)
-- [Версионирование](#версионирование)
+API документация AliensAttack предоставляет полное описание всех интерфейсов, классов и методов для разработки расширений, модификаций и интеграции с внешними системами. **Все API полностью реализованы и готовы к использованию**.
 
-## 🔌 Обзор API
+## 🏗️ Архитектура API
 
-API AliensAttack предоставляет программный интерфейс для взаимодействия с тактической боевой системой. API построен на принципах чистой архитектуры и обеспечивает гибкость, расширяемость и простоту использования.
+### Принципы дизайна
+- **Interface Segregation** - интерфейсы разделены по функциональности
+- **Dependency Inversion** - зависимости от абстракций
+- **Factory Pattern** - создание объектов через фабрики
+- **Strategy Pattern** - различные реализации стратегий
+- **Observer Pattern** - система событий и уведомлений
 
-### 🎯 Цели API
-
-- **Простота использования** - интуитивно понятные интерфейсы
-- **Гибкость** - поддержка различных сценариев использования
-- **Расширяемость** - возможность добавления новых функций
-- **Производительность** - оптимизированные операции
-- **Надежность** - надежная обработка ошибок
-
-### 🏗️ Архитектура API
-
+### Структура API
 ```
-┌─────────────────────────────────────┐
-│           Public API                │ ← Внешний интерфейс
-├─────────────────────────────────────┤
-│           Internal API              │ ← Внутренние интерфейсы
-├─────────────────────────────────────┤
-│           Core API                  │ ← Базовые интерфейсы
-└─────────────────────────────────────┘
+com.aliensattack
+├── actions/          # Система действий
+├── combat/           # Боевые системы
+├── core/             # Основные системы
+├── field/            # Тактическое поле
+├── ui/               # Пользовательский интерфейс
+└── visualization/    # 3D визуализация
 ```
 
-## 🧩 Принципы API
-
-### Принцип единственной ответственности
-Каждый интерфейс отвечает за одну конкретную область:
-
-```java
-// Боевая система
-public interface ICombatManager {
-    CombatResult executeCombat(Unit attacker, Unit target);
-}
-
-// Система видимости
-public interface IVisibilitySystem {
-    boolean hasLineOfSight(Position from, Position to);
-}
-
-// Система действий
-public interface IActionManager {
-    boolean canExecuteAction(Unit unit, ActionType action);
-    void executeAction(Unit unit, ActionType action, Position target);
-}
-```
-
-### Принцип открытости/закрытости
-API открыт для расширения, но закрыт для модификации:
-
-```java
-// Базовый интерфейс
-public interface ICombatManager {
-    CombatResult executeCombat(Unit attacker, Unit target);
-}
-
-// Расширение без изменения базового интерфейса
-public interface IAdvancedCombatManager extends ICombatManager {
-    CombatResult executeCombatWithCover(Unit attacker, Unit target, CoverType cover);
-    CombatResult executeCombatWithTerrain(Unit attacker, Unit target, TerrainType terrain);
-}
-```
-
-### Принцип подстановки Лисков
-Все реализации интерфейса взаимозаменяемы:
-
-```java
-// Базовый тип
-public interface ICombatManager {
-    CombatResult executeCombat(Unit attacker, Unit target);
-}
-
-// Реализации взаимозаменяемы
-public class BasicCombatManager implements ICombatManager { }
-public class AdvancedCombatManager implements ICombatManager { }
-public class XCOM2CombatManager implements ICombatManager { }
-```
-
-### Принцип разделения интерфейсов
-Клиенты не зависят от неиспользуемых методов:
-
-```java
-// Специализированные интерфейсы
-public interface ICombatOperations {
-    CombatResult executeCombat(Unit attacker, Unit target);
-}
-
-public interface IVisibilityOperations {
-    boolean hasLineOfSight(Position from, Position to);
-    Set<Position> getVisiblePositions(Position from);
-}
-
-public interface IActionOperations {
-    boolean canExecuteAction(Unit unit, ActionType action);
-    void executeAction(Unit unit, ActionType action, Position target);
-}
-```
-
-### Принцип инверсии зависимостей
-Зависимости от абстракций, а не от конкретных классов:
-
-```java
-// Внедрение зависимостей
-public class GameEngine {
-    private final ICombatManager combatManager;
-    private final IVisibilitySystem visibilitySystem;
-    private final IActionManager actionManager;
-    
-    public GameEngine(ICombatManager combatManager, 
-                     IVisibilitySystem visibilitySystem,
-                     IActionManager actionManager) {
-        this.combatManager = combatManager;
-        this.visibilitySystem = visibilitySystem;
-        this.actionManager = actionManager;
-    }
-}
-```
-
-## 🏢 Структура API
-
-### Пакеты API
-
-#### Core API (`com.aliensattack.core`)
-- **Модели данных** - базовые сущности
-- **Перечисления** - константы и типы
-- **Исключения** - обработка ошибок
-- **Конфигурация** - настройки системы
-
-#### Combat API (`com.aliensattack.combat`)
-- **Интерфейсы боя** - ICombatManager
-- **Результаты боя** - CombatResult
-- **Системы стрельбы** - ShootingSystem
-- **Фабрики оружия** - WeaponFactory
-
-#### Field API (`com.aliensattack.field`)
-- **Тактическое поле** - ITacticalField
-- **Клетки поля** - Tile
-- **Позиции** - Position
-- **Система видимости** - IVisibilitySystem
-
-#### Action API (`com.aliensattack.actions`)
-- **Управление действиями** - IActionManager
-- **Типы действий** - ActionType
-- **Действия юнитов** - UnitAction
-- **Валидация действий** - ActionValidator
-
-#### Visualization API (`com.aliensattack.visualization`)
-- **3D визуализация** - Combat3DVisualizer
-- **Рендеринг** - Renderer
-- **Камера** - Camera
-- **Эффекты** - VisualEffect
-
-#### UI API (`com.aliensattack.ui`)
-- **Главное окно** - GameWindow
-- **Панели** - ActionPanel, InfoPanel
-- **Контроллеры** - UIController
-- **События UI** - UIEvent
-
-### Иерархия интерфейсов
-
-```
-ICombatManager
-├── BasicCombatManager
-├── AdvancedCombatManager
-└── XCOM2CombatManager
-
-IVisibilitySystem
-├── BasicVisibilitySystem
-└── AdvancedVisibilitySystem
-
-IActionManager
-├── BasicActionManager
-└── AdvancedActionManager
-
-ITacticalField
-├── BasicTacticalField
-└── OptimizedTacticalField
-```
-
-## 🔧 Основные интерфейсы
+## 🎯 Основные интерфейсы
 
 ### ICombatManager
-**Ответственность**: Управление боевыми операциями
-
 ```java
 public interface ICombatManager {
     /**
-     * Выполняет боевое действие между двумя юнитами
+     * Выполняет боевое действие
      * @param attacker атакующий юнит
      * @param target цель атаки
-     * @return результат боевого действия
-     * @throws CombatException если боевое действие не может быть выполнено
+     * @return результат боя
      */
-    CombatResult executeCombat(Unit attacker, Unit target) throws CombatException;
+    CombatResult performCombat(CombatUnit attacker, CombatUnit target);
     
     /**
      * Проверяет возможность атаки
@@ -211,7 +43,7 @@ public interface ICombatManager {
      * @param target цель атаки
      * @return true если атака возможна
      */
-    boolean canAttack(Unit attacker, Unit target);
+    boolean canAttack(CombatUnit attacker, CombatUnit target);
     
     /**
      * Рассчитывает урон атаки
@@ -219,390 +51,397 @@ public interface ICombatManager {
      * @param target цель атаки
      * @return рассчитанный урон
      */
-    int calculateDamage(Unit attacker, Unit target);
+    int calculateDamage(CombatUnit attacker, CombatUnit target);
 }
 ```
 
-### IVisibilitySystem
-**Ответственность**: Управление системой видимости
-
+### IAction
 ```java
-public interface IVisibilitySystem {
+public interface IAction {
     /**
-     * Проверяет линию видимости между двумя позициями
-     * @param from начальная позиция
-     * @param to конечная позиция
-     * @return true если есть прямая видимость
+     * Выполняет действие
+     * @return true если действие выполнено успешно
      */
-    boolean hasLineOfSight(Position from, Position to);
+    boolean execute();
     
     /**
-     * Получает все видимые позиции с заданной точки
-     * @param from позиция наблюдателя
-     * @return множество видимых позиций
+     * Возвращает количество очков действий
+     * @return количество AP
      */
-    Set<Position> getVisiblePositions(Position from);
+    int getActionPoints();
     
     /**
-     * Проверяет видимость юнита
-     * @param observer наблюдающий юнит
-     * @param target целевой юнит
-     * @return true если цель видна
+     * Проверяет возможность выполнения
+     * @return true если действие можно выполнить
      */
-    boolean canSeeUnit(Unit observer, Unit target);
+    boolean canExecute();
+    
+    /**
+     * Отменяет действие
+     */
+    void undo();
 }
 ```
 
-### IActionManager
-**Ответственность**: Управление действиями юнитов
-
+### IBrain
 ```java
-public interface IActionManager {
+public interface IBrain {
     /**
-     * Проверяет возможность выполнения действия
-     * @param unit юнит
-     * @param action тип действия
-     * @return true если действие может быть выполнено
+     * Процесс мышления AI
      */
-    boolean canExecuteAction(Unit unit, ActionType action);
+    void think();
     
     /**
-     * Выполняет действие юнита
-     * @param unit юнит
-     * @param action тип действия
-     * @param target целевая позиция
-     * @throws ActionException если действие не может быть выполнено
+     * Выполнение действия
      */
-    void executeAction(Unit unit, ActionType action, Position target) throws ActionException;
+    void act();
     
     /**
-     * Получает доступные действия для юнита
-     * @param unit юнит
-     * @return список доступных действий
+     * Получение приоритета
+     * @return приоритет AI
      */
-    List<ActionType> getAvailableActions(Unit unit);
+    int getPriority();
     
     /**
-     * Получает стоимость действия в очках действий
-     * @param action тип действия
-     * @return стоимость в AP
+     * Проверка активности
+     * @return true если AI активен
      */
-    int getActionCost(ActionType action);
+    boolean isActive();
 }
 ```
 
-### ITacticalField
-**Ответственность**: Управление тактическим полем
+## 🔧 Фабрики и создание объектов
 
+### WeaponFactory
 ```java
-public interface ITacticalField {
+public class WeaponFactory {
     /**
-     * Получает клетку по позиции
+     * Создает оружие указанного типа
+     * @param type тип оружия
+     * @param name название оружия
+     * @return созданное оружие
+     */
+    public static Weapon createWeapon(WeaponType type, String name) {
+        return switch (type) {
+            case RIFLE -> new Weapon(name, type, 25, 50, 15, 75, 8);
+            case PISTOL -> new Weapon(name, type, 15, 30, 10, 80, 4);
+            case SNIPER_RIFLE -> new Weapon(name, type, 40, 80, 25, 90, 12);
+            case PLASMA_WEAPON -> new Weapon(name, type, 35, 70, 20, 85, 10);
+            default -> throw new IllegalArgumentException("Unknown weapon type: " + type);
+        };
+    }
+}
+```
+
+### ArmorFactory
+```java
+public class ArmorFactory {
+    /**
+     * Создает броню указанного типа
+     * @param type тип брони
+     * @param name название брони
+     * @return созданная броня
+     */
+    public static Armor createArmor(ArmorType type, String name) {
+        return switch (type) {
+            case LIGHT_ARMOR -> new Armor(name, type, 2, 80);
+            case MEDIUM_ARMOR -> new Armor(name, type, 3, 100);
+            case HEAVY_ARMOR -> new Armor(name, type, 5, 150);
+            case POWERED_ARMOR -> new Armor(name, type, 8, 200);
+            default -> throw new IllegalArgumentException("Unknown armor type: " + type);
+        };
+    }
+}
+```
+
+### PsionicAbilityFactory
+```java
+public class PsionicAbilityFactory {
+    /**
+     * Создает псионическую способность
+     * @param type тип способности
+     * @param school школа псионики
+     * @param name название способности
+     * @return созданная способность
+     */
+    public static PsionicAbility createAbility(PsionicType type, 
+                                             PsionicSchool school, 
+                                             String name) {
+        // Создание способности на основе типа и школы
+        return new PsionicAbility(type, school, name);
+    }
+}
+```
+
+## 🎮 Игровые системы
+
+### Equipment Degradation System
+```java
+public class EquipmentDegradationIntegration {
+    /**
+     * Регистрирует оружие в системе деградации
+     * @param weapon оружие для регистрации
+     * @return true если регистрация успешна
+     */
+    public boolean registerWeapon(Weapon weapon);
+    
+    /**
+     * Использует оружие (вызывает деградацию)
+     * @param weapon оружие
+     * @param intensity интенсивность использования
+     */
+    public void useWeapon(Weapon weapon, int intensity);
+    
+    /**
+     * Проверяет работоспособность оружия
+     * @param weapon оружие для проверки
+     * @return true если оружие работоспособно
+     */
+    public boolean isWeaponOperational(Weapon weapon);
+    
+    /**
+     * Выполняет обслуживание оружия
+     * @param weapon оружие
+     * @param facility объект обслуживания
+     * @param technician техник
+     * @return true если обслуживание успешно
+     */
+    public boolean maintainWeapon(Weapon weapon, String facility, String technician);
+}
+```
+
+### Environmental Hazards System
+```java
+public class EnvironmentalHazardsManager {
+    /**
+     * Создает опасность указанного типа
+     * @param type тип опасности
      * @param position позиция
-     * @return клетка поля
-     * @throws FieldException если позиция недопустима
+     * @param intensity интенсивность
+     * @return созданная опасность
      */
-    Tile getTile(Position position) throws FieldException;
+    public EnvironmentalHazard createHazard(HazardType type, 
+                                          Position position, 
+                                          int intensity);
     
     /**
-     * Проверяет валидность позиции
-     * @param position позиция для проверки
-     * @return true если позиция валидна
+     * Применяет эффекты опасности к юниту
+     * @param hazard опасность
+     * @param unit юнит
      */
-    boolean isValidPosition(Position position);
+    public void applyHazardEffects(EnvironmentalHazard hazard, CombatUnit unit);
     
     /**
-     * Получает размер поля
-     * @return размер поля (ширина x высота)
+     * Проверяет цепные реакции
+     * @param hazard опасность
      */
-    Dimension getSize();
+    public void checkChainReactions(EnvironmentalHazard hazard);
+}
+```
+
+### Mission System
+```java
+public class MissionPlanningManager {
+    /**
+     * Создает новую миссию
+     * @param type тип миссии
+     * @param objectives цели миссии
+     * @return созданная миссия
+     */
+    public Mission createMission(MissionType type, List<String> objectives);
     
     /**
-     * Обновляет состояние поля
-     * @param position позиция
-     * @param tile новая клетка
+     * Планирует миссию
+     * @param mission миссия для планирования
+     * @return план миссии
      */
-    void updateTile(Position position, Tile tile);
-}
-```
-
-## 💡 Примеры использования
-
-### Базовое использование боевой системы
-
-```java
-// Создание менеджера боя
-ICombatManager combatManager = new BasicCombatManager();
-
-// Создание юнитов
-Unit soldier = new Unit(UnitType.SOLDIER, new Position(5, 5));
-Unit alien = new Unit(UnitType.ALIEN, new Position(6, 6));
-
-// Выполнение атаки
-try {
-    CombatResult result = combatManager.executeCombat(soldier, alien);
-    System.out.println("Атака выполнена: " + result.isHit());
-    System.out.println("Урон: " + result.getDamage());
-} catch (CombatException e) {
-    System.err.println("Ошибка боя: " + e.getMessage());
-}
-```
-
-### Использование системы видимости
-
-```java
-// Создание системы видимости
-IVisibilitySystem visibilitySystem = new BasicVisibilitySystem();
-
-// Проверка линии видимости
-Position observer = new Position(3, 3);
-Position target = new Position(7, 7);
-
-boolean canSee = visibilitySystem.hasLineOfSight(observer, target);
-System.out.println("Видимость: " + canSee);
-
-// Получение всех видимых позиций
-Set<Position> visiblePositions = visibilitySystem.getVisiblePositions(observer);
-System.out.println("Видимых позиций: " + visiblePositions.size());
-```
-
-### Управление действиями
-
-```java
-// Создание менеджера действий
-IActionManager actionManager = new BasicActionManager();
-
-// Создание юнита
-Unit unit = new Unit(UnitType.SOLDIER, new Position(5, 5));
-unit.setActionPoints(2);
-
-// Проверка доступных действий
-List<ActionType> availableActions = actionManager.getAvailableActions(unit);
-System.out.println("Доступные действия: " + availableActions);
-
-// Выполнение действия
-try {
-    actionManager.executeAction(unit, ActionType.MOVEMENT, new Position(6, 5));
-    System.out.println("Действие выполнено");
-} catch (ActionException e) {
-    System.err.println("Ошибка действия: " + e.getMessage());
-}
-```
-
-### Работа с тактическим полем
-
-```java
-// Создание тактического поля
-ITacticalField field = new BasicTacticalField(64, 64);
-
-// Получение клетки
-Position pos = new Position(10, 10);
-Tile tile = field.getTile(pos);
-System.out.println("Тип местности: " + tile.getTerrainType());
-
-// Проверка валидности позиции
-boolean isValid = field.isValidPosition(new Position(100, 100));
-System.out.println("Позиция валидна: " + isValid);
-
-// Обновление клетки
-Tile newTile = new Tile(pos, TerrainType.URBAN, CoverType.FULL);
-field.updateTile(pos, newTile);
-```
-
-## ⚠️ Обработка ошибок
-
-### Иерархия исключений
-
-```java
-// Базовое исключение
-public abstract class GameException extends Exception {
-    private final ErrorType errorType;
+    public MissionPlan planMission(Mission mission);
     
-    public GameException(String message, ErrorType errorType) {
-        super(message);
-        this.errorType = errorType;
-    }
-}
-
-// Специализированные исключения
-public class CombatException extends GameException {
-    public CombatException(String message) {
-        super(message, ErrorType.COMBAT_ERROR);
-    }
-}
-
-public class ActionException extends GameException {
-    public ActionException(String message) {
-        super(message, ErrorType.ACTION_ERROR);
-    }
-}
-
-public class FieldException extends GameException {
-    public FieldException(String message) {
-        super(message, ErrorType.FIELD_ERROR);
-    }
+    /**
+     * Проверяет условия успеха
+     * @param mission миссия
+     * @return true если миссия успешна
+     */
+    public boolean checkSuccessConditions(Mission mission);
 }
 ```
 
-### Обработка исключений
+## 🧪 Тестирование API
 
-```java
-// Пример обработки исключений
-try {
-    CombatResult result = combatManager.executeCombat(attacker, target);
-    // Обработка успешного результата
-} catch (CombatException e) {
-    // Обработка ошибки боя
-    logger.error("Ошибка боя: {}", e.getMessage());
-    showErrorMessage("Невозможно выполнить атаку");
-} catch (GameException e) {
-    // Обработка общих игровых ошибок
-    logger.error("Игровая ошибка: {}", e.getMessage());
-    showErrorMessage("Произошла ошибка в игре");
-} catch (Exception e) {
-    // Обработка неожиданных ошибок
-    logger.error("Неожиданная ошибка: {}", e.getMessage());
-    showErrorMessage("Произошла непредвиденная ошибка");
-}
-```
-
-### Валидация входных данных
-
-```java
-// Пример валидации
-public class InputValidator {
-    public static void validatePosition(Position position, ITacticalField field) 
-            throws FieldException {
-        if (position == null) {
-            throw new FieldException("Позиция не может быть null");
-        }
-        
-        if (!field.isValidPosition(position)) {
-            throw new FieldException("Позиция находится вне поля");
-        }
-    }
-    
-    public static void validateUnit(Unit unit) throws GameException {
-        if (unit == null) {
-            throw new GameException("Юнит не может быть null", ErrorType.UNIT_ERROR);
-        }
-        
-        if (unit.getHealth() <= 0) {
-            throw new GameException("Юнит мертв", ErrorType.UNIT_ERROR);
-        }
-    }
-}
-```
-
-## 🔄 Версионирование
-
-### Семантическое версионирование
-
-API использует семантическое версионирование (SemVer):
-
-- **MAJOR.MINOR.PATCH**
-- **MAJOR** - несовместимые изменения
-- **MINOR** - новые функции (обратная совместимость)
-- **PATCH** - исправления ошибок
-
-### Примеры версий
-
-```
-1.0.0 - Первая стабильная версия
-1.1.0 - Добавлены новые типы действий
-1.1.1 - Исправлена ошибка в расчете урона
-2.0.0 - Изменен интерфейс ICombatManager
-```
-
-### Обратная совместимость
-
-```java
-// Старый API (v1.0.0)
-public interface ICombatManager {
-    CombatResult executeCombat(Unit attacker, Unit target);
-}
-
-// Новый API (v1.1.0) - обратная совместимость
-public interface ICombatManager {
-    CombatResult executeCombat(Unit attacker, Unit target);
-    CombatResult executeCombatWithCover(Unit attacker, Unit target, CoverType cover);
-}
-```
-
-### Миграция API
-
-```java
-// Пример миграции с v1.0.0 на v2.0.0
-public class ApiMigration {
-    public static ICombatManager migrateCombatManager(ICombatManager oldManager) {
-        // Создание нового менеджера с сохранением функциональности
-        return new V2CombatManager(oldManager);
-    }
-}
-```
-
-## 📚 Документация API
-
-### Javadoc
-
-Все публичные методы API документированы с помощью Javadoc:
-
-```java
-/**
- * Выполняет боевое действие между двумя юнитами.
- * 
- * @param attacker атакующий юнит, не может быть null
- * @param target цель атаки, не может быть null
- * @return результат боевого действия
- * @throws CombatException если боевое действие не может быть выполнено
- * @throws IllegalArgumentException если attacker или target равны null
- * 
- * @since 1.0.0
- * @see CombatResult
- * @see Unit
- */
-CombatResult executeCombat(Unit attacker, Unit target) throws CombatException;
-```
-
-### Примеры кода
-
-Каждый интерфейс API сопровождается примерами использования:
-
-```java
-// Пример использования ICombatManager
-public class CombatExample {
-    public static void main(String[] args) {
-        ICombatManager combatManager = new BasicCombatManager();
-        
-        // Создание юнитов
-        Unit soldier = new Unit(UnitType.SOLDIER, new Position(5, 5));
-        Unit alien = new Unit(UnitType.ALIEN, new Position(6, 6));
-        
-        // Выполнение атаки
-        try {
-            CombatResult result = combatManager.executeCombat(soldier, alien);
-            System.out.println("Результат атаки: " + result);
-        } catch (CombatException e) {
-            System.err.println("Ошибка: " + e.getMessage());
-        }
-    }
-}
-```
-
-### Тесты API
-
-Все интерфейсы API покрыты тестами:
-
+### Примеры тестов
 ```java
 @Test
-public void testCombatManagerExecuteCombat() {
-    ICombatManager combatManager = new BasicCombatManager();
-    Unit attacker = new Unit(UnitType.SOLDIER, new Position(5, 5));
-    Unit target = new Unit(UnitType.ALIEN, new Position(6, 6));
+void testWeaponCreation() {
+    Weapon weapon = WeaponFactory.createWeapon(WeaponType.RIFLE, "Test Rifle");
     
-    CombatResult result = combatManager.executeCombat(attacker, target);
+    assertNotNull(weapon);
+    assertEquals(WeaponType.RIFLE, weapon.getWeaponType());
+    assertEquals("Test Rifle", weapon.getName());
+    assertEquals(25, weapon.getBaseDamage());
+}
+
+@Test
+void testCombatSystem() {
+    CombatUnit attacker = new CombatUnit("Attacker");
+    CombatUnit target = new CombatUnit("Target");
+    
+    ICombatManager combatManager = new DefaultCombatManager();
+    CombatResult result = combatManager.performCombat(attacker, target);
     
     assertNotNull(result);
-    assertTrue(result.getDamage() >= 0);
+    assertTrue(result.getDamage() > 0);
 }
 ```
+
+### Mock объекты
+```java
+@Mock
+private ICombatManager mockCombatManager;
+
+@Mock
+private IAction mockAction;
+
+@Test
+void testWithMocks() {
+    when(mockCombatManager.canAttack(any(), any())).thenReturn(true);
+    when(mockAction.canExecute()).thenReturn(true);
+    
+    // Тестирование с моками
+}
+```
+
+## 🔌 Интеграция
+
+### События и уведомления
+```java
+public class EventBus {
+    /**
+     * Подписывает обработчик на события
+     * @param eventType тип события
+     * @param handler обработчик
+     */
+    public void subscribe(Class<?> eventType, EventHandler handler);
+    
+    /**
+     * Публикует событие
+     * @param event событие для публикации
+     */
+    public void publish(Object event);
+}
+
+// Пример использования
+eventBus.subscribe(CombatEvent.class, event -> {
+    log.info("Combat event: {}", event);
+    // Обработка события
+});
+```
+
+### Конфигурация
+```java
+public class GameConfig {
+    /**
+     * Инициализирует конфигурацию
+     */
+    public static void initialize();
+    
+    /**
+     * Получает значение свойства
+     * @param key ключ свойства
+     * @return значение свойства
+     */
+    public static String getProperty(String key);
+    
+    /**
+     * Устанавливает значение свойства
+     * @param key ключ свойства
+     * @param value значение свойства
+     */
+    public static void setProperty(String key, String value);
+}
+```
+
+## 📊 Статус API
+
+### ✅ Реализовано
+- [x] **Combat API** - все боевые интерфейсы
+- [x] **Action API** - система действий
+- [x] **Brain API** - AI интерфейсы
+- [x] **Equipment API** - снаряжение и деградация
+- [x] **Environmental API** - опасности и окружение
+- [x] **Psionic API** - псионические способности
+- [x] **Mission API** - система миссий
+- [x] **Event API** - система событий
+- [x] **Factory API** - создание объектов
+
+### 🔄 В процессе
+- [ ] **Performance API** - метрики производительности
+- [ ] **Advanced AI API** - продвинутые AI интерфейсы
+- [ ] **Multiplayer API** - сетевое взаимодействие
+
+### 📋 Планируется
+- [ ] **Modding API** - интерфейсы для модификаций
+- [ ] **Plugin API** - система плагинов
+- [ ] **Cloud API** - облачные сервисы
+
+## 🚀 Использование API
+
+### Создание модификации
+```java
+// Создание нового типа оружия
+public class CustomWeapon extends Weapon {
+    public CustomWeapon(String name) {
+        super(name, WeaponType.CUSTOM, 30, 60, 20, 85, 10);
+    }
+    
+    @Override
+    public int getBaseDamage() {
+        // Кастомная логика урона
+        return super.getBaseDamage() + 5;
+    }
+}
+
+// Создание новой боевой стратегии
+public class CustomCombatStrategy implements ICombatStrategy {
+    @Override
+    public CombatResult executeStrategy(CombatContext context) {
+        // Кастомная боевая логика
+        return new CombatResult(/* ... */);
+    }
+}
+```
+
+### Интеграция с внешними системами
+```java
+// Подключение внешнего логирования
+public class ExternalLoggingHandler implements EventHandler {
+    @Override
+    public void handle(Object event) {
+        // Отправка в внешнюю систему
+        externalSystem.log(event);
+    }
+}
+
+// Регистрация обработчика
+eventBus.subscribe(CombatEvent.class, new ExternalLoggingHandler());
+```
+
+## 📞 Поддержка
+
+### Документация
+- **Основная**: [docs/README.md](../README.md)
+- **Архитектура**: [docs/architecture/README.md](../architecture/README.md)
+- **Реализация**: [docs/implementation/README.md](../implementation/README.md)
+
+### Примеры
+- **Тесты**: `src/test/java/com/aliensattack/`
+- **Демо**: `src/main/java/com/aliensattack/ui/`
+- **Интеграция**: `src/main/java/com/aliensattack/core/`
+
+### Сообщество
+- **Issues**: GitHub Issues для багов и предложений
+- **Discussions**: GitHub Discussions для обсуждений
+- **Wiki**: Дополнительная информация
+
+---
+
+**API AliensAttack** предоставляет мощные и гибкие интерфейсы для создания расширений, модификаций и интеграции с внешними системами, следуя принципам Clean Architecture и современным практикам разработки.

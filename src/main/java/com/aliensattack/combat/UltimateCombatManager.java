@@ -2,7 +2,7 @@ package com.aliensattack.combat;
 
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
-import com.aliensattack.field.OptimizedTacticalField;
+import com.aliensattack.field.TacticalField;
 
 import lombok.Getter;
 import java.util.*;
@@ -22,7 +22,7 @@ public class UltimateCombatManager extends ComprehensiveCombatManager {
     private final Map<String, SquadTactic> activeSquadTactics;
     private final Random random;
     
-    public UltimateCombatManager(OptimizedTacticalField field, Mission mission) {
+    public UltimateCombatManager(TacticalField field, Mission mission) {
         super(field, mission);
         this.activeExplosives = new ConcurrentHashMap<>();
         this.activeSquadTactics = new ConcurrentHashMap<>();
@@ -198,7 +198,7 @@ public class UltimateCombatManager extends ComprehensiveCombatManager {
         Position explosionPos = new Position(x, y);
         
         // Find all units in explosion radius
-        List<Unit> unitsInRadius = ((OptimizedTacticalField)getField()).getUnitsInRangeOptimized(explosionPos, explosive.getRadius());
+        List<Unit> unitsInRadius = ((TacticalField)getField()).getUnitsInRange(explosionPos, explosive.getRadius());
         
         for (Unit unit : unitsInRadius) {
             if (unit.isAlive()) {
@@ -286,7 +286,7 @@ public class UltimateCombatManager extends ComprehensiveCombatManager {
                 Position minePos = new Position(x, y);
                 
                 // Check if any unit is adjacent to mine
-                List<Unit> nearbyUnits = ((OptimizedTacticalField)getField()).getUnitsInRangeOptimized(minePos, 1);
+                List<Unit> nearbyUnits = ((TacticalField)getField()).getUnitsInRange(minePos, 1);
                 
                 if (!nearbyUnits.isEmpty()) {
                     // Trigger explosion
@@ -349,8 +349,7 @@ public class UltimateCombatManager extends ComprehensiveCombatManager {
         }
     }
     
-    @Override
-    public void endTurnOptimized() {
+    public void endTurnRound() {
         // Process explosives
         processProximityMines();
         processTimedExplosives();
@@ -361,6 +360,6 @@ public class UltimateCombatManager extends ComprehensiveCombatManager {
         // Process suppression
         processSuppression();
         
-        super.endTurnOptimized();
+        super.endTurnCore();
     }
 } 

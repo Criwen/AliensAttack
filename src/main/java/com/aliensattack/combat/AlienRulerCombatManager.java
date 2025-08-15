@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Getter
 @Setter
-public class AlienRulerCombatManager extends XCOM2UltimateCombatManager {
+public class AlienRulerCombatManager extends UltimateCampaignCombatManager {
     
     private Random random;
     private List<AlienRuler> activeRulers;

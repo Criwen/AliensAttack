@@ -3,8 +3,8 @@ package com.aliensattack.visualization;
 import com.aliensattack.core.model.Position;
 import com.aliensattack.core.model.Unit;
 import com.aliensattack.core.model.CoverObject;
-import com.aliensattack.field.OptimizedTacticalField;
-import com.aliensattack.combat.OptimizedCombatManager;
+import com.aliensattack.field.TacticalField;
+import com.aliensattack.combat.DefaultCombatManager;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -30,7 +30,7 @@ import java.util.HashMap;
  */
 public class Combat3DVisualizer extends Application {
     
-    private OptimizedTacticalField field;
+    private TacticalField field;
     private Group root;
     private Camera camera;
     private double anchorX, anchorY;
@@ -58,7 +58,7 @@ public class Combat3DVisualizer extends Application {
     private final PhongMaterial moveIndicatorMaterial = new PhongMaterial();
     private final PhongMaterial selectedUnitMaterial = new PhongMaterial();
     
-    public Combat3DVisualizer(OptimizedTacticalField field) {
+    public Combat3DVisualizer(TacticalField field) {
         this.field = field;
         initializeMaterials();
     }
@@ -703,7 +703,7 @@ public class Combat3DVisualizer extends Application {
         unit.spendActionPoint(); // Тратим очко действия
         
         // Обновляем поле
-        field.moveUnitOptimized(unit, targetPos.getX(), targetPos.getY());
+        field.moveUnit(unit, targetPos.getX(), targetPos.getY());
         
         // Обновляем 3D визуализацию
         updateUnitPosition(unit, targetPos);
@@ -720,7 +720,7 @@ public class Combat3DVisualizer extends Application {
         }
     }
     
-    public static void launch3DVisualization(OptimizedTacticalField field, OptimizedCombatManager combatManager) {
+    public static void launch3DVisualization(TacticalField field, DefaultCombatManager combatManager) {
         Combat3DVisualizer visualizer = new Combat3DVisualizer(field);
         new Thread(() -> {
             Platform.startup(() -> {});

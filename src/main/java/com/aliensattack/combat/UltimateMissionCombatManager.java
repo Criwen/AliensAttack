@@ -2,6 +2,7 @@ package com.aliensattack.combat;
 
 import com.aliensattack.core.model.*;
 import com.aliensattack.field.ITacticalField;
+import com.aliensattack.field.TacticalField;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Getter
 @Setter
-public class UltimateMissionCombatManager extends ComprehensiveXCOM2CombatManager {
+public class UltimateMissionCombatManager extends ComprehensiveCombatManager {
 
     private Random random;
     private Mission currentMission;
@@ -43,7 +44,7 @@ public class UltimateMissionCombatManager extends ComprehensiveXCOM2CombatManage
     private List<String> missionLog;
 
     public UltimateMissionCombatManager(ITacticalField field, Mission mission) {
-        super(field);
+        super((TacticalField) field, mission);
         this.random = ThreadLocalRandom.current();
         this.currentMission = mission;
         this.vips = new ArrayList<>();

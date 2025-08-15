@@ -20,5 +20,9 @@ public enum MissionType {
     TERROR,           // Terror attack defense
     COUNCIL,          // Council mission
     ELIMINATION,      // Eliminate all enemies
-    TIMED_ASSAULT     // Timed assault mission
+    TIMED_ASSAULT,    // Timed assault mission
+    DESTRUCTION,      // Destroy specific targets
+    INTELLIGENCE,     // Gather intelligence
+    CAPTURE,          // Capture targets
+    INVASION          // Invasion defense
 } 

@@ -1,336 +1,175 @@
 package com.aliensattack.core.model;
 
+import lombok.extern.log4j.Log4j2;
 import java.util.*;
 
 /**
- * Factory class for creating squad tactics, formations, and bonding components
+ * Factory for creating squad tactics components
  */
+@Log4j2
 public class SquadTacticsFactory {
     
-    private static final Random random = new Random();
-    
     /**
-     * Create a coordinated assault tactic
+     * Create basic squad formation
      */
-    public static SquadTactic createCoordinatedAssaultTactic() {
-        return new SquadTactic("Coordinated Assault", 
-            com.aliensattack.core.enums.SquadTacticType.COORDINATED_ASSAULT, 4, 3);
-    }
-    
-    /**
-     * Create a defensive formation tactic
-     */
-    public static SquadTactic createDefensiveFormationTactic() {
-        return new SquadTactic("Defensive Formation", 
-            com.aliensattack.core.enums.SquadTacticType.DEFENSIVE_FORMATION, 5, 2);
-    }
-    
-    /**
-     * Create a stealth operation tactic
-     */
-    public static SquadTactic createStealthOperationTactic() {
-        return new SquadTactic("Stealth Operation", 
-            com.aliensattack.core.enums.SquadTacticType.STEALTH_OPERATION, 3, 2);
-    }
-    
-    /**
-     * Create a psionic synergy tactic
-     */
-    public static SquadTactic createPsionicSynergyTactic() {
-        return new SquadTactic("Psionic Synergy", 
-            com.aliensattack.core.enums.SquadTacticType.PSIONIC_SYNERGY, 4, 2);
-    }
-    
-    /**
-     * Create a rapid response tactic
-     */
-    public static SquadTactic createRapidResponseTactic() {
-        return new SquadTactic("Rapid Response", 
-            com.aliensattack.core.enums.SquadTacticType.RAPID_RESPONSE, 3, 3);
-    }
-    
-    /**
-     * Create a technical support tactic
-     */
-    public static SquadTactic createTechnicalSupportTactic() {
-        return new SquadTactic("Technical Support", 
-            com.aliensattack.core.enums.SquadTacticType.TECHNICAL_SUPPORT, 4, 2);
-    }
-    
-    /**
-     * Create an overwatch network tactic
-     */
-    public static SquadTactic createOverwatchNetworkTactic() {
-        return new SquadTactic("Overwatch Network", 
-            com.aliensattack.core.enums.SquadTacticType.OVERWATCH_NETWORK, 5, 4);
-    }
-    
-    /**
-     * Create a concealed ambush tactic
-     */
-    public static SquadTactic createConcealedAmbushTactic() {
-        return new SquadTactic("Concealed Ambush", 
-            com.aliensattack.core.enums.SquadTacticType.CONCEALED_AMBUSH, 3, 3);
-    }
-    
-    /**
-     * Create a chain reaction tactic
-     */
-    public static SquadTactic createChainReactionTactic() {
-        return new SquadTactic("Chain Reaction", 
-            com.aliensattack.core.enums.SquadTacticType.CHAIN_REACTION, 4, 3);
-    }
-    
-    /**
-     * Create a healing circle tactic
-     */
-    public static SquadTactic createHealingCircleTactic() {
-        return new SquadTactic("Healing Circle", 
-            com.aliensattack.core.enums.SquadTacticType.HEALING_CIRCLE, 4, 3);
-    }
-    
-    /**
-     * Create a defensive formation
-     */
-    public static AdvancedSquadTacticsSystem.SquadFormation createDefensiveFormation() {
-        Map<String, Integer> positionBonuses = new HashMap<>();
-        positionBonuses.put("defense", 15);
-        positionBonuses.put("accuracy", 5);
-        positionBonuses.put("overwatch", 10);
-        
-        List<String> requiredPositions = Arrays.asList("front", "back", "flank");
-        
-        return AdvancedSquadTacticsSystem.SquadFormation.builder()
-            .formationId("DEFENSIVE_FORMATION")
-            .formationName("Defensive Formation")
-            .formationType(AdvancedSquadTacticsSystem.SquadFormation.FormationType.DEFENSIVE)
-            .formationEffects(positionBonuses)
-            .formationRequirements(requiredPositions)
-            .formationCost(2)
-            .isActive(true)
+    public static SquadTacticsSystem.SquadFormation createBasicFormation() {
+        return SquadTacticsSystem.SquadFormation.builder()
+            .formationId("basic_formation")
+            .description("Basic squad formation")
+            .unitPositions(new HashMap<>())
+            .coverage(60)
+            .mobility(70)
             .build();
     }
     
     /**
-     * Create an offensive formation
+     * Create defensive squad formation
      */
-    public static AdvancedSquadTacticsSystem.SquadFormation createOffensiveFormation() {
-        Map<String, Integer> positionBonuses = new HashMap<>();
-        positionBonuses.put("damage", 15);
-        positionBonuses.put("accuracy", 10);
-        positionBonuses.put("critical", 5);
+    public static SquadTacticsSystem.SquadFormation createDefensiveFormation() {
+        Map<String, Position> positions = new HashMap<>();
+        positions.put("UNIT_1", new Position(0, 0));
+        positions.put("UNIT_2", new Position(1, 0));
+        positions.put("UNIT_3", new Position(0, 1));
         
-        List<String> requiredPositions = Arrays.asList("assault", "support", "flank");
-        
-                return AdvancedSquadTacticsSystem.SquadFormation.builder()
-            .formationId("OFFENSIVE_FORMATION")
-            .formationName("Offensive Formation")
-            .formationType(AdvancedSquadTacticsSystem.SquadFormation.FormationType.OFFENSIVE)
-            .formationEffects(positionBonuses)
-            .formationRequirements(requiredPositions)
-            .formationCost(3)
-            .isActive(true)
-            .build();
-    }
-
-    /**
-     * Create a flanking formation
-     */
-    public static AdvancedSquadTacticsSystem.SquadFormation createFlankingFormation() {
-        Map<String, Integer> positionBonuses = new HashMap<>();
-        positionBonuses.put("critical", 20);
-        positionBonuses.put("damage", 10);
-        positionBonuses.put("movement", 2);
-        
-        List<String> requiredPositions = Arrays.asList("left_flank", "right_flank", "center");
-        
-        return AdvancedSquadTacticsSystem.SquadFormation.builder()
-            .formationId("FLANKING_FORMATION")
-            .formationName("Flanking Formation")
-            .formationType(AdvancedSquadTacticsSystem.SquadFormation.FormationType.FLANKING)
-            .formationEffects(positionBonuses)
-            .formationRequirements(requiredPositions)
-            .formationCost(3)
-            .isActive(true)
-            .build();
-    }
-
-    /**
-     * Create a support formation
-     */
-    public static AdvancedSquadTacticsSystem.SquadFormation createSupportFormation() {
-        Map<String, Integer> positionBonuses = new HashMap<>();
-        positionBonuses.put("healing", 20);
-        positionBonuses.put("support_range", 3);
-        positionBonuses.put("defense", 10);
-        
-        List<String> requiredPositions = Arrays.asList("medic", "support", "guard");
-        
-        return AdvancedSquadTacticsSystem.SquadFormation.builder()
-            .formationId("SUPPORT_FORMATION")
-            .formationName("Support Formation")
-            .formationType(AdvancedSquadTacticsSystem.SquadFormation.FormationType.SUPPORT)
-            .formationEffects(positionBonuses)
-            .formationRequirements(requiredPositions)
-            .formationCost(2)
-            .isActive(true)
-            .build();
-    }
-
-    /**
-     * Create a coordinated attack maneuver
-     */
-    public static AdvancedSquadTacticsSystem.SquadManeuver createCoordinatedAttackManeuver() {
-        Map<String, Integer> maneuverBonuses = new HashMap<>();
-        maneuverBonuses.put("damage", 20);
-        maneuverBonuses.put("accuracy", 15);
-        maneuverBonuses.put("critical", 10);
-        
-        List<String> requiredUnits = Arrays.asList("attacker1", "attacker2", "support");
-        
-        return AdvancedSquadTacticsSystem.SquadManeuver.builder()
-            .maneuverId("COORDINATED_ATTACK")
-            .maneuverName("Coordinated Attack")
-            .maneuverType(AdvancedSquadTacticsSystem.SquadManeuver.ManeuverType.COORDINATED_ATTACK)
-            .maneuverEffects(maneuverBonuses)
-            .maneuverRequirements(requiredUnits)
-            .maneuverCost(3)
-            .isActive(true)
-            .build();
-    }
-
-    /**
-     * Create a covering fire maneuver
-     */
-    public static AdvancedSquadTacticsSystem.SquadManeuver createCoveringFireManeuver() {
-        Map<String, Integer> maneuverBonuses = new HashMap<>();
-        maneuverBonuses.put("overwatch", 25);
-        maneuverBonuses.put("defense", 10);
-        maneuverBonuses.put("movement", 1);
-        
-        List<String> requiredUnits = Arrays.asList("cover", "mover");
-        
-        return AdvancedSquadTacticsSystem.SquadManeuver.builder()
-            .maneuverId("COVERING_FIRE")
-            .maneuverName("Covering Fire")
-            .maneuverType(AdvancedSquadTacticsSystem.SquadManeuver.ManeuverType.COVERING_FIRE)
-            .maneuverEffects(maneuverBonuses)
-            .maneuverRequirements(requiredUnits)
-            .maneuverCost(2)
-            .isActive(true)
-            .build();
-    }
-
-    /**
-     * Create a flanking maneuver
-     */
-    public static AdvancedSquadTacticsSystem.SquadManeuver createFlankingManeuver() {
-        Map<String, Integer> maneuverBonuses = new HashMap<>();
-        maneuverBonuses.put("critical", 30);
-        maneuverBonuses.put("damage", 15);
-        maneuverBonuses.put("accuracy", 10);
-        
-        List<String> requiredUnits = Arrays.asList("flanker1", "flanker2", "distraction");
-        
-        return AdvancedSquadTacticsSystem.SquadManeuver.builder()
-            .maneuverId("FLANKING_MANEUVER")
-            .maneuverName("Flanking Maneuver")
-            .maneuverType(AdvancedSquadTacticsSystem.SquadManeuver.ManeuverType.FLANKING_MANEUVER)
-            .maneuverEffects(maneuverBonuses)
-            .maneuverRequirements(requiredUnits)
-            .maneuverCost(3)
-            .isActive(true)
+        return SquadTacticsSystem.SquadFormation.builder()
+            .formationId("defensive_formation")
+            .description("Defensive squad formation")
+            .unitPositions(positions)
+            .coverage(80)
+            .mobility(50)
             .build();
     }
     
     /**
-     * Create a random squad tactic
+     * Create offensive squad formation
      */
-    public static SquadTactic createRandomSquadTactic() {
-        int tacticType = random.nextInt(10);
+    public static SquadTacticsSystem.SquadFormation createOffensiveFormation() {
+        Map<String, Position> positions = new HashMap<>();
+        positions.put("UNIT_1", new Position(0, 0));
+        positions.put("UNIT_2", new Position(2, 0));
+        positions.put("UNIT_3", new Position(1, 1));
         
-        switch (tacticType) {
-            case 0: return createCoordinatedAssaultTactic();
-            case 1: return createDefensiveFormationTactic();
-            case 2: return createStealthOperationTactic();
-            case 3: return createPsionicSynergyTactic();
-            case 4: return createRapidResponseTactic();
-            case 5: return createTechnicalSupportTactic();
-            case 6: return createOverwatchNetworkTactic();
-            case 7: return createConcealedAmbushTactic();
-            case 8: return createChainReactionTactic();
-            case 9: return createHealingCircleTactic();
-            default: return createCoordinatedAssaultTactic();
-        }
+        return SquadTacticsSystem.SquadFormation.builder()
+            .formationId("offensive_formation")
+            .description("Offensive squad formation")
+            .unitPositions(positions)
+            .coverage(50)
+            .mobility(90)
+            .build();
     }
     
     /**
-     * Create a random formation
+     * Create flanking squad formation
      */
-    public static AdvancedSquadTacticsSystem.SquadFormation createRandomFormation() {
-        int formationType = random.nextInt(4);
+    public static SquadTacticsSystem.SquadFormation createFlankingFormation() {
+        Map<String, Position> positions = new HashMap<>();
+        positions.put("UNIT_1", new Position(0, 0));
+        positions.put("UNIT_2", new Position(3, 0));
+        positions.put("UNIT_3", new Position(1, 2));
         
-        switch (formationType) {
-            case 0: return createDefensiveFormation();
-            case 1: return createOffensiveFormation();
-            case 2: return createFlankingFormation();
-            case 3: return createSupportFormation();
-            default: return createDefensiveFormation();
-        }
+        return SquadTacticsSystem.SquadFormation.builder()
+            .formationId("flanking_formation")
+            .description("Flanking squad formation")
+            .unitPositions(positions)
+            .coverage(70)
+            .mobility(80)
+            .build();
     }
     
     /**
-     * Create a random maneuver
+     * Create support squad formation
      */
-    public static AdvancedSquadTacticsSystem.SquadManeuver createRandomManeuver() {
-        int maneuverType = random.nextInt(3);
+    public static SquadTacticsSystem.SquadFormation createSupportFormation() {
+        Map<String, Position> positions = new HashMap<>();
+        positions.put("UNIT_1", new Position(1, 1));
+        positions.put("UNIT_2", new Position(0, 0));
+        positions.put("UNIT_3", new Position(2, 0));
         
-        switch (maneuverType) {
-            case 0: return createCoordinatedAttackManeuver();
-            case 1: return createCoveringFireManeuver();
-            case 2: return createFlankingManeuver();
-            default: return createCoordinatedAttackManeuver();
-        }
+        return SquadTacticsSystem.SquadFormation.builder()
+            .formationId("support_formation")
+            .description("Support squad formation")
+            .unitPositions(positions)
+            .coverage(90)
+            .mobility(60)
+            .build();
     }
     
     /**
-     * Get all available tactic types
+     * Create coordinated attack maneuver
      */
-    public static List<String> getAllTacticTypes() {
-        return Arrays.asList(
-            "Coordinated Assault",
-            "Defensive Formation", 
-            "Stealth Operation",
-            "Psionic Synergy",
-            "Rapid Response",
-            "Technical Support",
-            "Overwatch Network",
-            "Concealed Ambush",
-            "Chain Reaction",
-            "Healing Circle"
-        );
+    public static SquadTacticsSystem.SquadManeuver createCoordinatedAttackManeuver() {
+        return SquadTacticsSystem.SquadManeuver.builder()
+            .maneuverId("coordinated_attack")
+            .description("Coordinated attack maneuver")
+            .coordinationBonus(25)
+            .executionTime(3)
+            .build();
     }
     
     /**
-     * Get all available formation types
+     * Create covering fire maneuver
      */
-    public static List<String> getAllFormationTypes() {
-        return Arrays.asList(
-            "Defensive Formation",
-            "Offensive Formation",
-            "Flanking Formation", 
-            "Support Formation"
-        );
+    public static SquadTacticsSystem.SquadManeuver createCoveringFireManeuver() {
+        return SquadTacticsSystem.SquadManeuver.builder()
+            .maneuverId("covering_fire")
+            .description("Covering fire maneuver")
+            .coordinationBonus(20)
+            .executionTime(2)
+            .build();
     }
     
     /**
-     * Get all available maneuver types
+     * Create flanking maneuver
      */
-    public static List<String> getAllManeuverTypes() {
-        return Arrays.asList(
-            "Coordinated Attack",
-            "Covering Fire",
-            "Flanking Maneuver"
-        );
+    public static SquadTacticsSystem.SquadManeuver createFlankingManeuver() {
+        return SquadTacticsSystem.SquadManeuver.builder()
+            .maneuverId("flanking_maneuver")
+            .description("Flanking maneuver")
+            .coordinationBonus(30)
+            .executionTime(4)
+            .build();
+    }
+    
+    /**
+     * Create random squad formation
+     */
+    public static SquadTacticsSystem.SquadFormation createRandomFormation() {
+        SquadTacticsSystem.SquadFormation.FormationType[] types = {
+            SquadTacticsSystem.SquadFormation.FormationType.BASIC,
+            SquadTacticsSystem.SquadFormation.FormationType.DEFENSIVE,
+            SquadTacticsSystem.SquadFormation.FormationType.OFFENSIVE,
+            SquadTacticsSystem.SquadFormation.FormationType.FLANKING,
+            SquadTacticsSystem.SquadFormation.FormationType.SUPPORT
+        };
+        SquadTacticsSystem.SquadFormation.FormationType type = types[new Random().nextInt(types.length)];
+        
+        return SquadTacticsSystem.SquadFormation.builder()
+            .formationId("random_formation_" + System.currentTimeMillis())
+            .description("Random squad formation")
+            .formationType(type)
+            .unitPositions(new HashMap<>())
+            .coverage(60 + new Random().nextInt(30))
+            .mobility(60 + new Random().nextInt(30))
+            .build();
+    }
+    
+    /**
+     * Create random squad maneuver
+     */
+    public static SquadTacticsSystem.SquadManeuver createRandomManeuver() {
+        SquadTacticsSystem.SquadManeuver.ManeuverType[] types = {
+            SquadTacticsSystem.SquadManeuver.ManeuverType.COORDINATED_ATTACK,
+            SquadTacticsSystem.SquadManeuver.ManeuverType.COVERING_FIRE,
+            SquadTacticsSystem.SquadManeuver.ManeuverType.FLANKING_MANEUVER
+        };
+        SquadTacticsSystem.SquadManeuver.ManeuverType type = types[new Random().nextInt(types.length)];
+        
+        return SquadTacticsSystem.SquadManeuver.builder()
+            .maneuverId("random_maneuver_" + System.currentTimeMillis())
+            .description("Random squad maneuver")
+            .maneuverType(type)
+            .coordinationBonus(15 + new Random().nextInt(20))
+            .executionTime(2 + new Random().nextInt(3))
+            .build();
     }
 }
