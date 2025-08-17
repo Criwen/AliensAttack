@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.aliensattack.core.config.GameConfig;
 
 import java.util.*;
 
@@ -39,12 +40,19 @@ public class WeaponSpecialization {
         this.modifications = new ArrayList<>();
         this.weaponLevel = 1;
         this.experiencePoints = 0;
-        this.maxExperiencePoints = 100;
-        this.durability = 100;
-        this.maxDurability = 100;
+        this.maxExperiencePoints = GameConfig.getWeaponSpecializationMaxLevel(); // Use configuration instead of hardcoded 100
+        this.durability = GameConfig.getWeaponSpecializationMaxDurability(); // Use configuration instead of hardcoded 100
+        this.maxDurability = GameConfig.getWeaponSpecializationMaxDurability(); // Use configuration instead of hardcoded 100
         this.needsMaintenance = false;
         this.weaponStats = new HashMap<>();
         this.unlockedAbilities = new ArrayList<>();
+        
+        // TODO: Implement comprehensive weapon specialization system
+        // - Load specialization bonuses from configuration
+        // - Initialize weapon modification system
+        // - Set up experience progression
+        // - Initialize durability mechanics
+        // - Set up specialization paths
         
         initializeWeaponStats();
     }
@@ -287,7 +295,7 @@ public class WeaponSpecialization {
      * Use weapon (reduce durability)
      */
     public void useWeapon() {
-        durability -= 1;
+        durability -= GameConfig.getWeaponSpecializationDurabilityLoss(); // Use configuration instead of hardcoded 1
         
         if (durability <= maxDurability * 0.2) { // 20% durability threshold
             needsMaintenance = true;

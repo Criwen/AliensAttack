@@ -26,6 +26,10 @@ public class TacticalMapView {
     public void setOnTileClick(BiConsumer<Integer, Integer> onTileClick) {
         this.onTileClick = onTileClick;
     }
+    
+    public JPanel getPanel() {
+        return panel;
+    }
 
     public void render(List<Position> highlightedPositions, boolean isHighlightingMovePositions,
                        boolean isWaitingForGrenadeTarget, Position grenadePreviewCenter, int grenadePreviewRadius,

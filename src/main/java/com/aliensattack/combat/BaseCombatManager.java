@@ -4,6 +4,8 @@ import com.aliensattack.combat.interfaces.ICombatManagerExtended;
 import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.core.model.Position;
 import com.aliensattack.field.ITacticalField;
+import com.aliensattack.core.config.GameConfig;
+import com.aliensattack.core.events.EventBus;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Base combat manager that provides common functionality
@@ -26,6 +29,11 @@ public abstract class BaseCombatManager implements ICombatManagerExtended {
     protected boolean combatActive;
     protected int currentTurn;
     protected int maxTurns;
+    protected boolean isGameOver;
+    protected String winner;
+    protected List<String> combatLog;
+    protected EventBus eventBus;
+    protected Random random;
     
     public BaseCombatManager(ITacticalField field) {
         this.field = field;
@@ -33,7 +41,19 @@ public abstract class BaseCombatManager implements ICombatManagerExtended {
         this.initiativeOrder = new ConcurrentHashMap<>();
         this.combatActive = false;
         this.currentTurn = 0;
-        this.maxTurns = 100; // Default max turns
+        this.maxTurns = GameConfig.getMaxTurns(); // Use configuration instead of hardcoded 100
+        this.isGameOver = false;
+        this.winner = null;
+        this.combatLog = new ArrayList<>();
+        this.eventBus = EventBus.getInstance();
+        this.random = new Random();
+        
+        // TODO: Implement comprehensive combat initialization system
+        // - Load combat configuration
+        // - Initialize combat systems
+        // - Set up event handlers
+        // - Initialize AI systems
+        // - Set up victory/defeat conditions
     }
     
     // ICombatManager interface implementation

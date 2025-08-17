@@ -9,6 +9,7 @@ import com.aliensattack.core.systems.AlienEvolutionSystem;
 import com.aliensattack.core.systems.AlienEvolutionSystem.EvolutionPath;
 import com.aliensattack.core.systems.AlienEvolutionSystem.EvolutionMutation;
 import com.aliensattack.core.systems.AlienEvolutionSystem.EvolutionStage;
+import com.aliensattack.core.config.GameConfig;
 
 import java.util.*;
 
@@ -31,6 +32,8 @@ public class AlienEvolution {
     private int mutationRate;
     private Random random;
     
+
+    
     /**
      * Initialize the alien evolution system
      */
@@ -52,8 +55,15 @@ public class AlienEvolution {
         }
         
         currentStage = EvolutionStage.BASIC;
-        evolutionPoints = 100;
-        mutationRate = 10;
+        evolutionPoints = GameConfig.getEvolutionBasePoints(); // Use configuration instead of hardcoded 100
+        mutationRate = GameConfig.getEvolutionMutationRate(); // Use configuration instead of hardcoded 10
+        
+        // TODO: Implement comprehensive evolution system initialization
+        // - Load evolution paths from configuration
+        // - Initialize mutation system
+        // - Set up adaptation mechanics
+        // - Initialize threat assessment
+        // - Set up evolution progression tracking
         
         initializeEvolutionPaths();
         initializeActiveMutations();
@@ -174,7 +184,7 @@ public class AlienEvolution {
         unlockMutations(path);
         
         // Add evolution points
-        evolutionPoints += 50;
+        evolutionPoints += GameConfig.getEvolutionCompletionBonus(); // Use configuration instead of hardcoded 50
         
         // Update current stage
         updateEvolutionStage();
@@ -228,7 +238,7 @@ public class AlienEvolution {
                 .filter(EvolutionPath::isCompleted)
                 .count();
         
-        if (completedPaths >= 3) {
+        if (completedPaths >= GameConfig.getEvolutionPathsRequired()) { // Use configuration instead of hardcoded 3
             currentStage = EvolutionStage.ADVANCED;
         } else if (completedPaths >= 1) {
             currentStage = EvolutionStage.INTERMEDIATE;

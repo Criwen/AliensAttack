@@ -6,6 +6,7 @@ import com.aliensattack.core.model.Tile;
 import com.aliensattack.core.model.CoverObject;
 import com.aliensattack.core.enums.CoverType;
 import com.aliensattack.core.enums.UnitType;
+import com.aliensattack.core.config.GameConfig;
 
 import lombok.Getter;
 import java.util.*;
@@ -32,6 +33,14 @@ public class TacticalFieldBase implements ITacticalField {
         this.occupiedPositions = ConcurrentHashMap.newKeySet();
         
         initializeGrid();
+        
+        // TODO: Implement comprehensive tactical field initialization system
+        // - Load field configuration from properties
+        // - Initialize terrain generation
+        // - Set up cover placement algorithms
+        // - Initialize height variation system
+        // - Set up environmental hazard placement
+        // - Initialize visibility calculation system
     }
     
     private void initializeGrid() {
@@ -43,6 +52,12 @@ public class TacticalFieldBase implements ITacticalField {
     }
     
     private int positionHash(int x, int y) {
+        // TODO: Implement configurable hash calculation system
+        // - Load hash multiplier from configuration
+        // - Optimize hash function for different field sizes
+        // - Add hash collision detection
+        // - Implement hash performance monitoring
+        
         int hash = x * 10000 + y; // Efficient hash for 2D coordinates
         System.out.println("DEBUG: positionHash(" + x + ", " + y + ") = " + hash);
         return hash;
@@ -312,6 +327,12 @@ public class TacticalFieldBase implements ITacticalField {
      */
     @Override
     public boolean hasLineOfSight(Position from, Position to) {
+        // TODO: Implement configurable line of sight calculation system
+        // - Load line of sight parameters from configuration
+        // - Optimize algorithm for different field sizes
+        // - Add terrain and cover effects
+        // - Implement visibility caching
+        
         int x0 = from.getX();
         int y0 = from.getY();
         int x1 = to.getX();

@@ -129,6 +129,7 @@ public class Unit implements IUnit {
             case SOLDIER -> GameConfig.getViewRange("soldier");
             case ALIEN -> GameConfig.getViewRange("alien");
             case ALIEN_RULER -> GameConfig.getViewRange("alien");
+            case CHOSEN -> GameConfig.getViewRange("alien");
             case CIVILIAN -> GameConfig.getViewRange("civilian");
             case VEHICLE -> GameConfig.getViewRange("vehicle");
             case ROBOTIC -> GameConfig.getViewRange("robotic");

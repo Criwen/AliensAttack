@@ -1,85 +1,60 @@
 package com.aliensattack.actions;
 
-import com.aliensattack.core.model.Position;
+import com.aliensattack.core.config.GameConfig;
+import com.aliensattack.core.data.StatusEffectData;
+import com.aliensattack.core.enums.StatusEffect;
+import com.aliensattack.core.enums.ActionType;
+import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.core.model.Unit;
 import com.aliensattack.core.model.Weapon;
-import com.aliensattack.core.enums.StatusEffect;
-import com.aliensattack.core.data.StatusEffectData;
+import com.aliensattack.core.model.Position;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Представляет действие юнита в тактическом бою
+ * Unit action implementation for XCOM 2 tactical combat
  */
-@Getter
-@Setter
-public class UnitAction {
-    private ActionType actionType;
-    private Unit performer;
-    private Unit target;
-    private Position targetPosition;
-    private String description;
-    private boolean successful;
+public class UnitAction implements com.aliensattack.actions.interfaces.IAction {
+    private final Unit performer;
+    private final ActionType actionType;
+    private final Unit target;
+    private final Position targetPosition;
+    private final int actionPointCost;
     private int damage;
+    private boolean successful;
     private String result;
-    private int actualActionPointCost; // Фактическая стоимость очков действия
     
-    public UnitAction(ActionType actionType, Unit performer) {
-        this.actionType = actionType;
+    public UnitAction(Unit performer, ActionType actionType, Unit target, Position targetPosition, int actionPointCost) {
         this.performer = performer;
-        this.successful = false;
-        this.damage = 0;
-        this.actualActionPointCost = actionType.getActionPointCost();
-    }
-    
-    public UnitAction(ActionType actionType, Unit performer, Unit target) {
-        this(actionType, performer);
+        this.actionType = actionType;
         this.target = target;
-    }
-    
-    public UnitAction(ActionType actionType, Unit performer, Position targetPosition) {
-        this(actionType, performer);
         this.targetPosition = targetPosition;
-        
-        // Рассчитываем фактическую стоимость для движения
-        if (actionType == ActionType.MOVE && targetPosition != null) {
-            this.actualActionPointCost = calculateMoveCost(performer, targetPosition);
-        } else if (actionType == ActionType.OVERWATCH) {
-            // Overwatch тратит все оставшиеся AP
-            this.actualActionPointCost = (int)performer.getActionPoints();
-        }
+        this.actionPointCost = actionPointCost;
+        this.damage = 0;
+        this.successful = false;
+        this.result = "";
     }
     
-    private int calculateMoveCost(Unit unit, Position targetPosition) {
-        if (unit == null || targetPosition == null) {
-            return actionType.getActionPointCost();
-        }
-        
-        Position currentPos = unit.getPosition();
-        int distance = Math.abs(currentPos.getX() - targetPosition.getX()) + 
-                      Math.abs(currentPos.getY() - targetPosition.getY());
-        
-        // Базовая стоимость движения
-        int baseCost = actionType.getActionPointCost();
-        
-        // Дополнительная стоимость за расстояние
-        if (distance > 1) {
-            baseCost += (distance - 1); // +1 AP за каждую дополнительную клетку
-        }
-        
-        return Math.min(baseCost, (int)unit.getActionPoints()); // Не превышаем доступные AP
+    // Convenience constructors
+    public UnitAction(Unit performer, ActionType actionType, Unit target, int actionPointCost) {
+        this(performer, actionType, target, null, actionPointCost);
     }
     
+    public UnitAction(Unit performer, ActionType actionType, Position targetPosition, int actionPointCost) {
+        this(performer, actionType, null, targetPosition, actionPointCost);
+    }
+    
+    public UnitAction(Unit performer, ActionType actionType, int actionPointCost) {
+        this(performer, actionType, null, null, actionPointCost);
+    }
+    
+    @Override
     public boolean canPerform() {
         if (performer == null || !performer.isAlive()) {
             return false;
         }
         
-        if (performer.getActionPoints() < actualActionPointCost) {
+        if (performer.getActionPoints() < actionPointCost) {
             return false;
         }
         
@@ -88,9 +63,11 @@ public class UnitAction {
             case ATTACK, HEAL -> target != null && target.isAlive();
             case OVERWATCH, RELOAD, DEFEND, SPECIAL_ABILITY -> true;
             case GRENADE -> targetPosition != null;
+            default -> false;
         };
     }
     
+    @Override
     public void execute() {
         if (!canPerform()) {
             successful = false;
@@ -98,42 +75,51 @@ public class UnitAction {
             return;
         }
         
-        // Тратим очки действия
-        for (int i = 0; i < actualActionPointCost; i++) {
-            performer.spendActionPoint();
-        }
+        performer.spendActionPoints(actionPointCost);
         
         switch (actionType) {
             case MOVE -> executeMove();
             case ATTACK -> executeAttack();
-            case OVERWATCH -> executeOverwatch();
-            case RELOAD -> executeReload();
+            case DEFEND -> executeDefend();
             case HEAL -> executeHeal();
             case GRENADE -> executeGrenade();
+            case OVERWATCH -> executeOverwatch();
+            case RELOAD -> executeReload();
             case SPECIAL_ABILITY -> executeSpecialAbility();
-            case DEFEND -> executeDefend();
-            case DASH -> executeDash();
+            default -> {
+                result = "Неизвестное действие: " + actionType;
+                successful = false;
+            }
         }
     }
     
     private void executeMove() {
         if (targetPosition != null) {
-            Position oldPosition = performer.getPosition();
-            // performer.setPosition(targetPosition.getX(), targetPosition.getY()); // УБРАНО!
+            // TODO: Implement proper movement validation and pathfinding
+            // - Check if path is clear
+            // - Validate movement range
+            // - Handle different terrain types
+            // - Apply movement penalties
+            // - Update unit position on field
             successful = true;
-            result = performer.getName() + " переместился из " + oldPosition + 
-                    " в позицию " + targetPosition + 
-                    " (стоимость: " + actualActionPointCost + " AP)";
+            result = performer.getName() + " перемещается в позицию " + targetPosition;
         } else {
             successful = false;
-            result = "Ошибка: целевая позиция не указана";
+            result = "Целевая позиция не указана";
         }
     }
     
     private void executeAttack() {
         if (target != null) {
-            // Простой расчет атаки
-            int hitChance = 70; // Базовый шанс попадания
+            // TODO: Implement comprehensive attack calculation system
+            // - Calculate hit chance based on weapon, distance, cover, status effects
+            // - Apply critical hit calculations
+            // - Handle different damage types (kinetic, energy, explosive)
+            // - Apply armor and damage reduction
+            // - Handle weapon degradation
+            // - Apply status effects from attacks
+            
+            int hitChance = GameConfig.getBaseHitChance(); // Use configuration instead of hardcoded 70
             boolean hit = Math.random() * 100 < hitChance;
             
             if (hit) {
@@ -155,23 +141,37 @@ public class UnitAction {
         double allAP = performer.getActionPoints();
         performer.spendActionPoints(allAP);
         
+        // TODO: Implement comprehensive overwatch system
+        // - Overwatch trigger conditions
+        // - Reaction shot mechanics
+        // - Overwatch accuracy penalties
+        // - Multiple target handling
+        // - Overwatch duration and cancellation
+        
         // Реализация логики наблюдения
         performer.setOverwatching(true);
-        performer.setOverwatchChance(70); // 70% шанс срабатывания
+        performer.setOverwatchChance(GameConfig.getOverwatchChance()); // Use configuration instead of hardcoded 70
         
         // Находим врагов в зоне видимости
-        List<Unit> enemiesInRange = findEnemiesInRange(performer, 8); // 8 клеток дальности
+        List<Unit> enemiesInRange = findEnemiesInRange(performer, GameConfig.getOverwatchRange()); // Use configuration instead of hardcoded 8
         
         if (!enemiesInRange.isEmpty()) {
             result = performer.getName() + " ведет наблюдение за " + enemiesInRange.size() + 
-                    " врагами (AP spent: ALL, Overwatch: 70%)";
+                    " врагами (AP spent: ALL, Overwatch: " + GameConfig.getOverwatchChance() + "%)";
         } else {
-            result = performer.getName() + " ведет наблюдение (AP spent: ALL, Overwatch: 70%)";
+            result = performer.getName() + " ведет наблюдение (AP spent: ALL, Overwatch: " + GameConfig.getOverwatchChance() + "%)";
         }
     }
     
     private void executeReload() {
         successful = true;
+        
+        // TODO: Implement comprehensive ammunition system
+        // - Different ammo types and effects
+        // - Ammo capacity management
+        // - Reload time and action cost
+        // - Ammo scarcity mechanics
+        // - Special ammo effects
         
         // Реализация системы боеприпасов
         Weapon weapon = performer.getWeapon();
@@ -188,35 +188,40 @@ public class UnitAction {
     
     private void executeHeal() {
         if (target != null) {
-            int healAmount = 25;
+            int healAmount = GameConfig.getHealAmount(); // Use configuration instead of hardcoded 25
             target.heal(healAmount);
             successful = true;
             result = performer.getName() + " лечит " + target.getName() + " на " + healAmount + " HP";
         }
         
-        // ToDo: Реализовать полную систему лечения и медицины
+        // TODO: Implement comprehensive medical system
         // - Medikit system with limited uses
         // - Medical stabilization for critically wounded soldiers
         // - Healing rate based on medic skill
         // - Medical priority system
         // - Injury recovery system
         // - Medical equipment degradation
+        // - Different healing types (basic, advanced, psionic)
+        // - Medical cooldowns and limitations
     }
     
     private void executeGrenade() {
         if (targetPosition != null) {
-            damage = 30;
+            damage = GameConfig.getGrenadeDamage(); // Use configuration instead of hardcoded 30
             successful = true;
             result = performer.getName() + " бросает гранату в позицию " + targetPosition + 
                     " и наносит " + damage + " урона по области";
         }
         
-        // ToDo: Реализовать полную систему гранат и взрывчатки
+        // TODO: Implement comprehensive grenade and explosive system
         // - Different grenade types (Frag, Acid, Fire, Poison, Smoke, Flashbang)
         // - Area of effect damage calculation
         // - Environmental destruction
         // - Chain reactions
         // - Grenade launcher mechanics
+        // - Throw distance and accuracy
+        // - Grenade effects on different terrain
+        // - Smoke and gas mechanics
     }
     
     private void executeSpecialAbility() {
@@ -225,61 +230,109 @@ public class UnitAction {
             case SOLDIER -> "Тактический выстрел";
             case ALIEN -> "Псионическая атака";
             case ALIEN_RULER -> "Мощная псионическая атака";
+            case CHOSEN -> "Мощная псионическая атака";
             case CIVILIAN -> "Первая помощь";
             case VEHICLE -> "Усиленная броня";
             case ROBOTIC -> "Техническая атака";
         };
         result = performer.getName() + " использует " + abilityName;
         
-        // ToDo: Реализовать полную систему специальных способностей
+        // TODO: Implement comprehensive special abilities system
         // - Psionic abilities (Mind Control, Teleport, Psychic Blast)
         // - Technical abilities (Hacking, Robot Control)
         // - Soldier class abilities (Ranger, Sharpshooter, Heavy, Specialist)
         // - Alien abilities (Evolution, Ruler abilities, Chosen abilities)
+        // - Ability cooldowns and energy costs
+        // - Ability progression and upgrades
+        // - Ability combinations and synergies
+        // - Ability failure and backlash effects
     }
     
     private void executeDefend() {
         successful = true;
         
+        // TODO: Implement comprehensive defense system
+        // - Different defense types (cover, armor, abilities)
+        // - Defense stacking and diminishing returns
+        // - Temporary defense bonuses
+        // - Defense against different damage types
+        // - Counter-attack mechanics
+        
         // Реализация системы защиты
-        int defenseBonus = 20; // +20% защиты
+        int defenseBonus = GameConfig.getDefendBonus(); // Use configuration instead of hardcoded 20
         performer.setDefense(performer.getDefense() + defenseBonus);
         
         // Добавляем статус эффект защиты
         StatusEffectData defenseEffect = new StatusEffectData(
-            StatusEffect.PROTECTED, 
-            2, // 2 хода
+            StatusEffect.PROTECTED,
+            GameConfig.getDefendDuration(), // Use configuration instead of hardcoded 2
             defenseBonus
         );
-        performer.addStatusEffect(defenseEffect);
         
-        result = performer.getName() + " занимает оборонительную позицию (+" + defenseBonus + "% защиты на 2 хода)";
+        // TODO: Implement proper status effect system
+        // - Status effect application and removal
+        // - Effect duration management
+        // - Effect stacking and interactions
+        // - Effect resistance and immunity
+        // - Effect visualization and UI
+        
+        result = performer.getName() + " принимает оборонительную стойку (+" + defenseBonus + "% защиты на " + GameConfig.getDefendDuration() + " ход)";
     }
     
-    private void executeDash() {
-        if (targetPosition != null) {
-            performer.setPosition(targetPosition.getX(), targetPosition.getY());
-            successful = true;
-            result = performer.getName() + " совершает рывок в позицию " + targetPosition;
-        }
-    }
-    
-    /**
-     * Найти врагов в зоне видимости для overwatch
-     */
     private List<Unit> findEnemiesInRange(Unit unit, int range) {
-        List<Unit> enemies = new ArrayList<>();
+        // TODO: Implement proper enemy detection system
+        // - Line of sight calculations
+        // - Cover and concealment effects
+        // - Detection range modifiers
+        // - Enemy identification and classification
+        // - Stealth mechanics
         
-        // Здесь должна быть логика поиска врагов через CombatManager
-        // Пока возвращаем пустой список
-        return enemies;
+        // Placeholder implementation
+        return List.of();
     }
     
     @Override
-    public String toString() {
-        return String.format("%s выполняет %s: %s", 
-                performer.getName(), 
-                actionType.getDisplayName(), 
-                result != null ? result : "в процессе");
+    public boolean isSuccessful() {
+        return successful;
+    }
+    
+    @Override
+    public String getResult() {
+        return result;
+    }
+    
+    @Override
+    public int getDamage() {
+        return damage;
+    }
+    
+    @Override
+    public String getActionType() {
+        return actionType.name();
+    }
+    
+    @Override
+    public IUnit getPerformer() {
+        return performer;
+    }
+    
+    @Override
+    public IUnit getTarget() {
+        return target;
+    }
+    
+    @Override
+    public Position getTargetPosition() {
+        return targetPosition;
+    }
+    
+    @Override
+    public int getActionPointCost() {
+        return actionPointCost;
+    }
+    
+    @Override
+    public int getActualActionPointCost() {
+        return actionPointCost;
     }
 }

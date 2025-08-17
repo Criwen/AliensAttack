@@ -12,6 +12,7 @@ import com.aliensattack.core.enums.*;
 import com.aliensattack.field.ITacticalField;
 import lombok.Getter;
 import lombok.Setter;
+import com.aliensattack.core.config.GameConfig;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -62,7 +63,7 @@ public class UltimateCampaignCombatManager extends UltimateMissionCombatManager 
         this.ambushCount = 0;
         this.combatEvents = new ArrayList<>();
         this.eventHistory = new HashMap<>();
-        this.totalMechanics = 45; // Total XCOM 2 mechanics implemented
+        this.totalMechanics = GameConfig.getMaxEvents(); // Use configuration instead of hardcoded 45
         
         logCombatEvent("Ultimate Combat Manager initialized with " + totalMechanics + " mechanics");
     }

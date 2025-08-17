@@ -53,6 +53,8 @@ public class CombatUnit extends BaseUnit {
         switch (unitType) {
             case SOLDIER: return 12;
             case ALIEN: return 10;
+            case ALIEN_RULER: return 10;
+            case CHOSEN: return 10;
             case CIVILIAN: return 6;
             case VEHICLE: return 8;
             case ROBOTIC: return 10;

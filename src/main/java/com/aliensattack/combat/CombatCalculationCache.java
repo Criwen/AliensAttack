@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.TimeUnit;
+import com.aliensattack.core.config.GameConfig;
 
 /**
  * Cache system for combat calculations to improve performance
@@ -18,7 +19,7 @@ public class CombatCalculationCache {
     private static final long DEFAULT_TTL_MS = TimeUnit.MINUTES.toMillis(5);
     
     private final Map<String, CachedCalculation> cache;
-    private final int maxSize;
+    private final int maxCacheSize;
     private final long ttlMs;
     
     // Performance metrics
@@ -27,15 +28,16 @@ public class CombatCalculationCache {
     private final AtomicLong cacheEvictions = new AtomicLong(0);
     
     public CombatCalculationCache() {
-        this(DEFAULT_CACHE_SIZE, DEFAULT_TTL_MS);
-    }
-    
-    public CombatCalculationCache(int maxSize, long ttlMs) {
         this.cache = new ConcurrentHashMap<>();
-        this.maxSize = maxSize;
-        this.ttlMs = ttlMs;
+        this.maxCacheSize = GameConfig.getCombatCacheDefaultSize(); // Use configuration instead of hardcoded 1000
+        this.ttlMs = DEFAULT_TTL_MS;
         
-        log.info("CombatCalculationCache initialized with max size: {}, TTL: {}ms", maxSize, ttlMs);
+        // TODO: Implement comprehensive combat calculation cache system
+        // - Cache invalidation strategies
+        // - Memory management and cleanup
+        // - Cache performance monitoring
+        // - Cache statistics and analytics
+        // - Cache configuration management
     }
     
     /**
@@ -64,10 +66,10 @@ public class CombatCalculationCache {
      * Store calculation result in cache
      */
     public void put(String key, Object result) {
-        if (cache.size() >= maxSize) {
+        if (cache.size() >= maxCacheSize) {
             evictExpiredEntries();
             
-            if (cache.size() >= maxSize) {
+            if (cache.size() >= maxCacheSize) {
                 evictOldestEntry();
             }
         }
@@ -134,7 +136,7 @@ public class CombatCalculationCache {
         
         return new CacheStatistics(
             cache.size(),
-            maxSize,
+            maxCacheSize,
             cacheHits.get(),
             cacheMisses.get(),
             cacheEvictions.get(),

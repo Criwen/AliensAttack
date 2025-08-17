@@ -8,7 +8,7 @@ import com.aliensattack.core.enums.*;
 import com.aliensattack.field.ITacticalField;
 import com.aliensattack.field.TacticalField;
 import com.aliensattack.actions.ActionManager;
-import com.aliensattack.actions.ActionType;
+import com.aliensattack.core.enums.ActionType;
 import com.aliensattack.actions.UnitAction;
 
 import javax.swing.*;

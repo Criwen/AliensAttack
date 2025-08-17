@@ -3,6 +3,7 @@ package com.aliensattack.ui.panels;
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
 import com.aliensattack.core.data.AmmoTypeData;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +11,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+
+
+
 
 /**
  * Soldier selection and equipment form for mission preparation
@@ -32,11 +36,9 @@ public class SoldierSelectionForm extends JPanel {
     private JTextArea soldierInfo;
     private JTextArea equipmentInfo;
     private JTextArea inventoryInfo;
-    private JButton confirmButton;
-    private JButton cancelButton;
-    private JButton startGameButton; // New button to start the game
+    private JButton startGameButton; // Button to start the game
     
-    private Soldier selectedSoldier;
+    private List<Soldier> selectedSoldiers;
     private Weapon selectedWeapon;
     private Armor selectedArmor;
     private List<Explosive> selectedExplosives;
@@ -45,11 +47,14 @@ public class SoldierSelectionForm extends JPanel {
     // Callback for when game should start
     private Runnable onGameStartCallback;
     
+
+    
     public SoldierSelectionForm() {
         this.availableSoldiers = new ArrayList<>();
         this.availableWeapons = new ArrayList<>();
         this.availableArmor = new ArrayList<>();
         this.availableExplosives = new ArrayList<>();
+        this.selectedSoldiers = new ArrayList<>();
         this.selectedExplosives = new ArrayList<>();
         this.selectedAmmo = new ArrayList<>();
         
@@ -60,12 +65,15 @@ public class SoldierSelectionForm extends JPanel {
         setupLayout();
         setupEventHandlers();
         loadSampleData();
+        
+        // Apply LLM-generated styles after component initialization
+        applyLLMStyles();
     }
     
     private void initializeComponents() {
-        // Soldier selection
+        // Soldier selection - MULTIPLE SELECTION
         soldierList = new JList<>();
-        soldierList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        soldierList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         soldierList.setCellRenderer(new SoldierListCellRenderer());
         
         // Equipment lists
@@ -101,12 +109,7 @@ public class SoldierSelectionForm extends JPanel {
         inventoryInfo.setLineWrap(true);
         inventoryInfo.setWrapStyleWord(true);
         
-        // Main action buttons
-        confirmButton = new JButton("Подтвердить");
-        confirmButton.setEnabled(false);
-        
-        cancelButton = new JButton("Отмена");
-        
+        // Main action button
         startGameButton = new JButton("Начать миссию");
         startGameButton.setEnabled(false);
     }
@@ -223,17 +226,8 @@ public class SoldierSelectionForm extends JPanel {
         clearExplosivesButton.addActionListener(e -> handleClearExplosives());
         equipAllButton.addActionListener(e -> handleEquipAll());
         
-        // Add main action buttons below the equipment buttons
-        JPanel mainActionPanel = new JPanel(new GridLayout(1, 2, 5, 5));
-        mainActionPanel.add(confirmButton);
-        mainActionPanel.add(cancelButton);
-        
-        // Create combined button container
-        JPanel allButtonsPanel = new JPanel(new BorderLayout(5, 5));
-        allButtonsPanel.add(buttonPanel, BorderLayout.CENTER);
-        allButtonsPanel.add(mainActionPanel, BorderLayout.SOUTH);
-        
-        rightPanel.add(allButtonsPanel, BorderLayout.SOUTH);
+        // Add buttons directly to the right panel
+        rightPanel.add(buttonPanel, BorderLayout.SOUTH);
         
         // Main layout with proper constraints
         JPanel topPanel = new JPanel(new BorderLayout(15, 0));
@@ -245,17 +239,15 @@ public class SoldierSelectionForm extends JPanel {
     }
     
     private void setupEventHandlers() {
-        // Soldier selection
+        // Soldier selection - MULTIPLE SELECTION
         soldierList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                Soldier soldier = soldierList.getSelectedValue();
-                if (soldier != null) {
-                    selectedSoldier = soldier;
-                    updateSoldierInfo(soldier);
-                    updateInventoryInfo();
-                    updateConfirmButton();
-                    updateStartGameButton();
-                }
+                List<Soldier> selected = soldierList.getSelectedValuesList();
+                selectedSoldiers.clear();
+                selectedSoldiers.addAll(selected);
+                updateSoldierInfo();
+                updateInventoryInfo();
+                updateStartGameButton();
             }
         });
         
@@ -264,11 +256,10 @@ public class SoldierSelectionForm extends JPanel {
             if (!e.getValueIsAdjusting()) {
                 Weapon weapon = weaponList.getSelectedValue();
                 if (weapon != null) {
-                    selectedWeapon = weapon;
-                    updateEquipmentInfo();
-                    updateInventoryInfo();
-                    updateConfirmButton();
-                    updateStartGameButton();
+                                    selectedWeapon = weapon;
+                updateEquipmentInfo();
+                updateInventoryInfo();
+                updateStartGameButton();
                 }
             }
         });
@@ -278,11 +269,10 @@ public class SoldierSelectionForm extends JPanel {
             if (!e.getValueIsAdjusting()) {
                 Armor armor = armorList.getSelectedValue();
                 if (armor != null) {
-                    selectedArmor = armor;
-                    updateEquipmentInfo();
-                    updateInventoryInfo();
-                    updateConfirmButton();
-                    updateStartGameButton();
+                                    selectedArmor = armor;
+                updateEquipmentInfo();
+                updateInventoryInfo();
+                updateStartGameButton();
                 }
             }
         });
@@ -295,14 +285,11 @@ public class SoldierSelectionForm extends JPanel {
                 selectedExplosives.addAll(selected);
                 updateEquipmentInfo();
                 updateInventoryInfo();
-                updateConfirmButton();
-                    updateStartGameButton();
+                updateStartGameButton();
             }
         });
         
-        // Buttons
-        confirmButton.addActionListener(e -> handleConfirm());
-        cancelButton.addActionListener(e -> handleCancel());
+        // Button
         startGameButton.addActionListener(e -> handleStartGame());
         
         // Ammunition selection
@@ -414,21 +401,36 @@ public class SoldierSelectionForm extends JPanel {
         return ammo;
     }
     
-    private void updateSoldierInfo(Soldier soldier) {
-        StringBuilder info = new StringBuilder();
-        info.append("Имя: ").append(soldier.getName()).append("\n");
-        info.append("Класс: ").append(soldier.getSoldierClass()).append("\n");
-        info.append("Уровень: ").append(soldier.getRank()).append("\n");
-        info.append("Опыт: ").append(soldier.getExperience()).append("\n");
-        info.append("Здоровье: ").append(soldier.getCurrentHealth()).append("/").append(soldier.getMaxHealth()).append("\n");
-        info.append("Движение: ").append(soldier.getMovementRange()).append("\n");
-        info.append("Атака: ").append(soldier.getAttackRange()).append(" (дальность)\n");
-        info.append("Урон: ").append(soldier.getAttackDamage()).append("\n");
+    private void updateSoldierInfo() {
+        if (selectedSoldiers == null || selectedSoldiers.isEmpty()) {
+            soldierInfo.setText("Выберите солдат для просмотра информации");
+            return;
+        }
         
-        if (soldier.getAbilities() != null && !soldier.getAbilities().isEmpty()) {
-            info.append("\nСпособности:\n");
-            for (SoldierAbility ability : soldier.getAbilities()) {
-                info.append("- ").append(ability.getName()).append("\n");
+        StringBuilder info = new StringBuilder();
+        info.append("=== ВЫБРАННЫЕ СОЛДАТЫ ===\n\n");
+        
+        for (int i = 0; i < selectedSoldiers.size(); i++) {
+            Soldier soldier = selectedSoldiers.get(i);
+            info.append("Солдат ").append(i + 1).append(":\n");
+            info.append("Имя: ").append(soldier.getName()).append("\n");
+            info.append("Класс: ").append(soldier.getSoldierClass()).append("\n");
+            info.append("Уровень: ").append(soldier.getRank()).append("\n");
+            info.append("Опыт: ").append(soldier.getExperience()).append("\n");
+            info.append("Здоровье: ").append(soldier.getCurrentHealth()).append("/").append(soldier.getMaxHealth()).append("\n");
+            info.append("Движение: ").append(soldier.getMovementRange()).append("\n");
+            info.append("Атака: ").append(soldier.getAttackRange()).append(" (дальность)\n");
+            info.append("Урон: ").append(soldier.getAttackDamage()).append("\n");
+            
+            if (soldier.getAbilities() != null && !soldier.getAbilities().isEmpty()) {
+                info.append("Способности:\n");
+                for (SoldierAbility ability : soldier.getAbilities()) {
+                    info.append("- ").append(ability.getName()).append("\n");
+                }
+            }
+            
+            if (i < selectedSoldiers.size() - 1) {
+                info.append("\n---\n\n");
             }
         }
         
@@ -465,32 +467,30 @@ public class SoldierSelectionForm extends JPanel {
     }
     
     private void updateInventoryInfo() {
-        if (selectedSoldier == null) {
-            inventoryInfo.setText("Выберите солдата для просмотра инвентаря");
+        if (selectedSoldiers == null || selectedSoldiers.isEmpty()) {
+            inventoryInfo.setText("Выберите солдат для просмотра инвентаря");
             return;
         }
         
         StringBuilder info = new StringBuilder();
-        info.append("=== ТЕКУЩЕЕ СНАРЯЖЕНИЕ ===\n\n");
+        info.append("=== СНАРЯЖЕНИЕ ДЛЯ ВЫБРАННЫХ СОЛДАТ ===\n\n");
         
-        // Current weapon
-        if (selectedSoldier.getWeapon() != null) {
-            info.append("Оружие: ").append(selectedSoldier.getWeapon().getName()).append("\n");
-            info.append("  Урон: ").append(selectedSoldier.getWeapon().getBaseDamage()).append("\n");
-            info.append("  Точность: ").append(selectedSoldier.getWeapon().getAccuracy()).append("%\n\n");
+        // Show selected equipment
+        if (selectedWeapon != null) {
+            info.append("Оружие: ").append(selectedWeapon.getName()).append("\n");
+            info.append("  Урон: ").append(selectedWeapon.getBaseDamage()).append("\n");
+            info.append("  Точность: ").append(selectedWeapon.getAccuracy()).append("%\n\n");
         } else {
             info.append("Оружие: не выбрано\n\n");
         }
         
-        // Current armor
-        if (selectedSoldier.getArmor() != null) {
-            info.append("Броня: ").append(selectedSoldier.getArmor().getName()).append("\n");
-            info.append("  Защита: ").append(selectedSoldier.getArmor().getDamageReduction()).append("\n\n");
+        if (selectedArmor != null) {
+            info.append("Броня: ").append(selectedArmor.getName()).append("\n");
+            info.append("  Защита: ").append(selectedArmor.getDamageReduction()).append("\n\n");
         } else {
             info.append("Броня: не выбрана\n\n");
         }
         
-        // Current explosives (if any)
         if (selectedExplosives != null && !selectedExplosives.isEmpty()) {
             info.append("Взрывчатка:\n");
             for (Explosive explosive : selectedExplosives) {
@@ -499,236 +499,194 @@ public class SoldierSelectionForm extends JPanel {
             info.append("\n");
         }
         
-        // Current ammunition from soldier's inventory
-        if (selectedSoldier.hasAmmunition()) {
-            info.append("Амуниция в инвентаре:\n");
-            info.append(selectedSoldier.getAmmunitionSummary()).append("\n");
-        } else {
-            info.append("Амуниция: не выбрана\n\n");
+        if (selectedAmmo != null && !selectedAmmo.isEmpty()) {
+            info.append("Амуниция:\n");
+            for (AmmoTypeData ammo : selectedAmmo) {
+                info.append("- ").append(ammo.getName()).append(" (тип: ").append(ammo.getType()).append(")\n");
+            }
+            info.append("\n");
         }
         
-        info.append("=== ВЫБРАННОЕ СНАРЯЖЕНИЕ ===\n\n");
-        
-        if (selectedWeapon != null) {
-            info.append("Новое оружие: ").append(selectedWeapon.getName()).append("\n");
-        }
-        
-        if (selectedArmor != null) {
-            info.append("Новая броня: ").append(selectedArmor.getName()).append("\n");
-        }
-        
-        if (!selectedExplosives.isEmpty()) {
-            info.append("Новая взрывчатка: ").append(selectedExplosives.size()).append(" шт.\n");
-        }
-        
-        if (!selectedAmmo.isEmpty()) {
-            info.append("Новая амуниция: ").append(selectedAmmo.size()).append(" типов\n");
-        }
+        info.append("=== КОЛИЧЕСТВО ВЫБРАННЫХ СОЛДАТ: ").append(selectedSoldiers.size()).append(" ===\n");
         
         inventoryInfo.setText(info.toString());
     }
     
-    private void updateConfirmButton() {
-        boolean canConfirm = selectedSoldier != null && selectedWeapon != null && selectedArmor != null;
-        confirmButton.setEnabled(canConfirm);
-    }
+
     
     private void updateStartGameButton() {
-        boolean canStartGame = selectedSoldier != null && selectedWeapon != null && selectedArmor != null;
+        boolean canStartGame = !selectedSoldiers.isEmpty() && selectedWeapon != null && selectedArmor != null;
         startGameButton.setEnabled(canStartGame);
     }
     
-    private void handleConfirm() {
-        if (selectedSoldier != null && selectedWeapon != null && selectedArmor != null) {
-            // Equip the soldier
-            selectedSoldier.equipWeapon(selectedWeapon);
-            selectedSoldier.equipArmor(selectedArmor);
-            
-            // Add explosives - using EquipmentManager if available, otherwise store for later
-            if (selectedExplosives != null && !selectedExplosives.isEmpty()) {
-                // Store selected explosives for the soldier
-                // Note: In a full implementation, this would use EquipmentManager
-                String explosiveInfo = "Выбрано " + selectedExplosives.size() + " взрывчатки для " + selectedSoldier.getName();
-                equipmentInfo.setText(equipmentInfo.getText() + "\n\n" + explosiveInfo);
-            }
-            
-            // Add ammunition to soldier's inventory
-            if (selectedAmmo != null && !selectedAmmo.isEmpty()) {
-                selectedSoldier.addAmmunition(selectedAmmo);
-                String ammoInfo = "Добавлено " + selectedAmmo.size() + " типов амуниции для " + selectedSoldier.getName();
-                equipmentInfo.setText(equipmentInfo.getText() + "\n\n" + ammoInfo);
-            }
-            
-            JOptionPane.showMessageDialog(this, 
-                "Солдат " + selectedSoldier.getName() + " экипирован!\n" +
-                "Теперь вы можете начать миссию, нажав кнопку 'Начать миссию'.",
-                "Солдат экипирован", 
-                JOptionPane.INFORMATION_MESSAGE);
-                
-            // Call the callback to notify GameWindow that soldier is prepared
-            if (onGameStartCallback != null) {
-                onGameStartCallback.run();
-            }
-        }
-    }
-    
-    private void handleCancel() {
-        // Reset selections
-        soldierList.clearSelection();
-        weaponList.clearSelection();
-        armorList.clearSelection();
-        explosiveList.clearSelection();
-        ammoList.clearSelection();
-        
-        selectedSoldier = null;
-        selectedWeapon = null;
-        selectedArmor = null;
-        selectedExplosives.clear();
-        selectedAmmo.clear();
-        
-        soldierInfo.setText("");
-        equipmentInfo.setText("");
-        inventoryInfo.setText("");
-        updateConfirmButton();
-        updateStartGameButton();
-    }
+
 
     private void handleStartGame() {
-        if (selectedSoldier != null && selectedWeapon != null && selectedArmor != null) {
-            // Equip the soldier before starting
-            selectedSoldier.equipWeapon(selectedWeapon);
-            selectedSoldier.equipArmor(selectedArmor);
-            
-            // Add ammunition to soldier's inventory
-            if (selectedAmmo != null && !selectedAmmo.isEmpty()) {
-                selectedSoldier.addAmmunition(selectedAmmo);
+        if (!selectedSoldiers.isEmpty() && selectedWeapon != null && selectedArmor != null) {
+            // Equip all selected soldiers before starting
+            for (Soldier soldier : selectedSoldiers) {
+                soldier.equipWeapon(selectedWeapon);
+                soldier.equipArmor(selectedArmor);
+                
+                // Add explosives if selected
+                if (selectedExplosives != null && !selectedExplosives.isEmpty()) {
+                    for (Explosive explosive : selectedExplosives) {
+                        // Create a copy of the explosive for each soldier
+                        Explosive explosiveCopy = new Explosive(explosive.getName(), explosive.getType(), explosive.getDamage(), explosive.getRadius(), 0);
+                        soldier.addExplosive(explosiveCopy);
+                    }
+                }
+                
+                // Add ammunition to soldier's inventory
+                if (selectedAmmo != null && !selectedAmmo.isEmpty()) {
+                    soldier.addAmmunition(selectedAmmo);
+                }
             }
             
-            // Show confirmation message
-            JOptionPane.showMessageDialog(this, 
-                "Солдат " + selectedSoldier.getName() + " готов к миссии!\n" +
-                "Оружие: " + selectedWeapon.getName() + "\n" +
-                "Броня: " + selectedArmor.getName() + "\n" +
-                "Взрывчатка: " + (selectedExplosives.isEmpty() ? "не выбрана" : selectedExplosives.size() + " шт.") + "\n" +
-                "Амуниция: " + (selectedAmmo.isEmpty() ? "не выбрана" : selectedAmmo.size() + " типов"),
-                "Готов к миссии", 
-                JOptionPane.INFORMATION_MESSAGE);
+            // Show brief success message and immediately start the game
+            String message = "Миссия начинается!\n";
+            message += "Экипировано " + selectedSoldiers.size() + " солдат";
             
-            // Call the callback to start the game
+            JOptionPane.showMessageDialog(this, message, "Миссия запущена", JOptionPane.INFORMATION_MESSAGE);
+            
+            // Call the callback to start the game immediately
             if (onGameStartCallback != null) {
                 onGameStartCallback.run();
             }
         } else {
             JOptionPane.showMessageDialog(this, 
-                "Пожалуйста, выберите солдата, оружие и броню перед началом миссии.",
+                "Пожалуйста, выберите солдат, оружие и броню перед началом миссии.",
                 "Неполная подготовка", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
     
     private void handleQuickEquipWeapon() {
-        if (selectedSoldier != null && selectedWeapon != null) {
-            // Replace current weapon
-            Weapon oldWeapon = selectedSoldier.getWeapon();
-            selectedSoldier.equipWeapon(selectedWeapon);
+        if (!selectedSoldiers.isEmpty() && selectedWeapon != null) {
+            // Replace current weapon for all selected soldiers
+            StringBuilder message = new StringBuilder("Оружие заменено для " + selectedSoldiers.size() + " солдат!\n\n");
             
-            String message = "Оружие заменено!\n";
-            if (oldWeapon != null) {
-                message += "Снято: " + oldWeapon.getName() + "\n";
+            for (Soldier soldier : selectedSoldiers) {
+                Weapon oldWeapon = soldier.getWeapon();
+                soldier.equipWeapon(selectedWeapon);
+                
+                if (oldWeapon != null) {
+                    message.append(soldier.getName()).append(": снято ").append(oldWeapon.getName()).append("\n");
+                }
+                message.append(soldier.getName()).append(": экипировано ").append(selectedWeapon.getName()).append("\n");
             }
-            message += "Экипировано: " + selectedWeapon.getName();
             
-            JOptionPane.showMessageDialog(this, message, "Оружие заменено", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, message.toString(), "Оружие заменено", JOptionPane.INFORMATION_MESSAGE);
             updateInventoryInfo();
         } else {
             JOptionPane.showMessageDialog(this, 
-                "Пожалуйста, выберите солдата и оружие для экипировки.",
+                "Пожалуйста, выберите солдат и оружие для экипировки.",
                 "Неполная подготовка", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
     
     private void handleQuickEquipArmor() {
-        if (selectedSoldier != null && selectedArmor != null) {
-            // Replace current armor
-            Armor oldArmor = selectedSoldier.getArmor();
-            selectedSoldier.equipArmor(selectedArmor);
+        if (!selectedSoldiers.isEmpty() && selectedArmor != null) {
+            // Replace current armor for all selected soldiers
+            StringBuilder message = new StringBuilder("Броня заменена для " + selectedSoldiers.size() + " солдат!\n\n");
             
-            String message = "Броня заменена!\n";
-            if (oldArmor != null) {
-                message += "Снято: " + oldArmor.getName() + "\n";
+            for (Soldier soldier : selectedSoldiers) {
+                Armor oldArmor = soldier.getArmor();
+                soldier.equipArmor(selectedArmor);
+                
+                if (oldArmor != null) {
+                    message.append(soldier.getName()).append(": снято ").append(oldArmor.getName()).append("\n");
+                }
+                message.append(soldier.getName()).append(": экипировано ").append(selectedArmor.getName()).append("\n");
             }
-            message += "Экипировано: " + selectedArmor.getName();
             
-            JOptionPane.showMessageDialog(this, message, "Броня заменена", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, message.toString(), "Броня заменена", JOptionPane.INFORMATION_MESSAGE);
             updateInventoryInfo();
         } else {
             JOptionPane.showMessageDialog(this, 
-                "Пожалуйста, выберите солдата и броню для экипировки.",
+                "Пожалуйста, выберите солдат и броню для экипировки.",
                 "Неполная подготовка", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
     
     private void handleQuickEquipExplosive() {
-        if (selectedSoldier != null && !selectedExplosives.isEmpty()) {
-            // Add explosives to soldier's inventory
+        if (!selectedSoldiers.isEmpty() && !selectedExplosives.isEmpty()) {
+            // Add explosives to all selected soldiers
             StringBuilder message = new StringBuilder();
-            message.append("Взрывчатка добавлена в инвентарь!\n\n");
+            message.append("Взрывчатка добавлена ").append(selectedSoldiers.size()).append(" солдатам!\n\n");
             message.append("Добавлено:\n");
             
             for (Explosive explosive : selectedExplosives) {
                 message.append("- ").append(explosive.getName()).append(" (урон: ").append(explosive.getDamage()).append(")\n");
             }
             
+            message.append("\nСолдаты:\n");
+            for (Soldier soldier : selectedSoldiers) {
+                message.append("- ").append(soldier.getName()).append("\n");
+            }
+            
             JOptionPane.showMessageDialog(this, message.toString(), "Взрывчатка добавлена", JOptionPane.INFORMATION_MESSAGE);
             updateInventoryInfo();
         } else {
             JOptionPane.showMessageDialog(this, 
-                "Пожалуйста, выберите солдата и взрывчатку для добавления в инвентарь.",
+                "Пожалуйста, выберите солдат и взрывчатку для добавления в инвентарь.",
                 "Неполная подготовка", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
     
     private void handleUnequipWeapon() {
-        if (selectedSoldier != null && selectedSoldier.getWeapon() != null) {
-            Weapon oldWeapon = selectedSoldier.getWeapon();
-            selectedSoldier.setWeapon(null);
+        if (!selectedSoldiers.isEmpty()) {
+            StringBuilder message = new StringBuilder("Оружие снято с " + selectedSoldiers.size() + " солдат!\n\n");
             
-            JOptionPane.showMessageDialog(this, 
-                "Оружие снято: " + oldWeapon.getName(),
-                "Оружие снято", 
-                JOptionPane.INFORMATION_MESSAGE);
+            for (Soldier soldier : selectedSoldiers) {
+                if (soldier.getWeapon() != null) {
+                    Weapon oldWeapon = soldier.getWeapon();
+                    soldier.setWeapon(null);
+                    message.append(soldier.getName()).append(": снято ").append(oldWeapon.getName()).append("\n");
+                } else {
+                    message.append(soldier.getName()).append(": нет оружия\n");
+                }
+            }
+            
+            JOptionPane.showMessageDialog(this, message.toString(), "Оружие снято", JOptionPane.INFORMATION_MESSAGE);
             updateInventoryInfo();
         } else {
             JOptionPane.showMessageDialog(this, 
-                "У солдата нет экипированного оружия для снятия.",
-                "Нет оружия", 
+                "Пожалуйста, выберите солдат для снятия оружия.",
+                "Нет солдат", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
     
     private void handleUnequipArmor() {
-        if (selectedSoldier != null && selectedSoldier.getArmor() != null) {
-            Armor oldArmor = selectedSoldier.getArmor();
-            selectedSoldier.setArmor(null);
+        if (!selectedSoldiers.isEmpty()) {
+            StringBuilder message = new StringBuilder("Броня снята с " + selectedSoldiers.size() + " солдат!\n\n");
             
-            JOptionPane.showMessageDialog(this, 
-                "Броня снята: " + oldArmor.getName(),
-                "Броня снята", 
-                JOptionPane.INFORMATION_MESSAGE);
+            for (Soldier soldier : selectedSoldiers) {
+                if (soldier.getArmor() != null) {
+                    Armor oldArmor = soldier.getArmor();
+                    soldier.setArmor(null);
+                    message.append(soldier.getName()).append(": снята ").append(oldArmor.getName()).append("\n");
+                } else {
+                    message.append(soldier.getName()).append(": нет брони\n");
+                }
+            }
+            
+            JOptionPane.showMessageDialog(this, message.toString(), "Броня снята", JOptionPane.INFORMATION_MESSAGE);
             updateInventoryInfo();
         } else {
             JOptionPane.showMessageDialog(this, 
-                "У солдата нет экипированной брони для снятия.",
-                "Нет брони", 
+                "Пожалуйста, выберите солдат для снятия брони.",
+                "Нет солдат", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
     
     private void handleClearExplosives() {
-        if (selectedSoldier != null && !selectedExplosives.isEmpty()) {
+        if (!selectedExplosives.isEmpty()) {
             int count = selectedExplosives.size();
             selectedExplosives.clear();
             
@@ -747,40 +705,48 @@ public class SoldierSelectionForm extends JPanel {
     }
     
     private void handleEquipAmmo() {
-        if (selectedSoldier != null && !selectedAmmo.isEmpty()) {
-            // Actually equip the ammunition to the soldier
-            selectedSoldier.addAmmunition(selectedAmmo);
-            
+        if (!selectedSoldiers.isEmpty() && !selectedAmmo.isEmpty()) {
+            // Actually equip the ammunition to all selected soldiers
             StringBuilder message = new StringBuilder();
-            message.append("Амуниция экипирована солдату!\n\n");
+            message.append("Амуниция экипирована ").append(selectedSoldiers.size()).append(" солдатам!\n\n");
             message.append("Добавлено:\n");
             
             for (AmmoTypeData ammo : selectedAmmo) {
                 message.append("- ").append(ammo.getName()).append(" (").append(ammo.getDamageBonus()).append(" бонус урона)\n");
             }
             
-            message.append("\nАмуниция сохранена в инвентаре солдата и будет доступна на поле боя.");
+            message.append("\nСолдаты:\n");
+            for (Soldier soldier : selectedSoldiers) {
+                soldier.addAmmunition(selectedAmmo);
+                message.append("- ").append(soldier.getName()).append("\n");
+            }
+            
+            message.append("\nАмуниция сохранена в инвентаре солдат и будет доступна на поле боя.");
             
             JOptionPane.showMessageDialog(this, message.toString(), "Амуниция экипирована", JOptionPane.INFORMATION_MESSAGE);
             updateInventoryInfo();
         } else {
             JOptionPane.showMessageDialog(this, 
-                "Пожалуйста, выберите солдата и амуницию для экипировки.",
+                "Пожалуйста, выберите солдат и амуницию для экипировки.",
                 "Неполная подготовка", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
     
     private void handleClearAmmo() {
-        if (selectedSoldier != null && !selectedAmmo.isEmpty()) {
+        if (!selectedAmmo.isEmpty()) {
             int count = selectedAmmo.size();
             selectedAmmo.clear();
             
-            // Also clear ammunition from soldier's inventory
-            selectedSoldier.clearAmmunition();
+            // Also clear ammunition from all selected soldiers' inventory
+            if (!selectedSoldiers.isEmpty()) {
+                for (Soldier soldier : selectedSoldiers) {
+                    soldier.clearAmmunition();
+                }
+            }
             
             JOptionPane.showMessageDialog(this, 
-                "Амуниция очищена (" + count + " типов удалено)\nАмуниция также удалена из инвентаря солдата.",
+                "Амуниция очищена (" + count + " типов удалено)\nАмуниция также удалена из инвентаря " + selectedSoldiers.size() + " солдат.",
                 "Амуниция очищена", 
                 JOptionPane.INFORMATION_MESSAGE);
             updateInventoryInfo();
@@ -793,36 +759,47 @@ public class SoldierSelectionForm extends JPanel {
     }
     
     private void handleEquipAll() {
-        if (selectedSoldier != null) {
+        if (!selectedSoldiers.isEmpty()) {
             boolean equipped = false;
             StringBuilder message = new StringBuilder();
-            message.append("Экипировка солдата:\n\n");
+            message.append("Экипировка ").append(selectedSoldiers.size()).append(" солдат:\n\n");
             
-            if (selectedWeapon != null) {
-                selectedSoldier.equipWeapon(selectedWeapon);
-                message.append("✓ Оружие: ").append(selectedWeapon.getName()).append("\n");
-                equipped = true;
-            }
-            
-            if (selectedArmor != null) {
-                selectedSoldier.equipArmor(selectedArmor);
-                message.append("✓ Броня: ").append(selectedArmor.getName()).append("\n");
-                equipped = true;
-            }
-            
-            if (!selectedExplosives.isEmpty()) {
-                message.append("✓ Взрывчатка: ").append(selectedExplosives.size()).append(" шт.\n");
-                equipped = true;
-            }
-            
-            if (!selectedAmmo.isEmpty()) {
-                selectedSoldier.addAmmunition(selectedAmmo);
-                message.append("✓ Амуниция: ").append(selectedAmmo.size()).append(" типов\n");
-                equipped = true;
+            for (Soldier soldier : selectedSoldiers) {
+                message.append("Солдат: ").append(soldier.getName()).append("\n");
+                
+                if (selectedWeapon != null) {
+                    soldier.equipWeapon(selectedWeapon);
+                    message.append("✓ Оружие: ").append(selectedWeapon.getName()).append("\n");
+                    equipped = true;
+                }
+                
+                if (selectedArmor != null) {
+                    soldier.equipArmor(selectedArmor);
+                    message.append("✓ Броня: ").append(selectedArmor.getName()).append("\n");
+                    equipped = true;
+                }
+                
+                if (!selectedExplosives.isEmpty()) {
+                    for (Explosive explosive : selectedExplosives) {
+                        // Create a copy of the explosive for each soldier
+                        Explosive explosiveCopy = new Explosive(explosive.getName(), explosive.getType(), explosive.getDamage(), explosive.getRadius(), 0);
+                        soldier.addExplosive(explosiveCopy);
+                    }
+                    message.append("✓ Взрывчатка: ").append(selectedExplosives.size()).append(" шт.\n");
+                    equipped = true;
+                }
+                
+                if (!selectedAmmo.isEmpty()) {
+                    soldier.addAmmunition(selectedAmmo);
+                    message.append("✓ Амуниция: ").append(selectedAmmo.size()).append(" типов\n");
+                    equipped = true;
+                }
+                
+                message.append("\n");
             }
             
             if (equipped) {
-                message.append("\nСолдат полностью экипирован!");
+                message.append("Все солдаты полностью экипированы!");
                 JOptionPane.showMessageDialog(this, message.toString(), "Экипировка завершена", JOptionPane.INFORMATION_MESSAGE);
                 updateInventoryInfo();
             } else {
@@ -833,8 +810,8 @@ public class SoldierSelectionForm extends JPanel {
             }
         } else {
             JOptionPane.showMessageDialog(this, 
-                "Пожалуйста, выберите солдата для экипировки.",
-                "Нет солдата", 
+                "Пожалуйста, выберите солдат для экипировки.",
+                "Нет солдат", 
                 JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -895,57 +872,80 @@ public class SoldierSelectionForm extends JPanel {
     }
     
     /**
-     * Get the equipped soldier
+     * Get the equipped soldiers
      */
-    public Soldier getEquippedSoldier() {
-        return selectedSoldier;
+    public List<Soldier> getEquippedSoldiers() {
+        return new ArrayList<>(selectedSoldiers);
     }
     
     /**
-     * Get the fully equipped soldier for the mission
+     * Get the first equipped soldier
      */
-    public Soldier getMissionReadySoldier() {
-        if (selectedSoldier != null && selectedWeapon != null && selectedArmor != null) {
-            // Create a copy to avoid modifying the original
-            Soldier missionSoldier = new Soldier(
-                selectedSoldier.getName(),
-                selectedSoldier.getMaxHealth(),
-                selectedSoldier.getMovementRange(),
-                selectedSoldier.getAttackRange(),
-                selectedSoldier.getAttackDamage(),
-                selectedSoldier.getSoldierClass()
-            );
+    public Soldier getFirstEquippedSoldier() {
+        return selectedSoldiers.isEmpty() ? null : selectedSoldiers.get(0);
+    }
+    
+    /**
+     * Get the fully equipped soldiers for the mission
+     */
+    public List<Soldier> getMissionReadySoldiers() {
+        if (!selectedSoldiers.isEmpty() && selectedWeapon != null && selectedArmor != null) {
+            List<Soldier> missionSoldiers = new ArrayList<>();
             
-            // Copy other properties
-            missionSoldier.setExperience(selectedSoldier.getExperience());
-            missionSoldier.setRank(selectedSoldier.getRank());
-            
-            // Equip the soldier
-            missionSoldier.equipWeapon(selectedWeapon);
-            missionSoldier.equipArmor(selectedArmor);
-            
-            // Add explosives if selected
-            if (selectedExplosives != null && !selectedExplosives.isEmpty()) {
-                // In a full implementation, this would use EquipmentManager
-                // For now, we'll store the explosives information
-                missionSoldier.setAbilities(selectedSoldier.getAbilities()); // Preserve abilities
+            for (Soldier selectedSoldier : selectedSoldiers) {
+                // Create a copy to avoid modifying the original
+                Soldier missionSoldier = new Soldier(
+                    selectedSoldier.getName(),
+                    selectedSoldier.getMaxHealth(),
+                    selectedSoldier.getMovementRange(),
+                    selectedSoldier.getAttackRange(),
+                    selectedSoldier.getAttackDamage(),
+                    selectedSoldier.getSoldierClass()
+                );
+                
+                // Copy other properties
+                missionSoldier.setExperience(selectedSoldier.getExperience());
+                missionSoldier.setRank(selectedSoldier.getRank());
+                
+                // Equip the soldier
+                missionSoldier.equipWeapon(selectedWeapon);
+                missionSoldier.equipArmor(selectedArmor);
+                
+                // Add explosives if selected
+                if (selectedExplosives != null && !selectedExplosives.isEmpty()) {
+                    for (Explosive explosive : selectedExplosives) {
+                        // Create a copy of the explosive for each soldier
+                        Explosive explosiveCopy = new Explosive(explosive.getName(), explosive.getType(), explosive.getDamage(), explosive.getRadius(), 0);
+                        missionSoldier.addExplosive(explosiveCopy);
+                    }
+                }
+                
+                // Add ammunition if selected
+                if (selectedAmmo != null && !selectedAmmo.isEmpty()) {
+                    missionSoldier.addAmmunition(selectedAmmo);
+                }
+                
+                missionSoldiers.add(missionSoldier);
             }
             
-            // Add ammunition if selected
-            if (selectedAmmo != null && !selectedAmmo.isEmpty()) {
-                missionSoldier.addAmmunition(selectedAmmo);
-            }
-            
-            return missionSoldier;
+            return missionSoldiers;
         }
-        return null;
+        return new ArrayList<>();
+    }
+    
+    /**
+     * Get the first fully equipped soldier for the mission
+     */
+    public Soldier getFirstMissionReadySoldier() {
+        List<Soldier> readySoldiers = getMissionReadySoldiers();
+        return readySoldiers.isEmpty() ? null : readySoldiers.get(0);
     }
     
     /**
      * Check if form is complete
      */
     public boolean isFormComplete() {
-        return selectedSoldier != null && selectedWeapon != null && selectedArmor != null;
+        return !selectedSoldiers.isEmpty() && selectedWeapon != null && selectedArmor != null;
     }
     
     /**
@@ -957,7 +957,10 @@ public class SoldierSelectionForm extends JPanel {
         }
         
         StringBuilder summary = new StringBuilder();
-        summary.append("Солдат: ").append(selectedSoldier.getName()).append("\n");
+        summary.append("Солдаты: ").append(selectedSoldiers.size()).append(" чел.\n");
+        for (Soldier soldier : selectedSoldiers) {
+            summary.append("- ").append(soldier.getName()).append(" (").append(soldier.getSoldierClass()).append(")\n");
+        }
         summary.append("Оружие: ").append(selectedWeapon.getName()).append("\n");
         summary.append("Броня: ").append(selectedArmor.getName()).append("\n");
         
@@ -995,7 +998,7 @@ public class SoldierSelectionForm extends JPanel {
         ammoList.clearSelection();
         
         // Reset selected items
-        selectedSoldier = null;
+        selectedSoldiers.clear();
         selectedWeapon = null;
         selectedArmor = null;
         selectedExplosives.clear();
@@ -1006,8 +1009,12 @@ public class SoldierSelectionForm extends JPanel {
         equipmentInfo.setText("");
         inventoryInfo.setText("");
         
-        // Update buttons
-        updateConfirmButton();
+        // Update button
         updateStartGameButton();
+    }
+
+    private void applyLLMStyles() {
+        // Basic styling can be added here if needed
+        // For now, this method is kept for future enhancements
     }
 }

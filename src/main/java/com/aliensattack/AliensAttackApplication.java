@@ -1,6 +1,7 @@
 package com.aliensattack;
 
 import com.aliensattack.core.GameLogManager;
+import com.aliensattack.core.GameSystemIntegrator;
 import com.aliensattack.core.config.GameConfig;
 import com.aliensattack.ui.GameWindow;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +26,9 @@ public class AliensAttackApplication {
         
         // Initialize configuration at startup
         GameConfig.initialize();
+        
+        // Initialize all previously unused systems
+        GameSystemIntegrator.getInstance().initializeUnusedSystems();
         
         // Subscribe logging handler to events
         LoggingEventHandler.register();

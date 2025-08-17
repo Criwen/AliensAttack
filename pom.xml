@@ -29,6 +29,8 @@
             <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+        
+        <!-- JavaFX Dependencies -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -44,6 +46,12 @@
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        
         <!-- Logging: Apache Log4j2 -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -104,10 +112,11 @@
                     <mainClass>com.aliensattack.AliensAttackApplication</mainClass>
                     <options>
                         <option>--add-modules</option>
-                        <option>javafx.controls,javafx.fxml,javafx.graphics</option>
+                        <option>javafx.controls,javafx.fxml,javafx.graphics,javafx.swing</option>
                     </options>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -119,6 +128,7 @@
                     </includes>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

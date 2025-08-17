@@ -12,6 +12,10 @@ public class UnitInfoPanelView {
     public UnitInfoPanelView(JPanel panel) {
         this.panel = panel;
     }
+    
+    public JPanel getPanel() {
+        return panel;
+    }
 
     public void render(Unit selectedUnit) {
         panel.removeAll();
@@ -53,15 +57,37 @@ public class UnitInfoPanelView {
             }
             addLabel("Ammo: " + weapon.getCurrentAmmo() + "/" + weapon.getAmmoCapacity());
         } else {
-            addLabel("Weapon: Error displaying weapon info");
+            addLabel("Weapon: нет");
+        }
+        
+        // Add armor information
+        Armor armor = selectedUnit.getArmor();
+        if (armor != null) {
+            addLabel("--- БРОНЯ ---");
+            addLabel("Name: " + armor.getName());
+            addLabel("Type: " + armor.getType());
+            addLabel("Damage Reduction: " + armor.getDamageReduction());
+            addLabel("Health: " + armor.getCurrentHealth() + "/" + armor.getMaxHealth());
+        } else {
+            addLabel("Armor: нет");
         }
 
         List<Explosive> explosives = selectedUnit.getExplosives();
         if (explosives != null && !explosives.isEmpty()) {
-            addLabel("--- GRENADES ---");
+            addLabel("--- ГРАНАТЫ ---");
+            addLabel("Количество: " + explosives.size() + " шт.");
             for (Explosive explosive : explosives) {
-                addLabel(explosive.getName() + " (" + explosive.getDamage() + " dmg, " + explosive.getRadius() + " radius)");
+                String explosiveInfo = explosive.getName();
+                if (explosive.getDamage() > 0) {
+                    explosiveInfo += " (урон: " + explosive.getDamage();
+                } else {
+                    explosiveInfo += " (специальная";
+                }
+                explosiveInfo += ", радиус: " + explosive.getRadius() + ")";
+                addLabel(explosiveInfo);
             }
+        } else {
+            addLabel("Гранаты: нет");
         }
 
         List<SoldierAbility> abilities = selectedUnit.getAbilities();

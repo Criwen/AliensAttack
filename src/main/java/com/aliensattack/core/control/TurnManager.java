@@ -2,12 +2,14 @@ package com.aliensattack.core.control;
 
 import com.aliensattack.core.interfaces.IBrain;
 import com.aliensattack.core.model.GameContext;
+import com.aliensattack.actions.interfaces.IAction;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * Manages turn-based gameplay with automatic switching between player and enemy turns
@@ -122,70 +124,49 @@ public class TurnManager {
      */
     public void executeEnemyTurn() {
         if (isPlayerTurn) {
-            log.warn("Cannot execute enemy turn during player's turn");
+            log.warn("Cannot execute enemy turn - it's player's turn");
             return;
         }
         
-        log.info("🤖 Executing enemy AI turn...");
+        log.info("🤖 Executing enemy AI turn");
         
-        // Get all active enemy AI brains
-        List<IBrain> enemyBrains = getActiveEnemyBrains();
+        // Execute brains for the current game context
+        brainManager.executeBrains(gameContext);
         
-        if (enemyBrains.isEmpty()) {
-            log.warn("No enemy AI brains found - ending enemy turn");
-            endEnemyTurn();
-            return;
-        }
+        // Count enemy actions from the execution
+        enemyActionsThisTurn = brainManager.getBrainStatistics().get("activeBrains") != null ? 
+            (Integer) brainManager.getBrainStatistics().get("activeBrains") : 0;
         
-        // Execute each enemy brain in priority order
-        for (IBrain brain : enemyBrains) {
-            if (!brain.isReady()) {
-                continue;
-            }
-            
-            try {
-                // Update brain with current game context
-                brain.update(gameContext);
-                
-                // Select and execute action
-                var action = brain.selectAction(gameContext);
-                if (action.isPresent()) {
-                    boolean success = brain.executeAction(action.get());
-                    if (success) {
-                        enemyActionsThisTurn++;
-                        cumulativeEnemyActions++;
-                        recordUnitAction(brain.getControlledUnit().getId());
-                        log.debug("Enemy AI {} executed action: {}", 
-                                brain.getBrainId(), action.get().getActionType());
-                    }
-                }
-                
-            } catch (Exception e) {
-                log.error("Error executing enemy brain {}", brain.getBrainId(), e);
-            }
-        }
-        
-        log.info("🤖 Enemy AI turn completed - {} actions executed", enemyActionsThisTurn);
-        
-        // Check if enemy turn should end
-        if (shouldEndEnemyTurn()) {
-            endEnemyTurn();
-        }
+        cumulativeEnemyActions += enemyActionsThisTurn;
+        log.info("🤖 Enemy turn completed with {} actions", enemyActionsThisTurn);
     }
     
     /**
-     * Record an action for a unit
+     * Record a player action
      */
     public void recordPlayerAction(String unitId) {
         playerActionsThisTurn++;
         cumulativePlayerActions++;
-        recordUnitAction(unitId);
+        unitActionsPerTurn.merge(unitId, 1, Integer::sum);
+        
+        log.debug("📝 Player action recorded for unit {} (Total: {})", unitId, playerActionsThisTurn);
+    }
+    
+    /**
+     * Record an enemy action
+     */
+    public void recordEnemyAction(String unitId) {
+        enemyActionsThisTurn++;
+        cumulativeEnemyActions++;
+        unitActionsPerTurn.merge(unitId, 1, Integer::sum);
+        
+        log.debug("📝 Enemy action recorded for unit {} (Total: {})", unitId, enemyActionsThisTurn);
     }
     
     /**
      * Check if turn time limit exceeded
      */
-    public boolean isTurnTimeExceeded() {
+    public boolean isTurnTimeLimitExceeded() {
         if (!enableTurnTimeLimit) {
             return false;
         }
@@ -201,10 +182,10 @@ public class TurnManager {
      */
     public void forceEndTurn() {
         if (isPlayerTurn) {
-            log.warn("⏰ Player turn time limit exceeded - forcing end");
+            log.warn("⏰ Forcing end of player turn due to time limit");
             endPlayerTurn();
         } else {
-            log.warn("⏰ Enemy turn time limit exceeded - forcing end");
+            log.warn("⏰ Forcing end of enemy turn due to time limit");
             endEnemyTurn();
         }
     }
@@ -301,7 +282,7 @@ public class TurnManager {
                 .allMatch(unit -> unit.getActionPoints() <= 0);
         
         // End turn if time limit exceeded
-        boolean timeExceeded = isTurnTimeExceeded();
+        boolean timeExceeded = isTurnTimeLimitExceeded();
         
         // End turn if no more actions possible
         boolean noActionsPossible = getActiveEnemyBrains().stream()
@@ -383,5 +364,82 @@ public class TurnManager {
         private double averagePlayerActionsPerTurn;
         private double averageEnemyActionsPerTurn;
         private Map<String, Integer> unitActionsThisTurn;
+    }
+
+    /**
+     * Get current turn phase
+     */
+    public TurnPhase getCurrentPhase() {
+        return currentPhase;
+    }
+    
+    /**
+     * Check if it's currently player's turn
+     */
+    public boolean isPlayerTurn() {
+        return isPlayerTurn;
+    }
+    
+    /**
+     * Get current turn number
+     */
+    public int getCurrentTurn() {
+        return currentTurn;
+    }
+    
+    /**
+     * Get turn start time
+     */
+    public long getTurnStartTime() {
+        return turnStartTime;
+    }
+    
+    /**
+     * Get max turn duration
+     */
+    public long getMaxTurnDuration() {
+        return maxTurnDuration;
+    }
+    
+    /**
+     * Check if turn time limit is enabled
+     */
+    public boolean isTurnTimeLimitEnabled() {
+        return enableTurnTimeLimit;
+    }
+    
+    /**
+     * Get player actions this turn
+     */
+    public int getPlayerActionsThisTurn() {
+        return playerActionsThisTurn;
+    }
+    
+    /**
+     * Get enemy actions this turn
+     */
+    public int getEnemyActionsThisTurn() {
+        return enemyActionsThisTurn;
+    }
+    
+    /**
+     * Get unit actions per turn
+     */
+    public Map<String, Integer> getUnitActionsPerTurn() {
+        return new ConcurrentHashMap<>(unitActionsPerTurn);
+    }
+    
+    /**
+     * Get cumulative player actions
+     */
+    public int getCumulativePlayerActions() {
+        return cumulativePlayerActions;
+    }
+    
+    /**
+     * Get cumulative enemy actions
+     */
+    public int getCumulativeEnemyActions() {
+        return cumulativeEnemyActions;
     }
 } 

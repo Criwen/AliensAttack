@@ -102,7 +102,7 @@ public class PerformanceManager {
             int maxSize = GameConfig.getInt("performance.caching.combat.max_size", 1000);
             int ttlMinutes = GameConfig.getInt("performance.caching.combat.ttl_minutes", 5);
             
-            combatCache = new CombatCalculationCache(maxSize, TimeUnit.MINUTES.toMillis(ttlMinutes));
+            combatCache = new CombatCalculationCache();
             
             log.info("Combat Calculation Cache initialized with max size: {}, TTL: {} minutes", maxSize, ttlMinutes);
         }

@@ -1,7 +1,7 @@
 package com.aliensattack.ui.panels;
 
 import com.aliensattack.actions.ActionManager;
-import com.aliensattack.actions.ActionType;
+import com.aliensattack.core.enums.ActionType;
 import com.aliensattack.core.model.Unit;
 
 import javax.swing.*;
@@ -16,6 +16,10 @@ public class ActionPanelView {
     public ActionPanelView(JPanel panel, ActionManager actionManager) {
         this.panel = panel;
         this.actionManager = actionManager;
+    }
+    
+    public JPanel getPanel() {
+        return panel;
     }
 
     public void setOnActionSelected(Consumer<ActionType> onActionSelected) {

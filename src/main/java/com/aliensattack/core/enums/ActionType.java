@@ -5,23 +5,25 @@ package com.aliensattack.core.enums;
  * Defines different types of actions units can perform
  */
 public enum ActionType {
-    MOVE("Move", "Unit movement"),
-    ATTACK("Attack", "Weapon attack"),
-    OVERWATCH("Overwatch", "Reaction shot"),
-    RELOAD("Reload", "Weapon reload"),
-    HEAL("Heal", "Medical action"),
-    GRENADE("Grenade", "Explosive use"),
-    SPECIAL_ABILITY("Special Ability", "Unique unit ability"),
-    DEFEND("Defend", "Defensive stance"),
-    DASH("Dash", "Fast movement"),
-    HACK("Hack", "Technical action");
+    MOVE("Move", "Unit movement", 1),
+    ATTACK("Attack", "Weapon attack", 1),
+    OVERWATCH("Overwatch", "Reaction shot", 1),
+    RELOAD("Reload", "Weapon reload", 1),
+    HEAL("Heal", "Medical action", 1),
+    GRENADE("Grenade", "Explosive use", 1),
+    SPECIAL_ABILITY("Special Ability", "Unique unit ability", 2),
+    DEFEND("Defend", "Defensive stance", 1),
+    DASH("Dash", "Fast movement", 2),
+    HACK("Hack", "Technical action", 1);
     
     private final String displayName;
     private final String description;
+    private final int actionPointCost;
     
-    ActionType(String displayName, String description) {
+    ActionType(String displayName, String description, int actionPointCost) {
         this.displayName = displayName;
         this.description = description;
+        this.actionPointCost = actionPointCost;
     }
     
     public String getDisplayName() {
@@ -30,5 +32,9 @@ public enum ActionType {
     
     public String getDescription() {
         return description;
+    }
+    
+    public int getActionPointCost() {
+        return actionPointCost;
     }
 }

@@ -5,6 +5,7 @@ import com.aliensattack.core.enums.UnitType;
 import com.aliensattack.core.enums.StatusEffect;
 import com.aliensattack.core.config.GameConfig;
 import com.aliensattack.core.data.StatusEffectData;
+import com.aliensattack.core.model.Explosive;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -43,6 +44,9 @@ public abstract class BaseUnit implements IUnit {
     // Status effects
     protected List<StatusEffectData> statusEffects;
     
+    // Explosives
+    protected List<Explosive> explosives;
+    
     // Overwatch
     protected boolean isOverwatching;
     protected int overwatchChance;
@@ -60,6 +64,7 @@ public abstract class BaseUnit implements IUnit {
         this.actionPoints = GameConfig.getDefaultActionPoints();
         this.position = new Position(0, 0);
         this.statusEffects = new ArrayList<>();
+        this.explosives = new ArrayList<>();
         this.isOverwatching = false;
         this.overwatchChance = GameConfig.getDefaultOverwatchChance();
         this.accuracy = GameConfig.getInt("unit.default.accuracy", 75);
@@ -213,6 +218,29 @@ public abstract class BaseUnit implements IUnit {
     @Override
     public void clearStatusEffects() {
         statusEffects.clear();
+    }
+    
+    // Explosives implementation
+    public List<Explosive> getExplosives() {
+        return new ArrayList<>(explosives);
+    }
+    
+    public void addExplosive(Explosive explosive) {
+        if (explosive != null) {
+            explosives.add(explosive);
+        }
+    }
+    
+    public void removeExplosive(Explosive explosive) {
+        explosives.remove(explosive);
+    }
+    
+    public boolean hasExplosives() {
+        return !explosives.isEmpty();
+    }
+    
+    public int getExplosiveCount() {
+        return explosives.size();
     }
     
     // Overwatch implementation

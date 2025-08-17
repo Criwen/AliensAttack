@@ -5,6 +5,7 @@ import com.aliensattack.core.model.Unit;
 import com.aliensattack.field.ITacticalField;
 import com.aliensattack.combat.ICombatManager;
 import com.aliensattack.core.GameLogManager;
+import com.aliensattack.core.enums.ActionType;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -113,6 +114,11 @@ public class ActionManager {
                 actionsToAssign = new ArrayList<>(alienActions);
                 GameLogManager.logUnitAction(unit.getName(), "Action Assignment", 
                     String.format("Assigned %d alien ruler actions", alienActions.size()));
+            }
+            case CHOSEN -> {
+                actionsToAssign = new ArrayList<>(alienActions);
+                GameLogManager.logUnitAction(unit.getName(), "Action Assignment", 
+                    String.format("Assigned %d chosen actions", alienActions.size()));
             }
             case CIVILIAN -> {
                 actionsToAssign = new ArrayList<>(civilianActions);
@@ -250,11 +256,11 @@ public class ActionManager {
         
         UnitAction action;
         if (target != null) {
-            action = new UnitAction(selectedAction, selectedUnit, target);
+            action = new UnitAction(selectedUnit, selectedAction, target, selectedAction.getActionPointCost());
         } else if (targetPosition != null) {
-            action = new UnitAction(selectedAction, selectedUnit, targetPosition);
+            action = new UnitAction(selectedUnit, selectedAction, targetPosition, selectedAction.getActionPointCost());
         } else {
-            action = new UnitAction(selectedAction, selectedUnit);
+            action = new UnitAction(selectedUnit, selectedAction, selectedAction.getActionPointCost());
         }
         
         // Для движения сначала обновляем тактическое поле, затем выполняем действие
