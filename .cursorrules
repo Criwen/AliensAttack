@@ -15,7 +15,7 @@ AliensAttack is a sophisticated XCOM2-style tactical combat system built in Java
 
 ### Package Structure
 ```
-src/main/java/com/aliensattack/
+src/main/java/com/aliensattack/ 
 ├── actions/          # Action system (Move, Attack, Defend, etc.)
 ├── combat/           # Combat mechanics and managers
 ├── core/             # Core game systems and models

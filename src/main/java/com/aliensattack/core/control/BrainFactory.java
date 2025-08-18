@@ -185,6 +185,7 @@ public class BrainFactory {
     public static IBrain createBrainForUnitType(String unitType, String unitId, int priority) {
         return switch (unitType.toUpperCase()) {
             case "SOLDIER", "PLAYER_UNIT" -> createHumanBrain("PLAYER_" + unitId, priority);
+            case "ALIEN" -> createAIBrain(7, 0.8, priority); // Use enhanced AI for Alien units
             case "ADVENT_TROOPER", "BASIC_ENEMY" -> createBasicAIBrain();
             case "ADVENT_OFFICER", "COMMANDER" -> createTacticalAIBrain();
             case "BERSERKER", "AGGRESSIVE_ENEMY" -> createAggressiveAIBrain();

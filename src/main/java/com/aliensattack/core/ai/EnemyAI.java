@@ -14,6 +14,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
 
@@ -316,61 +317,78 @@ public class EnemyAI implements IEnemyAI {
     }
     
     @Override
-    public void makeTurnDecision() {
+    public CompletableFuture<IEnemyAI.AITurnDecision> makeTurnDecision() {
         if (alien == null || !alien.isAlive()) {
-            return;
+            return CompletableFuture.completedFuture(
+                new IEnemyAI.AITurnDecision("none", "none", null, null, "No alien or alien is dead", 0.0)
+            );
         }
         
-        log.debug("AI making turn decision for alien: {}", alien.getName());
-        
-        // Update AI state
-        updateAIState();
-        updateBehavior();
-        
-        // Check squad coordination if available
-        if (squadCoordination != null) {
-            SquadCoordinationSystem.Squad squad = squadCoordination.getSquadForUnit(alien);
-            if (squad != null) {
-                // Consider squad tactics in decision making
-                SquadCoordinationSystem.SquadTactic activeTactic = squadCoordination.getActiveTactic(squad.getSquadId());
-                if (activeTactic != null && activeTactic.canUse()) {
-                    log.debug("AI considering squad tactic: {} for squad: {}", activeTactic.getName(), squad.getSquadId());
-                    
-                    // Execute squad tactic if appropriate
-                    if (shouldExecuteSquadTactic(activeTactic, squad)) {
-                        log.debug("AI executing squad tactic: {}", activeTactic.getName());
-                        return;
+        return CompletableFuture.supplyAsync(() -> {
+            log.debug("AI making turn decision for alien: {}", alien.getName());
+            
+            try {
+                // Update AI state
+                updateAIState();
+                updateBehavior();
+                
+                // Check squad coordination if available
+                if (squadCoordination != null) {
+                    SquadCoordinationSystem.Squad squad = squadCoordination.getSquadForUnit(alien);
+                    if (squad != null) {
+                        // Consider squad tactics in decision making
+                        SquadCoordinationSystem.SquadTactic activeTactic = squadCoordination.getActiveTactic(squad.getSquadId());
+                        if (activeTactic != null && activeTactic.canUse()) {
+                            log.debug("AI considering squad tactic: {} for squad: {}", activeTactic.getName(), squad.getSquadId());
+                            
+                            // Execute squad tactic if appropriate
+                            if (shouldExecuteSquadTactic(activeTactic, squad)) {
+                                log.debug("AI executing squad tactic: {}", activeTactic.getName());
+                                return new IEnemyAI.AITurnDecision("squad_tactic", "none", null, null, 
+                                    "Executing squad tactic: " + activeTactic.getName(), 0.8);
+                            }
+                        }
+                        
+                        // Get squad coordination data for tactical positioning
+                        SquadCoordinationSystem.SquadCoordinationData coordinationData = 
+                            squadCoordination.getCoordinationData(squad.getSquadId());
+                        if (coordinationData != null) {
+                            log.debug("AI using squad coordination data - Tactical advantage: {}, Coordination score: {}", 
+                                     coordinationData.getTacticalAdvantage(), coordinationData.getCoordinationScore());
+                        }
                     }
                 }
                 
-                // Get squad coordination data for tactical positioning
-                SquadCoordinationSystem.SquadCoordinationData coordinationData = 
-                    squadCoordination.getCoordinationData(squad.getSquadId());
-                if (coordinationData != null) {
-                    log.debug("AI using squad coordination data - Tactical advantage: {}, Coordination score: {}", 
-                             coordinationData.getTacticalAdvantage(), coordinationData.getCoordinationScore());
+                // Make decision based on current situation and behavior tree
+                if (shouldUseSpecialAbility().join()) {
+                    log.debug("AI decided to use special ability");
+                    return new IEnemyAI.AITurnDecision("use_special_ability", "none", null, null, 
+                        "Using special ability", 0.7);
                 }
+                
+                if (shouldAttack()) {
+                    log.debug("AI decided to attack");
+                    return new IEnemyAI.AITurnDecision("attack_target", "none", null, null, 
+                        "Attacking target", 0.8);
+                }
+                
+                if (shouldMove()) {
+                    log.debug("AI decided to move");
+                    return new IEnemyAI.AITurnDecision("move_to_position", "none", null, null, 
+                        "Moving to position", 0.6);
+                }
+                
+                // Default: defensive stance
+                log.debug("AI taking defensive stance");
+                return new IEnemyAI.AITurnDecision("defend", "none", null, null, 
+                    "Taking defensive stance", 0.5);
+                
+            } catch (Exception e) {
+                log.error("Error making turn decision: {}", e.getMessage());
+                return new IEnemyAI.AITurnDecision("defend", "none", null, null, 
+                    "Error in decision making, taking defensive stance", 0.3);
             }
-        }
-        
-        // Make decision based on current situation and behavior tree
-        if (shouldUseSpecialAbility()) {
-            log.debug("AI decided to use special ability");
-            return;
-        }
-        
-        if (shouldAttack()) {
-            log.debug("AI decided to attack");
-            return;
-        }
-        
-        if (shouldMove()) {
-            log.debug("AI decided to move");
-            return;
-        }
-        
-        // Default: defensive stance
-        log.debug("AI taking defensive stance");
+        });
     }
     
     /**
@@ -798,98 +816,106 @@ public class EnemyAI implements IEnemyAI {
     }
     
     @Override
-    public boolean executeAction() {
+    public CompletableFuture<Boolean> executeAction() {
         if (alien == null || !alien.isAlive()) {
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
         
-        try {
-            // Execute the decided action
-            if (shouldUseSpecialAbility()) {
-                return executeSpecialAbility();
-            } else if (shouldAttack()) {
-                return executeAttack();
-            } else if (shouldMove()) {
-                return executeMove();
-            } else {
-                return executeDefend();
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // Execute the decided action
+                if (shouldUseSpecialAbility().join()) {
+                    return executeSpecialAbility();
+                } else if (shouldAttack()) {
+                    return executeAttack();
+                } else if (shouldMove()) {
+                    return executeMove();
+                } else {
+                    return executeDefend();
+                }
+            } catch (Exception e) {
+                log.error("Error executing AI action for alien {}: {}", alien.getName(), e.getMessage());
+                return false;
             }
-        } catch (Exception e) {
-            log.error("Error executing AI action for alien {}: {}", alien.getName(), e.getMessage());
-            return false;
-        }
-    }
-    
-    @Override
-    public Position calculateBestMovePosition() {
-        if (alien == null || tacticalField == null) {
-            return null;
-        }
-        
-        Position currentPos = alien.getPosition();
-        if (currentPos == null) {
-            return null;
-        }
-        
-        // Find best strategic position
-        List<Position> validPositions = getValidMovePositions();
-        if (validPositions.isEmpty()) {
-            return currentPos; // Stay in place
-        }
-        
-        // Score positions based on AI strategy
-        Position bestPosition = validPositions.stream()
-            .max(Comparator.comparingInt(this::scorePosition))
-            .orElse(currentPos);
-        
-        log.debug("AI calculated best move position: {} -> {}", currentPos, bestPosition);
-        return bestPosition;
-    }
-    
-    @Override
-    public List<Unit> findBestTargets() {
-        if (alien == null || tacticalField == null) {
-            return new ArrayList<>();
-        }
-        
-        // Find all player units in range
-        List<Unit> targets = tacticalField.getAllUnits().stream()
-            .filter(unit -> unit.getUnitType() == com.aliensattack.core.enums.UnitType.SOLDIER)
-            .filter(unit -> unit.isAlive())
-            .filter(unit -> isInAttackRange(unit))
-            .collect(Collectors.toList());
-        
-        // Sort by priority (closest, weakest, etc.)
-        targets.sort((t1, t2) -> {
-            int priority1 = calculateTargetPriority(t1);
-            int priority2 = calculateTargetPriority(t2);
-            return Integer.compare(priority2, priority1); // Higher priority first
         });
-        
-        log.debug("AI found {} potential targets", targets.size());
-        return targets;
     }
     
     @Override
-    public boolean shouldUseSpecialAbility() {
+    public CompletableFuture<Position> calculateBestMovePosition() {
+        if (alien == null || tacticalField == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+        
+        return CompletableFuture.supplyAsync(() -> {
+            Position currentPos = alien.getPosition();
+            if (currentPos == null) {
+                return null;
+            }
+            
+            // Find best strategic position
+            List<Position> validPositions = getValidMovePositions();
+            if (validPositions.isEmpty()) {
+                return currentPos; // Stay in place
+            }
+            
+            // Score positions based on AI strategy
+            Position bestPosition = validPositions.stream()
+                .max(Comparator.comparingInt(this::scorePosition))
+                .orElse(currentPos);
+            
+            log.debug("AI calculated best move position: {} -> {}", currentPos, bestPosition);
+            return bestPosition;
+        });
+    }
+    
+    @Override
+    public CompletableFuture<List<Unit>> findBestTargets() {
+        if (alien == null || tacticalField == null) {
+            return CompletableFuture.completedFuture(new ArrayList<>());
+        }
+        
+        return CompletableFuture.supplyAsync(() -> {
+            // Find all player units in range
+            List<Unit> targets = tacticalField.getAllUnits().stream()
+                .filter(unit -> unit.getUnitType() == com.aliensattack.core.enums.UnitType.SOLDIER)
+                .filter(unit -> unit.isAlive())
+                .filter(unit -> isInAttackRange(unit))
+                .collect(Collectors.toList());
+            
+            // Sort by priority (closest, weakest, etc.)
+            targets.sort((t1, t2) -> {
+                int priority1 = calculateTargetPriority(t1);
+                int priority2 = calculateTargetPriority(t2);
+                return Integer.compare(priority2, priority1); // Higher priority first
+            });
+            
+            log.debug("AI found {} potential targets", targets.size());
+            return targets;
+        });
+    }
+    
+    @Override
+    public CompletableFuture<Boolean> shouldUseSpecialAbility() {
         if (alien == null || alien.getPsionicAbilities().isEmpty()) {
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
         
-        // Check if we have enough action points and energy
-        if (alien.getActionPoints() < 2) {
-            return false;
-        }
-        
-        // Check if there are good targets for psionic abilities
-        List<Unit> targets = findBestTargets();
-        if (targets.isEmpty()) {
-            return false;
-        }
-        
-        // Random chance based on difficulty and situation
-        double chance = calculateSpecialAbilityChance();
-        return random.nextDouble() < chance;
+        return CompletableFuture.supplyAsync(() -> {
+            // Check if we have enough action points and energy
+            if (alien.getActionPoints() < 2) {
+                return false;
+            }
+            
+            // Check if there are good targets for psionic abilities
+            List<Unit> targets = findBestTargets().join(); // Get the result synchronously
+            if (targets.isEmpty()) {
+                return false;
+            }
+            
+            // Random chance based on difficulty and situation
+            double chance = calculateSpecialAbilityChance();
+            return random.nextDouble() < chance;
+        });
     }
     
     @Override
@@ -959,7 +985,7 @@ public class EnemyAI implements IEnemyAI {
     
     private void updateAIState() {
         // Update last known player position
-        List<Unit> visiblePlayers = findBestTargets();
+        List<Unit> visiblePlayers = findBestTargets().join();
         if (!visiblePlayers.isEmpty()) {
             lastKnownPlayerPosition = visiblePlayers.get(0).getPosition();
             turnsSinceLastSighting = 0;
@@ -978,7 +1004,7 @@ public class EnemyAI implements IEnemyAI {
             return false;
         }
         
-        List<Unit> targets = findBestTargets();
+        List<Unit> targets = findBestTargets().join();
         if (targets.isEmpty()) {
             return false;
         }
@@ -994,13 +1020,13 @@ public class EnemyAI implements IEnemyAI {
         }
         
         // Move if no targets in range or for tactical positioning
-        List<Unit> targets = findBestTargets();
+        List<Unit> targets = findBestTargets().join();
         if (targets.isEmpty()) {
             return true; // Move to find targets
         }
         
         // Move for better positioning
-        Position bestPos = calculateBestMovePosition();
+        Position bestPos = calculateBestMovePosition().join();
         if (bestPos != null && !bestPos.equals(alien.getPosition())) {
             return true;
         }
@@ -1269,7 +1295,7 @@ public class EnemyAI implements IEnemyAI {
         baseChance += (difficultyLevel * 0.05);
         
         // Increase chance if we have good targets
-        List<Unit> targets = findBestTargets();
+        List<Unit> targets = findBestTargets().join();
         if (targets.size() >= 2) {
             baseChance += 0.2; // Multiple targets
         }
@@ -1300,7 +1326,7 @@ public class EnemyAI implements IEnemyAI {
     }
     
     private boolean executeAttack() {
-        List<Unit> targets = findBestTargets();
+        List<Unit> targets = findBestTargets().join();
         if (targets.isEmpty()) {
             return false;
         }
@@ -1316,7 +1342,7 @@ public class EnemyAI implements IEnemyAI {
     }
     
     private boolean executeMove() {
-        Position targetPos = calculateBestMovePosition();
+        Position targetPos = calculateBestMovePosition().join();
         if (targetPos == null || targetPos.equals(alien.getPosition())) {
             return false;
         }
@@ -1338,5 +1364,46 @@ public class EnemyAI implements IEnemyAI {
         alien.spendActionPoints(1);
         
         return true;
+    }
+    
+    @Override
+    public boolean isOllamaEnabled() {
+        return false; // Standard EnemyAI doesn't use Ollama
+    }
+    
+    @Override
+    public CompletableFuture<IEnemyAI.TacticalSituation> analyzeTacticalSituation() {
+        return CompletableFuture.completedFuture(new IEnemyAI.TacticalSituation(
+            getValidMovePositions(),
+            getVisibleEnemies(),
+            getVisibleAllies(),
+            new HashMap<>(),
+            new HashMap<>(),
+            "Standard AI tactical analysis"
+        ));
+    }
+    
+    private List<Unit> getVisibleEnemies() {
+        if (alien == null || tacticalField == null) {
+            return new ArrayList<>();
+        }
+        
+        return tacticalField.getAllUnits().stream()
+            .filter(unit -> unit.getUnitType() == com.aliensattack.core.enums.UnitType.SOLDIER)
+            .filter(unit -> unit.isAlive())
+            .filter(unit -> isInAttackRange(unit))
+            .collect(Collectors.toList());
+    }
+    
+    private List<Unit> getVisibleAllies() {
+        if (alien == null || tacticalField == null) {
+            return new ArrayList<>();
+        }
+        
+        return tacticalField.getAllUnits().stream()
+            .filter(unit -> unit.getUnitType() == com.aliensattack.core.enums.UnitType.ALIEN)
+            .filter(unit -> unit.isAlive())
+            .filter(unit -> !unit.equals(alien))
+            .collect(Collectors.toList());
     }
 }

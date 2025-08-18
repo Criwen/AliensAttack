@@ -117,6 +117,9 @@ public class AliensAttackApplication {
                 log.info("Shutdown signal received, cleaning up...");
                 GameLogManager.logApplicationShutdown("JVM shutdown signal received");
                 
+                // Perform cleanup operations
+                performCleanup();
+                
                 // Force exit after cleanup
                 System.exit(0);
             }
@@ -140,6 +143,34 @@ public class AliensAttackApplication {
             }
         } catch (Exception e) {
             log.debug("Signal handling setup failed, using basic shutdown: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Perform cleanup operations before shutdown
+     */
+    private static void performCleanup() {
+        try {
+            log.info("Performing application cleanup...");
+            
+            // Log final system state
+            Runtime runtime = Runtime.getRuntime();
+            long totalMemory = runtime.totalMemory();
+            long freeMemory = runtime.freeMemory();
+            long usedMemory = totalMemory - freeMemory;
+            
+            log.info("Final Memory Usage - Total: {}MB, Used: {}MB, Free: {}MB", 
+                    totalMemory / 1024 / 1024,
+                    usedMemory / 1024 / 1024,
+                    freeMemory / 1024 / 1024);
+            
+            // Log cleanup completion
+            log.info("Application cleanup completed");
+            GameLogManager.logApplicationShutdown("Cleanup completed successfully");
+            
+        } catch (Exception e) {
+            log.error("Error during application cleanup", e);
+            GameLogManager.logApplicationShutdown("Error during cleanup: " + e.getMessage());
         }
     }
 } 

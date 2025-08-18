@@ -3,9 +3,11 @@ package com.aliensattack.ui;
 import com.aliensattack.combat.ShootingSystem;
 import com.aliensattack.combat.CombatResult;
 import com.aliensattack.combat.DefaultCombatManager;
-import com.aliensattack.combat.TurnManager;
+import com.aliensattack.core.control.TurnManager;
 import com.aliensattack.core.model.*;
 import com.aliensattack.core.enums.*;
+import com.aliensattack.core.ai.BattlefieldSituation;
+import com.aliensattack.core.ai.AlienAction;
 import com.aliensattack.core.data.AmmoTypeData;
 import com.aliensattack.core.config.GameConfig;
 import com.aliensattack.field.ITacticalField;
@@ -210,6 +212,7 @@ public class GameWindow extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                log.info("Window closing event received");
                 int choice = JOptionPane.showConfirmDialog(
                     GameWindow.this,
                     "Вы уверены, что хотите выйти из игры?",
@@ -219,9 +222,24 @@ public class GameWindow extends JFrame {
                 );
                 
                 if (choice == JOptionPane.YES_OPTION) {
+                    log.info("User confirmed exit, performing cleanup...");
                     cleanup();
+                    
+                    // Log final message
+                    logMessage("=== ВЫХОД ИЗ ИГРЫ ===");
+                    logMessage("Все системы закрыты. До свидания!");
+                    
+                    // Exit application
                     System.exit(0);
+                } else {
+                    log.info("User cancelled exit");
                 }
+            }
+            
+            @Override
+            public void windowClosed(WindowEvent e) {
+                log.info("Window closed event received");
+                cleanup();
             }
             
             @Override
@@ -289,7 +307,7 @@ public class GameWindow extends JFrame {
             
             // Initialize turn management system
             com.aliensattack.core.model.GameContext gameContext = com.aliensattack.core.model.GameContext.createDefault();
-            turnManager = new TurnManager(combatManager, tacticalField);
+            turnManager = new TurnManager(brainManager, gameContext);
             log.info("✅ Turn manager initialized");
             
             // Initialize squad cohesion system
@@ -372,6 +390,50 @@ public class GameWindow extends JFrame {
         tacticalField.addUnit(soldier4);
         tacticalField.addUnit(alien1);
         tacticalField.addUnit(alien2);
+        
+        // Add units to turn manager for proper AI initialization
+        if (turnManager != null) {
+            turnManager.addUnit(soldier1);
+            turnManager.addUnit(soldier2);
+            turnManager.addUnit(soldier3);
+            turnManager.addUnit(soldier4);
+            turnManager.addUnit(alien1);
+            turnManager.addUnit(alien2);
+            log.info("✅ Все юниты добавлены в TurnManager для инициализации AI");
+        } else {
+            log.warn("⚠️ TurnManager не инициализирован, AI не будет работать");
+        }
+        
+        // Create AI brains for Alien units
+        if (brainManager != null) {
+            try {
+                // Create AI brain for Sectoid
+                com.aliensattack.core.interfaces.IBrain sectoidBrain = com.aliensattack.core.control.BrainFactory.createBrainForUnitType("ALIEN", "Sectoid", 8);
+                if (sectoidBrain != null) {
+                    brainManager.registerBrain(sectoidBrain);
+                    brainManager.assignBrainToUnit(sectoidBrain.getBrainId(), alien1.getId());
+                    log.info("✅ AI мозг создан для Sectoid: {}", sectoidBrain.getBrainId());
+                }
+                
+                // Create AI brain for Advent Trooper
+                com.aliensattack.core.interfaces.IBrain adventBrain = com.aliensattack.core.control.BrainFactory.createBrainForUnitType("ADVENT_TROOPER", "AdventTrooper", 7);
+                if (adventBrain != null) {
+                    brainManager.registerBrain(adventBrain);
+                    brainManager.assignBrainToUnit(adventBrain.getBrainId(), alien2.getId());
+                    log.info("✅ AI мозг создан для Advent Trooper: {}", adventBrain.getBrainId());
+                }
+                
+                log.info("🎯 AI мозги созданы для всех Alien юнитов");
+                
+                // Note: GameContext will be updated when TurnManager executes
+                log.info("✅ AI мозги готовы к работе");
+                
+            } catch (Exception e) {
+                log.error("❌ Ошибка создания AI мозгов для Alien: {}", e.getMessage(), e);
+            }
+        } else {
+            log.warn("⚠️ BrainManager не инициализирован, AI мозги не будут созданы");
+        }
         
         // Инициализируем действия для всех юнитов после их добавления в поле
         actionManager.initializeActionsForUnit(soldier1);
@@ -1216,17 +1278,731 @@ public class GameWindow extends JFrame {
             return;
         }
         
-        currentTurn++;
-        logMessage("=== TURN " + currentTurn + " ===");
-        logMessage("Ход завершен - все солдаты потратили очки действий");
+        logMessage("=== ЗАВЕРШЕНИЕ ХОДА СОЛДАТ ===");
+        logMessage("Все солдаты потратили очки действий");
         
-        // Reset action points for all units
-        for (Unit unit : units) {
-            unit.resetActionPoints();
+        // Используем TurnManager для правильного переключения фаз
+        if (turnManager != null) {
+            turnManager.endPlayerTurn();
+            logMessage("🎯 Ход солдат завершен, начинается ход Alien!");
+            
+            // Execute Alien turns using Ollama
+            executeAlienTurnsWithOllama();
+            
+            // После завершения хода Alien, переключаемся обратно на солдат
+            turnManager.endEnemyTurn();
+            
+            // Сбрасываем очки действий всем юнитам
+            for (Unit unit : units) {
+                unit.resetActionPoints();
+            }
+            
+            currentTurn++;
+            logMessage("=== TURN " + currentTurn + " ===");
+            logMessage("🎮 Ход Alien завершен, начинается новый ход солдат!");
+        } else {
+            logMessage("❌ TurnManager не инициализирован!");
         }
         
         updateUnitInfo();
-        updateActionPanel(); // Обновляем панель действий после сброса AP
+        updateActionPanel();
+        updateTacticalMap();
+    }
+    
+    /**
+     * Execute Alien turns using Ollama AI
+     */
+    private void executeAlienTurnsWithOllama() {
+        try {
+            logMessage("🤖 Начинается ход Alien с использованием Ollama AI...");
+            
+            // Create Ollama AI service
+            com.aliensattack.core.ai.ollama.OllamaAIService ollamaService = 
+                new com.aliensattack.core.ai.ollama.OllamaAIService();
+            
+            if (!ollamaService.isAvailable()) {
+                logMessage("⚠️ Ollama недоступен, используем стандартный AI");
+                turnManager.executeEnemyTurn();
+                return;
+            }
+            
+            // Disable player interaction during Alien turn
+            boolean wasPlayerInteractionEnabled = isPlayerInteractionEnabled;
+            setPlayerInteractionEnabled(false);
+            
+            try {
+                // Execute turns for each Alien unit
+                for (Unit unit : units) {
+                    if (unit.getUnitType() == UnitType.ALIEN && unit.isAlive()) {
+                        try {
+                            logMessage("🤖 " + unit.getName() + " принимает решение через Ollama...");
+                            
+                            // Check if unit is Alien type and cast if possible
+                            if (unit.getUnitType() == UnitType.ALIEN) {
+                                // For now, we'll use the Unit directly since we can't cast to Alien
+                                // In the future, we can create a proper Alien instance
+                                logMessage("🤖 " + unit.getName() + " - Alien unit detected");
+                                
+                                // Try to use Ollama for intelligent decision making
+                                boolean success = executeOllamaAlienTurn(unit);
+                                
+                                if (success) {
+                                    logMessage("✅ " + unit.getName() + " выполнил действие через Ollama AI");
+                                } else {
+                                    logMessage("❌ " + unit.getName() + " не смог выполнить действие");
+                                }
+                                
+                                // Small delay to show actions step by step
+                                Thread.sleep(1000);
+                            } else {
+                                logMessage("⚠️ " + unit.getName() + " не является Alien, пропускаем");
+                            }
+                            
+                        } catch (Exception e) {
+                            logMessage("❌ Ошибка выполнения хода для " + unit.getName() + ": " + e.getMessage());
+                            log.error("Error executing Alien turn for {}: {}", unit.getName(), e.getMessage(), e);
+                        }
+                    }
+                }
+                
+                logMessage("🤖 Ход Alien завершен");
+                
+            } finally {
+                // Re-enable player interaction
+                setPlayerInteractionEnabled(wasPlayerInteractionEnabled);
+            }
+            
+        } catch (Exception e) {
+            logMessage("❌ Критическая ошибка в Ollama AI: " + e.getMessage());
+            log.error("Critical error in Ollama AI execution: {}", e.getMessage(), e);
+            
+            // Fallback to standard AI
+            logMessage("🔄 Переключаемся на стандартный AI...");
+            turnManager.executeEnemyTurn();
+        }
+    }
+    
+    /**
+     * Check if player interaction is enabled
+     */
+    private boolean isPlayerInteractionEnabled = true;
+    
+    /**
+     * Set player interaction enabled/disabled
+     */
+    private void setPlayerInteractionEnabled(boolean enabled) {
+        isPlayerInteractionEnabled = enabled;
+        log.debug("Player interaction {} during Alien turn", enabled ? "enabled" : "disabled");
+    }
+    
+    /**
+     * Execute Alien turn using Ollama for intelligent decision making
+     */
+    private boolean executeOllamaAlienTurn(Unit unit) {
+        try {
+            logMessage("🤖 Ollama AI для " + unit.getName() + " - анализ ситуации и принятие решения");
+            
+            // Create Ollama AI service
+            com.aliensattack.core.ai.ollama.OllamaAIService ollamaService = 
+                new com.aliensattack.core.ai.ollama.OllamaAIService();
+            
+            if (!ollamaService.isAvailable()) {
+                logMessage("⚠️ Ollama недоступен, используем fallback AI");
+                return executeFallbackAlienTurn(unit);
+            }
+            
+            // Analyze battlefield situation
+            BattlefieldSituation situation = analyzeBattlefieldSituation(unit);
+            
+            // Generate available actions for this unit
+            List<AlienAction> availableActions = generateAvailableActions(unit, situation);
+            
+            // Create prompt for Ollama decision
+            String prompt = buildOllamaDecisionPrompt(unit, situation, availableActions);
+            
+            // Get decision from Ollama
+            String ollamaResponse = ollamaService.getOllamaDecision(prompt);
+            
+            if (ollamaResponse != null && !ollamaResponse.trim().isEmpty()) {
+                // Parse Ollama response and execute action
+                return executeOllamaDecision(unit, ollamaResponse, availableActions);
+            } else {
+                logMessage("⚠️ Ollama не вернул ответ, используем fallback AI");
+                return executeFallbackAlienTurn(unit);
+            }
+            
+        } catch (Exception e) {
+            log.error("Error in Ollama Alien turn for {}: {}", unit.getName(), e.getMessage());
+            logMessage("❌ Ошибка Ollama AI, используем fallback: " + e.getMessage());
+            return executeFallbackAlienTurn(unit);
+        }
+    }
+    
+    /**
+     * Execute fallback Alien turn when Ollama is not available
+     */
+    private boolean executeFallbackAlienTurn(Unit unit) {
+        try {
+            logMessage("🤖 Fallback AI для " + unit.getName() + " - выполнение простых действий");
+            
+            // Simple fallback logic: move towards nearest enemy or defend
+            if (unit.getActionPoints() >= 1.0) {
+                // Try to move towards nearest enemy
+                Unit nearestEnemy = findNearestEnemy(unit);
+                if (nearestEnemy != null) {
+                    Position targetPos = calculateMoveTowardsTarget(unit, nearestEnemy);
+                    if (targetPos != null && tacticalField.getUnitAt(targetPos.getX(), targetPos.getY()) == null) {
+                        // Move unit by updating position
+                        unit.setPosition(targetPos);
+                        unit.spendActionPoints(1.0);
+                        logMessage("✅ " + unit.getName() + " переместился к врагу");
+                        return true;
+                    }
+                }
+                
+                // If can't move, defend
+                unit.spendActionPoints(1.0);
+                logMessage("✅ " + unit.getName() + " занял оборонительную позицию");
+                return true;
+            }
+            
+            return false;
+            
+        } catch (Exception e) {
+            log.error("Error in fallback Alien turn for {}: {}", unit.getName(), e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Find nearest enemy unit
+     */
+    private Unit findNearestEnemy(Unit unit) {
+        Unit nearest = null;
+        double minDistance = Double.MAX_VALUE;
+        
+        for (Unit otherUnit : units) {
+            if (otherUnit.getUnitType() == UnitType.SOLDIER && otherUnit.isAlive()) {
+                double distance = calculateDistance(unit.getPosition(), otherUnit.getPosition());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearest = otherUnit;
+                }
+            }
+        }
+        
+        return nearest;
+    }
+    
+    /**
+     * Calculate move position towards target
+     */
+    private Position calculateMoveTowardsTarget(Unit unit, Unit target) {
+        Position unitPos = unit.getPosition();
+        Position targetPos = target.getPosition();
+        
+        int dx = Integer.compare(targetPos.getX(), unitPos.getX());
+        int dy = Integer.compare(targetPos.getY(), unitPos.getY());
+        
+        int newX = unitPos.getX() + dx;
+        int newY = unitPos.getY() + dy;
+        
+        // Ensure position is within bounds
+        if (newX >= 0 && newX < tacticalField.getWidth() && 
+            newY >= 0 && newY < tacticalField.getHeight()) {
+            return new Position(newX, newY, 0);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Calculate distance between two positions
+     */
+    private double calculateDistance(Position pos1, Position pos2) {
+        int dx = pos1.getX() - pos2.getX();
+        int dy = pos1.getY() - pos2.getY();
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    /**
+     * Analyze battlefield situation for a unit
+     */
+    private BattlefieldSituation analyzeBattlefieldSituation(Unit unit) {
+        try {
+            // Create base situation
+            BattlefieldSituation situation = BattlefieldSituation.createForUnit(
+                unit, units, tacticalField.getWidth(), tacticalField.getHeight());
+            
+            // Analyze enemies
+            List<BattlefieldSituation.EnemyInfo> enemies = new ArrayList<>();
+            for (Unit otherUnit : units) {
+                if (otherUnit.getUnitType() == UnitType.SOLDIER && otherUnit.isAlive()) {
+                    double distance = calculateDistance(unit.getPosition(), otherUnit.getPosition());
+                    int threatLevel = calculateThreatLevel(otherUnit, distance);
+                    
+                    enemies.add(BattlefieldSituation.EnemyInfo.builder()
+                        .name(otherUnit.getName())
+                        .position(otherUnit.getPosition())
+                        .health(otherUnit.getCurrentHealth())
+                        .maxHealth(otherUnit.getMaxHealth())
+                        .weaponType(otherUnit.getWeapon() != null ? otherUnit.getWeapon().getWeaponType().toString() : "UNKNOWN")
+                        .threatLevel(threatLevel)
+                        .distance(distance)
+                        .hasCover(false) // TODO: Implement cover detection
+                        .isOverwatching(otherUnit.isOverwatching())
+                        .build());
+                }
+            }
+            
+            // Sort enemies by threat level and distance
+            enemies.sort((e1, e2) -> {
+                if (e1.getThreatLevel() != e2.getThreatLevel()) {
+                    return Integer.compare(e2.getThreatLevel(), e1.getThreatLevel()); // Higher threat first
+                }
+                return Double.compare(e1.getDistance(), e2.getDistance()); // Closer first
+            });
+            
+            situation.setVisibleEnemies(enemies);
+            situation.setNearbyEnemies(enemies.stream()
+                .filter(e -> e.getDistance() <= 6.0)
+                .collect(Collectors.toList()));
+            
+            // Analyze allies
+            List<BattlefieldSituation.AllyInfo> allies = new ArrayList<>();
+            for (Unit otherUnit : units) {
+                if (otherUnit.getUnitType() == UnitType.ALIEN && otherUnit.isAlive() && !otherUnit.equals(unit)) {
+                    double distance = calculateDistance(unit.getPosition(), otherUnit.getPosition());
+                    boolean needsSupport = otherUnit.getCurrentHealth() < otherUnit.getMaxHealth() * 0.5;
+                    
+                    allies.add(BattlefieldSituation.AllyInfo.builder()
+                        .name(otherUnit.getName())
+                        .position(otherUnit.getPosition())
+                        .health(otherUnit.getCurrentHealth())
+                        .maxHealth(otherUnit.getMaxHealth())
+                        .needsSupport(needsSupport)
+                        .distance(distance)
+                        .build());
+                }
+            }
+            
+            situation.setVisibleAllies(allies);
+            situation.setNearbyAllies(allies.stream()
+                .filter(a -> a.getDistance() <= 4.0)
+                .collect(Collectors.toList()));
+            
+            // Calculate available move positions
+            List<Position> movePositions = calculateAvailableMovePositions(unit);
+            situation.setAvailableMovePositions(movePositions);
+            
+            // Determine threat level
+            if (!enemies.isEmpty()) {
+                BattlefieldSituation.EnemyInfo nearestEnemy = enemies.get(0);
+                situation.setDistanceToNearestEnemy((int) nearestEnemy.getDistance());
+                
+                if (nearestEnemy.getDistance() <= 3.0) {
+                    situation.setCurrentThreatLevel("HIGH");
+                } else if (nearestEnemy.getDistance() <= 6.0) {
+                    situation.setCurrentThreatLevel("MEDIUM");
+                } else {
+                    situation.setCurrentThreatLevel("LOW");
+                }
+            }
+            
+            log.debug("Battlefield situation analyzed for {}: {} enemies, {} allies, {} move positions", 
+                unit.getName(), enemies.size(), allies.size(), movePositions.size());
+            
+            return situation;
+            
+        } catch (Exception e) {
+            log.error("Error analyzing battlefield situation for {}: {}", unit.getName(), e.getMessage());
+            // Return basic situation on error
+            return BattlefieldSituation.createForUnit(unit, units, tacticalField.getWidth(), tacticalField.getHeight());
+        }
+    }
+    
+    /**
+     * Calculate threat level for an enemy unit
+     */
+    private int calculateThreatLevel(Unit enemy, double distance) {
+        int threatLevel = 1;
+        
+        // Base threat from health
+        if (enemy.getCurrentHealth() > enemy.getMaxHealth() * 0.8) {
+            threatLevel += 2;
+        } else if (enemy.getCurrentHealth() > enemy.getMaxHealth() * 0.5) {
+            threatLevel += 1;
+        }
+        
+        // Threat from weapon
+        if (enemy.getWeapon() != null) {
+            threatLevel += enemy.getWeapon().getBaseDamage() / 5;
+        }
+        
+        // Distance modifier
+        if (distance <= 3.0) {
+            threatLevel += 3; // Very close
+        } else if (distance <= 6.0) {
+            threatLevel += 2; // Close
+        } else if (distance <= 10.0) {
+            threatLevel += 1; // Medium
+        }
+        
+        // Overwatch threat
+        if (enemy.isOverwatching()) {
+            threatLevel += 2;
+        }
+        
+        return Math.min(threatLevel, 10); // Cap at 10
+    }
+    
+    /**
+     * Calculate available move positions for a unit
+     */
+    private List<Position> calculateAvailableMovePositions(Unit unit) {
+        List<Position> positions = new ArrayList<>();
+        Position currentPos = unit.getPosition();
+        int moveRange = unit.getMovementRange();
+        
+        for (int x = Math.max(0, currentPos.getX() - moveRange); 
+             x <= Math.min(tacticalField.getWidth() - 1, currentPos.getX() + moveRange); x++) {
+            for (int y = Math.max(0, currentPos.getY() - moveRange); 
+                 y <= Math.min(tacticalField.getHeight() - 1, currentPos.getY() + moveRange); y++) {
+                
+                int distance = Math.abs(x - currentPos.getX()) + Math.abs(y - currentPos.getY());
+                if (distance <= moveRange) {
+                    Position pos = new Position(x, y, 0);
+                    
+                    // Check if position is available
+                    if (tacticalField.getUnitAt(x, y) == null) {
+                        positions.add(pos);
+                    }
+                }
+            }
+        }
+        
+        return positions;
+    }
+    
+    /**
+     * Generate available actions for an Alien unit
+     */
+    private List<AlienAction> generateAvailableActions(Unit unit, BattlefieldSituation situation) {
+        List<AlienAction> actions = new ArrayList<>();
+        
+        try {
+            // Add move actions
+            for (Position movePos : situation.getAvailableMovePositions()) {
+                if (unit.getActionPoints() >= 1.0) {
+                    actions.add(AlienAction.createMoveAction(movePos, 1.0));
+                }
+            }
+            
+            // Add attack actions
+            for (BattlefieldSituation.EnemyInfo enemy : situation.getVisibleEnemies()) {
+                if (unit.getActionPoints() >= 1.0) {
+                    // Find the actual Unit object
+                    Unit targetUnit = findUnitByName(enemy.getName());
+                    if (targetUnit != null) {
+                        int damage = unit.getAttackDamage();
+                        actions.add(AlienAction.createAttackAction(targetUnit, 1.0, damage));
+                    }
+                }
+            }
+            
+            // Add defensive actions
+            if (unit.getActionPoints() >= 1.0) {
+                actions.add(AlienAction.createDefendAction(1.0));
+                actions.add(AlienAction.createOverwatchAction(1.0));
+            }
+            
+            // Add special ability actions if available
+            if (unit.getActionPoints() >= 2.0 && !situation.getVisibleEnemies().isEmpty()) {
+                BattlefieldSituation.EnemyInfo targetEnemy = situation.getVisibleEnemies().get(0);
+                Unit targetUnit = findUnitByName(targetEnemy.getName());
+                if (targetUnit != null) {
+                    actions.add(AlienAction.createSpecialAbilityAction("PSIONIC_ATTACK", targetUnit, 2.0));
+                }
+            }
+            
+            // Add retreat action if health is low
+            if (unit.getCurrentHealth() < unit.getMaxHealth() * 0.3 && unit.getActionPoints() >= 1.0) {
+                Position retreatPos = findRetreatPosition(unit, situation);
+                if (retreatPos != null) {
+                    actions.add(AlienAction.createRetreatAction(retreatPos, 1.0));
+                }
+            }
+            
+            // Sort actions by priority
+            actions.sort((a1, a2) -> Integer.compare(a2.getPriority(), a1.getPriority()));
+            
+            log.debug("Generated {} available actions for {}", actions.size(), unit.getName());
+            
+        } catch (Exception e) {
+            log.error("Error generating actions for {}: {}", unit.getName(), e.getMessage());
+        }
+        
+        return actions;
+    }
+    
+    /**
+     * Find unit by name
+     */
+    private Unit findUnitByName(String name) {
+        return units.stream()
+            .filter(u -> u.getName().equals(name))
+            .findFirst()
+            .orElse(null);
+    }
+    
+    /**
+     * Find retreat position for low health unit
+     */
+    private Position findRetreatPosition(Unit unit, BattlefieldSituation situation) {
+        // Find position away from enemies
+        for (Position pos : situation.getAvailableMovePositions()) {
+            boolean isSafe = true;
+            for (BattlefieldSituation.EnemyInfo enemy : situation.getVisibleEnemies()) {
+                if (calculateDistance(pos, enemy.getPosition()) < 4.0) {
+                    isSafe = false;
+                    break;
+                }
+            }
+            if (isSafe) {
+                return pos;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Build prompt for Ollama decision making
+     */
+    private String buildOllamaDecisionPrompt(Unit unit, BattlefieldSituation situation, List<AlienAction> availableActions) {
+        StringBuilder prompt = new StringBuilder();
+        
+        prompt.append("You are an AI controlling an Alien unit in a tactical combat game. ");
+        prompt.append("Analyze the battlefield situation and choose the best action from the available options.\n\n");
+        
+        prompt.append("UNIT INFORMATION:\n");
+        prompt.append("- Name: ").append(situation.getUnitName()).append("\n");
+        prompt.append("- Health: ").append(situation.getUnitHealth()).append("/").append(situation.getUnitMaxHealth()).append("\n");
+        prompt.append("- Action Points: ").append(situation.getUnitActionPoints()).append("\n");
+        prompt.append("- Position: (").append(situation.getUnitPosition().getX()).append(", ").append(situation.getUnitPosition().getY()).append(")\n");
+        prompt.append("- Type: ").append(situation.getUnitType()).append("\n\n");
+        
+        prompt.append("BATTLEFIELD SITUATION:\n");
+        prompt.append("- Field Size: ").append(situation.getFieldWidth()).append("x").append(situation.getFieldHeight()).append("\n");
+        prompt.append("- Threat Level: ").append(situation.getCurrentThreatLevel()).append("\n");
+        prompt.append("- Distance to Nearest Enemy: ").append(situation.getDistanceToNearestEnemy()).append(" tiles\n");
+        prompt.append("- Under Fire: ").append(situation.isUnderFire() ? "Yes" : "No").append("\n");
+        prompt.append("- Flanked: ").append(situation.isFlanked() ? "Yes" : "No").append("\n");
+        prompt.append("- Has Cover: ").append(situation.isHasCover() ? "Yes" : "No").append("\n\n");
+        
+        prompt.append("ENEMY INFORMATION:\n");
+        for (BattlefieldSituation.EnemyInfo enemy : situation.getVisibleEnemies()) {
+            prompt.append("- ").append(enemy.getName()).append(" at (").append(enemy.getPosition().getX()).append(", ").append(enemy.getPosition().getY()).append(")");
+            prompt.append(" - Health: ").append(enemy.getHealth()).append("/").append(enemy.getMaxHealth());
+            prompt.append(" - Threat: ").append(enemy.getThreatLevel()).append("/10");
+            prompt.append(" - Distance: ").append(String.format("%.1f", enemy.getDistance())).append(" tiles");
+            prompt.append(" - Overwatching: ").append(enemy.isOverwatching() ? "Yes" : "No").append("\n");
+        }
+        prompt.append("\n");
+        
+        prompt.append("ALLY INFORMATION:\n");
+        for (BattlefieldSituation.AllyInfo ally : situation.getVisibleAllies()) {
+            prompt.append("- ").append(ally.getName()).append(" at (").append(ally.getPosition().getX()).append(", ").append(ally.getPosition().getY()).append(")");
+            prompt.append(" - Health: ").append(ally.getHealth()).append("/").append(ally.getMaxHealth());
+            prompt.append(" - Needs Support: ").append(ally.isNeedsSupport() ? "Yes" : "No").append("\n");
+        }
+        prompt.append("\n");
+        
+        prompt.append("AVAILABLE ACTIONS:\n");
+        for (int i = 0; i < availableActions.size(); i++) {
+            AlienAction action = availableActions.get(i);
+            prompt.append(i + 1).append(". ").append(action.getActionSummary()).append("\n");
+            prompt.append("   - Priority: ").append(action.getPriority()).append("/10\n");
+            prompt.append("   - Success Chance: ").append(String.format("%.0f", action.getSuccessChance() * 100)).append("%\n");
+            prompt.append("   - Tactical Advantage: ").append(action.getTacticalAdvantage()).append("\n");
+            prompt.append("   - Risk: ").append(action.getTacticalRisk()).append("\n\n");
+        }
+        
+        prompt.append("DECISION REQUIREMENTS:\n");
+        prompt.append("Choose the best action considering:\n");
+        prompt.append("1. Current threat level and enemy positions\n");
+        prompt.append("2. Unit health and action points\n");
+        prompt.append("3. Tactical advantage vs risk\n");
+        prompt.append("4. Support for allies if needed\n");
+        prompt.append("5. Strategic positioning for future turns\n\n");
+        
+        prompt.append("RESPONSE FORMAT:\n");
+        prompt.append("{\n");
+        prompt.append("  \"selected_action\": \"action_id\",\n");
+        prompt.append("  \"reasoning\": \"detailed explanation of why this action was chosen\",\n");
+        prompt.append("  \"expected_outcome\": \"what you expect to achieve\",\n");
+        prompt.append("  \"alternative_actions\": [\"action_id1\", \"action_id2\"],\n");
+        prompt.append("  \"confidence\": 0.0-1.0\n");
+        prompt.append("}\n\n");
+        
+        prompt.append("Make a tactical decision based on the current situation.");
+        
+        return prompt.toString();
+    }
+    
+    /**
+     * Execute decision received from Ollama
+     */
+    private boolean executeOllamaDecision(Unit unit, String ollamaResponse, List<AlienAction> availableActions) {
+        try {
+            logMessage("🤖 Parsing Ollama decision for " + unit.getName());
+            
+            // Simple JSON parsing (in production, use proper JSON library)
+            String selectedActionId = extractActionIdFromResponse(ollamaResponse);
+            
+            if (selectedActionId != null) {
+                // Find the selected action
+                AlienAction selectedAction = availableActions.stream()
+                    .filter(action -> action.getActionId().equals(selectedActionId))
+                    .findFirst()
+                    .orElse(null);
+                
+                if (selectedAction != null) {
+                    logMessage("✅ " + unit.getName() + " выбрал действие: " + selectedAction.getActionName());
+                    return executeAlienAction(unit, selectedAction);
+                } else {
+                    logMessage("⚠️ Выбранное действие не найдено: " + selectedActionId);
+                }
+            } else {
+                logMessage("⚠️ Не удалось извлечь ID действия из ответа Ollama");
+            }
+            
+            // Fallback to fallback AI if Ollama decision failed
+            logMessage("🔄 Переключаемся на fallback AI...");
+            return executeFallbackAlienTurn(unit);
+            
+        } catch (Exception e) {
+            log.error("Error executing Ollama decision for {}: {}", unit.getName(), e.getMessage());
+            logMessage("❌ Ошибка выполнения решения Ollama: " + e.getMessage());
+            return executeFallbackAlienTurn(unit);
+        }
+    }
+    
+    /**
+     * Extract action ID from Ollama response
+     */
+    private String extractActionIdFromResponse(String response) {
+        try {
+            // Simple extraction - look for "selected_action" field
+            if (response.contains("\"selected_action\"")) {
+                int start = response.indexOf("\"selected_action\"") + 18;
+                int end = response.indexOf("\"", start);
+                if (end > start) {
+                    return response.substring(start, end);
+                }
+            }
+            
+            // Fallback: look for action patterns
+            for (String pattern : new String[]{"MOVE_", "ATTACK_", "DEFEND", "OVERWATCH", "SPECIAL_", "RETREAT_"}) {
+                if (response.contains(pattern)) {
+                    int start = response.indexOf(pattern);
+                    int end = response.indexOf("\"", start);
+                    if (end > start) {
+                        return response.substring(start, end);
+                    } else {
+                        return response.substring(start);
+                    }
+                }
+            }
+            
+            return null;
+            
+        } catch (Exception e) {
+            log.error("Error extracting action ID: {}", e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Execute a specific Alien action
+     */
+    private boolean executeAlienAction(Unit unit, AlienAction action) {
+        try {
+            logMessage("🎯 " + unit.getName() + " выполняет: " + action.getActionName());
+            
+            // Check if unit can perform this action
+            if (!action.canBePerformedBy(unit)) {
+                logMessage("❌ " + unit.getName() + " не может выполнить действие: недостаточно AP");
+                return false;
+            }
+            
+            // Execute based on action type
+            switch (action.getActionType()) {
+                case "MOVE":
+                    if (action.getTargetPosition() != null) {
+                        unit.setPosition(action.getTargetPosition());
+                        unit.spendActionPoints(action.getActionPointCost());
+                        logMessage("✅ " + unit.getName() + " переместился в (" + 
+                            action.getTargetPosition().getX() + ", " + action.getTargetPosition().getY() + ")");
+                        return true;
+                    }
+                    break;
+                    
+                case "ATTACK":
+                    if (action.getTargetUnit() != null) {
+                        // Simple attack simulation
+                        boolean success = Math.random() < action.getSuccessChance();
+                        if (success) {
+                            int damage = action.getBaseDamage();
+                            action.getTargetUnit().takeDamage(damage);
+                            unit.spendActionPoints(action.getActionPointCost());
+                            logMessage("✅ " + unit.getName() + " атаковал " + 
+                                action.getTargetUnit().getName() + " и нанес " + damage + " урона");
+                        } else {
+                            unit.spendActionPoints(action.getActionPointCost());
+                            logMessage("❌ " + unit.getName() + " промахнулся по " + 
+                                action.getTargetUnit().getName());
+                        }
+                        return true;
+                    }
+                    break;
+                    
+                case "DEFEND":
+                    unit.spendActionPoints(action.getActionPointCost());
+                    logMessage("✅ " + unit.getName() + " занял оборонительную позицию");
+                    return true;
+                    
+                case "OVERWATCH":
+                    unit.setOverwatching(true);
+                    unit.spendActionPoints(action.getActionPointCost());
+                    logMessage("✅ " + unit.getName() + " установил overwatch");
+                    return true;
+                    
+                case "SPECIAL_ABILITY":
+                    unit.spendActionPoints(action.getActionPointCost());
+                    logMessage("✅ " + unit.getName() + " использовал способность: " + 
+                        action.getAbilityType());
+                    return true;
+                    
+                case "RETREAT":
+                    if (action.getTargetPosition() != null) {
+                        unit.setPosition(action.getTargetPosition());
+                        unit.spendActionPoints(action.getActionPointCost());
+                        logMessage("✅ " + unit.getName() + " отступил в безопасную позицию");
+                        return true;
+                    }
+                    break;
+                    
+                default:
+                    logMessage("⚠️ Неизвестный тип действия: " + action.getActionType());
+                    return false;
+            }
+            
+            return false;
+            
+        } catch (Exception e) {
+            log.error("Error executing action {} for {}: {}", action.getActionName(), unit.getName(), e.getMessage());
+            return false;
+        }
     }
     
     private void handleConcealAction() {
@@ -1446,7 +2222,56 @@ public class GameWindow extends JFrame {
     
     private void cleanup() {
         logMessage("Shutting down XCOM 2 Tactical Combat System...");
-        // Cleanup resources
+        
+        try {
+            // Shutdown turn manager
+            if (turnManager != null) {
+                logMessage("Shutting down Turn Manager...");
+                turnManager.shutdown();
+            }
+            
+            // Shutdown brain manager
+            if (brainManager != null) {
+                logMessage("Shutting down Brain Manager...");
+                brainManager.shutdown();
+            }
+            
+            // Shutdown squad cohesion manager
+            if (squadCohesionManager != null) {
+                logMessage("Shutting down Squad Cohesion Manager...");
+                squadCohesionManager.shutdown();
+            }
+            
+            // Note: Performance manager is not initialized in GameWindow
+            
+            // Shutdown Ollama AI service
+            try {
+                com.aliensattack.core.ai.OllamaAIFactory.cleanup();
+                logMessage("Ollama AI service cleaned up");
+            } catch (Exception e) {
+                logMessage("Warning: Error cleaning up Ollama AI service: " + e.getMessage());
+            }
+            
+            // Clear all units and references
+            if (units != null) {
+                units.clear();
+            }
+            if (preparedSoldiers != null) {
+                preparedSoldiers.clear();
+            }
+            if (highlightedPositions != null) {
+                highlightedPositions.clear();
+            }
+            
+            // Clear UI references
+            selectedUnit = null;
+            
+            logMessage("All systems shut down successfully");
+            
+        } catch (Exception e) {
+            logMessage("Error during cleanup: " + e.getMessage());
+            log.error("Error during GameWindow cleanup", e);
+        }
     }
     
     public void showWindow() {

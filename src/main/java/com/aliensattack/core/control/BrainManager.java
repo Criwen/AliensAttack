@@ -224,23 +224,33 @@ public class BrainManager {
             return;
         }
         
+        log.info("🤖 Executing brains for game context. Total brains: {}, Context: {}", 
+                registeredBrains.size(), context);
+        
         // Update all brains with current context
-        registeredBrains.values().forEach(brain -> {
+        int updatedBrains = 0;
+        for (IBrain brain : registeredBrains.values()) {
             if (brain.isControlling()) {
                 brain.update(context);
+                updatedBrains++;
+                log.debug("🤖 Updated brain: {} (Type: {})", brain.getBrainId(), brain.getBrainType());
             }
-        });
+        }
+        log.info("🤖 Updated {} controlling brains", updatedBrains);
         
         // Execute brains in priority order
         List<IBrain> brainsToExecute = getBrainsByPriority();
+        log.info("🤖 Found {} brains ready for execution", brainsToExecute.size());
         
         for (IBrain brain : brainsToExecute) {
             if (!brain.isReady()) {
+                log.debug("🤖 Brain {} not ready, skipping", brain.getBrainId());
                 continue;
             }
             
             if (activeBrains.size() >= maxConcurrentBrains) {
-                log.debug("Maximum concurrent brains reached, skipping {}", brain.getBrainId());
+                log.warn("⚠️ Maximum concurrent brains reached ({}), skipping {}", 
+                        maxConcurrentBrains, brain.getBrainId());
                 continue;
             }
             
@@ -249,6 +259,8 @@ public class BrainManager {
         
         // Clean up inactive brains
         cleanupInactiveBrains();
+        
+        log.info("🤖 Brain execution completed. Active brains: {}", activeBrains.size());
     }
     
     /**
@@ -258,6 +270,9 @@ public class BrainManager {
         String brainId = brain.getBrainId();
         
         try {
+            log.info("🤖 Executing brain: {} (Type: {}, Ready: {}, Controlling: {})", 
+                    brainId, brain.getBrainType(), brain.isReady(), brain.isControlling());
+            
             // Mark brain as active
             activeBrains.add(brainId);
             brainLastActionTime.put(brainId, System.currentTimeMillis());
@@ -266,19 +281,22 @@ public class BrainManager {
             Optional<IAction> action = brain.selectAction(context);
             
             if (action.isPresent()) {
+                log.info("🤖 Brain {} selected action: {} (Type: {})", 
+                        brainId, action.get().getActionType(), action.get().getClass().getSimpleName());
+                
                 boolean success = brain.executeAction(action.get());
                 
                 if (success) {
-                    log.debug("Brain {} successfully executed action {}", brainId, action.get().getActionType());
+                    log.info("✅ Brain {} successfully executed action {}", brainId, action.get().getActionType());
                 } else {
-                    log.warn("Brain {} failed to execute action {}", brainId, action.get().getActionType());
+                    log.warn("❌ Brain {} failed to execute action {}", brainId, action.get().getActionType());
                 }
             } else {
-                log.debug("Brain {} no action selected", brainId);
+                log.warn("⚠️ Brain {} no action selected", brainId);
             }
             
         } catch (Exception e) {
-            log.error("Error executing brain {}", brainId, e);
+            log.error("❌ Error executing brain {}: {}", brainId, e.getMessage(), e);
         } finally {
             // Mark brain as inactive
             activeBrains.remove(brainId);
@@ -289,10 +307,18 @@ public class BrainManager {
      * Get brains ordered by priority
      */
     private List<IBrain> getBrainsByPriority() {
-        return registeredBrains.values().stream()
+        List<IBrain> controllingBrains = registeredBrains.values().stream()
                 .filter(IBrain::isControlling)
                 .sorted(Comparator.comparingInt(IBrain::getPriority).reversed())
                 .collect(Collectors.toList());
+        
+        log.debug("🤖 Found {} controlling brains by priority: {}", 
+                controllingBrains.size(), 
+                controllingBrains.stream()
+                    .map(brain -> brain.getBrainId() + "(" + brain.getPriority() + ")")
+                    .collect(Collectors.joining(", ")));
+        
+        return controllingBrains;
     }
     
     /**
@@ -401,5 +427,36 @@ public class BrainManager {
         });
         
         return metrics;
+    }
+    
+    /**
+     * Shutdown the brain manager and clean up resources
+     */
+    public void shutdown() {
+        log.info("Shutting down Brain Manager...");
+        
+        try {
+            // Release control from all brains
+            for (String brainId : new ArrayList<>(activeBrains)) {
+                try {
+                    releaseUnitControl(brainId);
+                } catch (Exception e) {
+                    log.warn("Error releasing control from brain {}: {}", brainId, e.getMessage());
+                }
+            }
+            
+            // Clear all mappings and collections
+            registeredBrains.clear();
+            unitToBrainMapping.clear();
+            brainToUnitMapping.clear();
+            brainExecutionQueue.clear();
+            activeBrains.clear();
+            brainLastActionTime.clear();
+            
+            log.info("Brain Manager shutdown completed");
+            
+        } catch (Exception e) {
+            log.error("Error during Brain Manager shutdown", e);
+        }
     }
 }

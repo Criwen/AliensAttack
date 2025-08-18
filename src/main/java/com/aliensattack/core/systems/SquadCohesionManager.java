@@ -172,4 +172,38 @@ public class SquadCohesionManager {
         
         return status.toString();
     }
+    
+    /**
+     * Shutdown the squad cohesion manager and clean up resources
+     */
+    public void shutdown() {
+        try {
+            // Clear all active bonds
+            if (activeBonds != null) {
+                activeBonds.clear();
+            }
+            
+            // Clear squad systems
+            if (squadSystems != null) {
+                squadSystems.clear();
+            }
+            
+            // Clear squad members
+            if (squadMembers != null) {
+                squadMembers.clear();
+            }
+            
+            // Reset state
+            cohesionLevel = 0;
+            bondingPoints = 0;
+            tacticalBonus = 0;
+            
+            // Clear random generator
+            random = null;
+            
+        } catch (Exception e) {
+            // Log error but don't throw
+            System.err.println("Error during SquadCohesionManager shutdown: " + e.getMessage());
+        }
+    }
 }

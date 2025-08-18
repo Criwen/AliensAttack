@@ -34,7 +34,8 @@ public class GameConfig {
             "mission.properties",
             "game.properties",
             "actions.properties",
-            "ai.properties"
+            "ai.properties",
+            "ollama.properties"
         };
         
         for (String configFile : configFiles) {
@@ -101,6 +102,24 @@ public class GameConfig {
         }
         return defaultValue;
     }
+    
+    /**
+     * Get long property with default value
+     */
+    public static long getLong(String key, long defaultValue) {
+        initialize();
+        String value = properties.getProperty(key);
+        if (value != null) {
+            try {
+                return Long.parseLong(value.trim());
+            } catch (NumberFormatException e) {
+                log.warn("Invalid long value for {}: {}", key, value);
+            }
+        }
+        return defaultValue;
+    }
+    
+
     
     /**
      * Get boolean property with default value

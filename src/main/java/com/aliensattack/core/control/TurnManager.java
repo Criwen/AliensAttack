@@ -442,4 +442,39 @@ public class TurnManager {
     public int getCumulativeEnemyActions() {
         return cumulativeEnemyActions;
     }
+    
+    /**
+     * Add unit to turn management
+     */
+    public void addUnit(com.aliensattack.core.interfaces.IUnit unit) {
+        if (unit != null) {
+            log.debug("Adding unit {} to turn management", unit.getId());
+            // Note: This TurnManager doesn't maintain a unit list directly
+            // Units are managed through the game context
+        }
+    }
+    
+    /**
+     * Shutdown the turn manager and clean up resources
+     */
+    public void shutdown() {
+        log.info("Shutting down Turn Manager...");
+        
+        try {
+            // Deactivate all enemy AI brains
+            deactivateEnemyAI();
+            
+            // Clear statistics
+            unitActionsPerTurn.clear();
+            playerActionsThisTurn = 0;
+            enemyActionsThisTurn = 0;
+            cumulativePlayerActions = 0;
+            cumulativeEnemyActions = 0;
+            
+            log.info("Turn Manager shutdown completed");
+            
+        } catch (Exception e) {
+            log.error("Error during Turn Manager shutdown", e);
+        }
+    }
 } 

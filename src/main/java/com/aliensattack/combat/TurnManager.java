@@ -5,6 +5,7 @@ import com.aliensattack.core.model.Unit;
 import com.aliensattack.core.model.Alien;
 import com.aliensattack.core.interfaces.IUnit;
 import com.aliensattack.core.ai.EnemyAI;
+import com.aliensattack.core.ai.OllamaAIFactory;
 import com.aliensattack.core.ai.interfaces.IEnemyAI;
 import com.aliensattack.core.enums.UnitType;
 import com.aliensattack.field.ITacticalField;
@@ -96,30 +97,27 @@ public class TurnManager {
         for (Unit unit : enemyUnits) {
             if (unit.getUnitType() == UnitType.ALIEN) {
                 try {
-                    // Create and initialize AI for this alien
-                    EnemyAI ai = new EnemyAI();
+                    log.info("🔧 Инициализация AI для Alien: {}", unit.getName());
                     
-                    // Check if unit has required methods for AI initialization
-                    if (hasRequiredMethodsForAI(unit)) {
-                        // Initialize AI with unit data
-                        ai.initializeWithUnit(unit);
-                        ai.setTacticalField(tacticalField);
-                        ai.setCombatManager(combatManager);
-                        
+                    // Use OllamaAIFactory to create appropriate AI (Ollama-based or fallback)
+                    IEnemyAI ai = OllamaAIFactory.createAI(unit, tacticalField, combatManager);
+                    
+                    if (ai != null) {
                         // Store AI with unit ID as key
                         enemyAIs.put(unit.getName(), ai);
                         
-                        log.debug("AI initialized for alien unit: {} (Type: {})", unit.getName(), unit.getUnitType());
+                        log.info("✅ AI инициализирован для Alien: {} (Ollama: {})", 
+                                unit.getName(), ai.isOllamaEnabled());
                     } else {
-                        log.warn("Unit {} missing required methods for AI initialization", unit.getName());
+                        log.warn("⚠️ Не удалось создать AI для Alien: {}", unit.getName());
                     }
                 } catch (Exception e) {
-                    log.error("Error initializing AI for alien unit {}: {}", unit.getName(), e.getMessage());
+                    log.error("❌ Ошибка инициализации AI для Alien {}: {}", unit.getName(), e.getMessage());
                 }
             }
         }
         
-        log.info("Initialized AI for {} enemy units", enemyAIs.size());
+        log.info("🎯 Инициализирован AI для {} вражеских юнитов", enemyAIs.size());
     }
     
     /**
@@ -274,24 +272,92 @@ public class TurnManager {
             IEnemyAI ai = enemyAIs.get(enemyUnit.getName());
             
             if (ai != null) {
-                log.debug("Executing AI turn for enemy: {}", enemyUnit.getName());
+                log.info("🤖 Выполнение хода AI для врага: {} (AP: {})", enemyUnit.getName(), enemyUnit.getActionPoints());
                 
-                // Make AI decision
-                ai.makeTurnDecision();
-                
-                // Execute AI action
-                boolean actionExecuted = ai.executeAction();
-                
-                if (actionExecuted) {
-                    log.debug("AI action executed successfully for enemy: {}", enemyUnit.getName());
+                // For Ollama-based AI, we need to get the decision first, then execute it
+                if (ai.isOllamaEnabled()) {
+                    log.info("🤖 Используется Ollama AI для {}", enemyUnit.getName());
+                    
+                    // Get AI decision first
+                    ai.makeTurnDecision().thenAccept(decision -> {
+                        if (decision != null) {
+                            log.info("🤖 Ollama решение для {}: {} -> {} (уверенность: {:.2f})", 
+                                    enemyUnit.getName(), decision.getPrimaryAction(), 
+                                    decision.getSecondaryAction(), decision.getConfidence());
+                            
+                            // Execute the decision
+                            ai.executeAction().thenAccept(actionExecuted -> {
+                                if (actionExecuted) {
+                                    log.info("✅ Ollama действие выполнено успешно для {}", enemyUnit.getName());
+                                } else {
+                                    log.warn("❌ Ollama действие не удалось для {}", enemyUnit.getName());
+                                }
+                            }).exceptionally(throwable -> {
+                                log.error("❌ Ошибка выполнения Ollama действия для {}: {}", 
+                                         enemyUnit.getName(), throwable.getMessage());
+                                return null;
+                            });
+                        } else {
+                            log.warn("⚠️ Ollama не вернул решение для {}", enemyUnit.getName());
+                        }
+                    }).exceptionally(throwable -> {
+                        log.error("❌ Ошибка получения решения Ollama для {}: {}", 
+                                 enemyUnit.getName(), throwable.getMessage());
+                        return null;
+                    });
                 } else {
-                    log.debug("AI action failed for enemy: {}", enemyUnit.getName());
+                    log.info("🤖 Используется стандартный AI для {}", enemyUnit.getName());
+                    
+                    // Standard AI flow
+                    ai.makeTurnDecision().thenAccept(decision -> {
+                        if (decision != null) {
+                            log.info("🤖 Стандартное AI решение для {}: {} -> {}", 
+                                    enemyUnit.getName(), decision.getPrimaryAction(), 
+                                    decision.getSecondaryAction());
+                            
+                            // Execute AI action
+                            ai.executeAction().thenAccept(actionExecuted -> {
+                                if (actionExecuted) {
+                                    log.info("✅ Стандартное AI действие выполнено успешно для {}", enemyUnit.getName());
+                                } else {
+                                    log.warn("❌ Стандартное AI действие не удалось для {}", enemyUnit.getName());
+                                }
+                            }).exceptionally(throwable -> {
+                                log.error("❌ Ошибка выполнения стандартного AI действия для {}: {}", 
+                                         enemyUnit.getName(), throwable.getMessage());
+                                return null;
+                            });
+                        }
+                    }).exceptionally(throwable -> {
+                        log.error("❌ Ошибка получения стандартного AI решения для {}: {}", 
+                                 enemyUnit.getName(), throwable.getMessage());
+                        return null;
+                    });
                 }
             } else {
-                log.warn("No AI found for enemy unit: {}", enemyUnit.getName());
+                log.warn("⚠️ AI не найден для вражеского юнита: {}", enemyUnit.getName());
+                
+                // Try to create AI for this alien unit
+                try {
+                    log.info("🔧 Попытка создать AI для {}", enemyUnit.getName());
+                    
+                    // Use OllamaAIFactory to create appropriate AI
+                    IEnemyAI newAI = OllamaAIFactory.createAI(enemyUnit, tacticalField, combatManager);
+                    if (newAI != null) {
+                        enemyAIs.put(enemyUnit.getName(), newAI);
+                        log.info("✅ AI создан для {}", enemyUnit.getName());
+                        
+                        // Retry the turn execution
+                        executeEnemyTurn(enemyUnit);
+                    } else {
+                        log.error("❌ Не удалось создать AI для {}", enemyUnit.getName());
+                    }
+                } catch (Exception e) {
+                    log.error("❌ Ошибка создания AI для {}: {}", enemyUnit.getName(), e.getMessage());
+                }
             }
         } catch (Exception e) {
-            log.error("Error executing AI turn for enemy {}: {}", enemyUnit.getName(), e.getMessage());
+            log.error("❌ Ошибка выполнения хода AI для врага {}: {}", enemyUnit.getName(), e.getMessage());
         }
     }
     
@@ -465,25 +531,22 @@ public class TurnManager {
             // Initialize AI if it's an enemy
             if (aiEnabled && unit.getUnitType() == UnitType.ALIEN) {
                 try {
-                    // Create and initialize AI for this alien
-                    EnemyAI ai = new EnemyAI();
+                    log.info("🔧 Инициализация AI для нового Alien: {}", unit.getName());
                     
-                    // Check if unit has required methods for AI initialization
-                    if (hasRequiredMethodsForAI(unit)) {
-                        // Initialize AI with unit data
-                        ai.initializeWithUnit(unit);
-                        ai.setTacticalField(tacticalField);
-                        ai.setCombatManager(combatManager);
-                        
+                    // Use OllamaAIFactory to create appropriate AI (Ollama-based or fallback)
+                    IEnemyAI ai = OllamaAIFactory.createAI(unit, tacticalField, combatManager);
+                    
+                    if (ai != null) {
                         // Store AI with unit ID as key
                         enemyAIs.put(unit.getName(), ai);
                         
-                        log.debug("AI initialized for new alien unit: {} (Type: {})", unit.getName(), unit.getUnitType());
+                        log.info("✅ AI инициализирован для нового Alien: {} (Ollama: {})", 
+                                unit.getName(), ai.isOllamaEnabled());
                     } else {
-                        log.warn("New unit {} missing required methods for AI initialization", unit.getName());
+                        log.warn("⚠️ Не удалось создать AI для нового Alien: {}", unit.getName());
                     }
                 } catch (Exception e) {
-                    log.error("Error initializing AI for new alien unit {}: {}", unit.getName(), e.getMessage());
+                    log.error("❌ Ошибка инициализации AI для нового Alien {}: {}", unit.getName(), e.getMessage());
                 }
             }
             
@@ -527,5 +590,44 @@ public class TurnManager {
      */
     public int getCurrentTurn() {
         return currentTurn;
+    }
+    
+    /**
+     * Shutdown the turn manager and clean up resources
+     */
+    public void shutdown() {
+        log.info("Shutting down Turn Manager...");
+        
+        try {
+            // Shutdown all enemy AIs
+            if (enemyAIs != null) {
+                for (IEnemyAI ai : enemyAIs.values()) {
+                    try {
+                        // Clean up AI resources if they have cleanup methods
+                        if (ai instanceof AutoCloseable) {
+                            ((AutoCloseable) ai).close();
+                        }
+                    } catch (Exception e) {
+                        log.warn("Error cleaning up AI {}: {}", ai, e.getMessage());
+                    }
+                }
+                enemyAIs.clear();
+            }
+            
+            // Clear turn order
+            if (turnOrder != null) {
+                turnOrder.clear();
+            }
+            
+            // Reset state
+            currentTurn = 1;
+            currentPhase = TurnPhase.SOLDIER_PHASE;
+            currentUnitIndex = 0;
+            
+            log.info("Turn Manager shutdown completed");
+            
+        } catch (Exception e) {
+            log.error("Error during Turn Manager shutdown", e);
+        }
     }
 }
